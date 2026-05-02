@@ -1,0 +1,292 @@
+ChaletDeLaPointe – Foundational Web + Cross-Device App
+
+You are a senior full-stack architect and React Native engineer.
+Build Phase One of a production-grade rental platform called:
+
+ChaletDeLaPointe
+
+This is a scalable multi-unit rental system that initially supports one unit:
+
+Chalet St-Mathieu (Quebec)
+
+The application must be:
+
+Professional, modern, Airbnb-level visual quality
+Fully responsive
+Mobile-first
+React Native compatible (Expo)
+Web + iOS + Android compatible
+Architected for multi-property expansion
+Clean, modular, scalable
+TypeScript strictly enforced
+🧱 CORE ARCHITECTURE
+Tech Stack
+
+Frontend:
+
+React Native with Expo
+Expo Router (for unified navigation)
+React Native Web for web compatibility
+TypeScript
+
+Backend:
+
+Supabase
+Postgres
+RLS
+Stripe (future phase)
+Hosted on Vercel (web) + Expo (mobile)
+
+UI System:
+
+Tailwind (NativeWind for RN)
+Modern neutral Airbnb-style aesthetic
+Clean typography
+Large imagery
+Spacious layouts
+Soft shadows
+Rounded cards
+
+Design tone:
+Minimal, premium, calm, Quebec nature inspired.
+
+🏗️ PHASE ONE GOAL
+
+Build the basic public web + mobile app with:
+
+Visual polish
+Navigation structure
+Core pages
+Multi-unit architecture (even if only 1 unit exists)
+Auth wiring
+Data models scaffolded
+Placeholder booking flow
+
+No complex booking logic yet.
+No Stripe yet.
+No expense system yet.
+
+Just solid structure.
+
+🌍 APPLICATION STRUCTURE
+
+Use scalable folder architecture:
+
+/app
+   /(public)
+      index
+      properties
+      property/[id]
+      blog
+      calendar
+   /(auth)
+      login
+      register
+   /(app)
+      dashboard
+      reservations
+      expenses (placeholder)
+      admin (placeholder)
+🏡 MULTI-UNIT READY DATA MODEL
+
+Even though only 1 chalet exists, the schema must support:
+
+properties
+
+id
+name
+slug
+description
+location
+base_price
+cover_image
+gallery_images
+is_active
+
+Start with seeded property:
+
+Chalet St-Mathieu
+Location: Saint-Mathieu-de-Rioux
+Province: Quebec
+Country: Canada
+
+🌐 PUBLIC EXPERIENCE (Airbnb-level)
+1. Homepage
+
+Hero section:
+
+Full-width background image
+Large headline
+Subheading
+Call to action "View Chalet"
+
+Below:
+
+Featured property card
+Short description
+Call to explore
+
+Professional layout.
+
+2. Property Detail Page
+
+Sections:
+
+Image gallery carousel
+Property title
+Location
+Description
+Amenities (placeholder icons)
+Availability preview (read-only calendar placeholder)
+“Request Booking” button (non-functional placeholder)
+
+Must feel real.
+
+3. Public Calendar (Read-Only)
+Visual calendar component
+Shows unavailable dates (hardcoded mock data)
+No pricing shown
+No personal info shown
+4. Blog (Public Reading)
+List of posts
+Clean layout
+Author name
+Date
+Markdown rendering
+Post detail page
+
+Use mock data initially.
+
+🔐 AUTHENTICATION (WIRED BUT BASIC)
+
+Use Supabase Auth.
+
+Implement:
+
+Login screen
+Register screen
+Role hydration (admin/user)
+Protected route wrapper
+Auth context provider
+
+No business logic yet.
+
+👤 DASHBOARD (Authenticated Placeholder)
+
+Basic layout:
+
+Tabs:
+
+My Reservations
+Blog
+Expenses (locked)
+Admin (if role = admin)
+
+Just placeholder screens for now.
+
+🎨 VISUAL REQUIREMENTS
+
+Design must:
+
+Feel premium
+Have spacing
+Use soft grey backgrounds
+Rounded cards
+Modern typography
+Subtle animation transitions
+Smooth scroll
+Hover states on web
+Touch-friendly on mobile
+
+No generic bootstrap look.
+No clutter.
+No admin-dashboard vibe.
+
+This should feel like a real rental platform.
+
+📱 RESPONSIVENESS
+
+Must render perfectly on:
+
+Desktop
+Tablet
+iPhone
+Android
+
+Navigation:
+
+Web: top navigation bar
+Mobile: bottom tab navigation
+
+Unified codebase.
+
+🧠 SCALABILITY REQUIREMENTS
+
+Must support:
+
+Adding more properties later
+Adding multi-unit management
+Adding booking engine later
+Adding Stripe later
+Adding owner dashboard later
+
+Do NOT hardcode property logic to a single chalet.
+
+📦 DELIVERABLES FOR PHASE ONE
+
+Generate:
+
+Folder structure
+Navigation structure
+Property schema
+Seed data
+Homepage layout
+Property page layout
+Public calendar component (mocked)
+Blog layout (mocked)
+Auth flow
+Protected route wrapper
+Clean UI system setup
+README explaining architecture
+
+Use TypeScript everywhere.
+
+Explain briefly why each structural choice was made before showing code.
+
+🚨 IMPORTANT CONSTRAINTS
+No business logic yet
+No Stripe yet
+No reservation validation yet
+Just structure and UI
+Must be production-grade quality
+Must look like a real company platform
+Must be clean enough to scale to 10+ units
+💡 ADDITIONAL REQUIREMENTS
+
+Add a configuration layer:
+
+/config/platform.ts
+
+Allow:
+
+platformName
+primaryColor
+currency
+region
+
+So the platform can rebrand easily later.
+
+🎯 OUTCOME OF PHASE ONE
+
+At the end of this phase:
+
+The app looks real
+The architecture is clean
+It is deployable
+It supports web + mobile
+It is ready for business logic in Phase Two
+🔥 EXECUTION MODE
+
+Build this as if this is going to production.
+No demo-level shortcuts.
+No fragile architecture.
