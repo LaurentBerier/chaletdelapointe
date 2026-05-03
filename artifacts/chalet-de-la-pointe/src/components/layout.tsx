@@ -162,7 +162,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <h3 className="font-serif text-xl mb-4">Chalet St-Mathieu</h3>
               <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-xs">
-                Une retraite exclusive sur le Lac Saint-Mathieu dans les collines boisées du Québec. L'expérience du luxe discret où la nature a toute sa place.
+                Une retraite rustique sur le Lac Saint-Mathieu dans les collines boisées du Québec. L'expérience d'un confort chaleureux où la nature a toute sa place.
               </p>
             </div>
             <div>

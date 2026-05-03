@@ -73,7 +73,7 @@ Gardez un carnet de voyage. Ces moments-là méritent d'être écrits.`,
     slug: "art-de-ne-rien-faire",
     title: "L'art de ne rien faire",
     excerpt:
-      "Dans un monde hyper-connecté, le luxe véritable est de prendre le temps. Un guide pour déconnecter et profiter pleinement de la quiétude du Chalet St-Mathieu.",
+      "Dans un monde hyper-connecté, le vrai confort est de prendre le temps. Un guide pour déconnecter et profiter pleinement de la quiétude du Chalet St-Mathieu.",
     content: `Il y a une forme de courage dans la décision de ne rien faire.
 
 Dans une société qui valorise la productivité, la connexion permanente et l'agenda rempli, choisir de s'asseoir sur une terrasse et regarder le lac sans but précis est presque un acte radical.

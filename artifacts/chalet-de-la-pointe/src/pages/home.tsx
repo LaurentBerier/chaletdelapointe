@@ -140,7 +140,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-lg md:text-xl text-muted-foreground leading-relaxed font-light"
           >
-            Loin du bruit de la ville, le Chalet St-Mathieu offre une expérience de luxe discret, ancrée dans la nature québécoise. Pensez matins brumeux sur une eau calme, après-midis paresseux sur votre plage de sable, et couchers de soleil dorés depuis le balcon. Un monde surélevé et sans hâte.
+            Loin du bruit de la ville, le Chalet St-Mathieu offre une expérience de charme rustique, ancrée dans la nature québécoise. Pensez matins brumeux sur une eau calme, après-midis paresseux sur votre plage de sable, et couchers de soleil dorés depuis le balcon. Un monde surélevé et sans hâte.
           </motion.p>
         </div>
       </section>
@@ -204,7 +204,7 @@ export default function Home() {
             >
               <h3 className="text-2xl md:text-4xl font-serif text-primary mb-6">Charme authentique</h3>
               <p className="text-secondary-foreground/80 mb-8 leading-relaxed">
-                Boiseries chaleureuses, grande table familiale, baies vitrées sur le lac. Le chalet conserve son âme québécoise tout en offrant le confort moderne, un cocon où l'on aime se rassembler après une journée au bord de l'eau.
+                Boiseries chaleureuses, grande table familiale, baies vitrées sur le lac. Le chalet conserve son âme québécoise tout en offrant le confort douillet, un cocon où l'on aime se rassembler après une journée au bord de l'eau.
               </p>
               <Link
                 href="/chalet"
