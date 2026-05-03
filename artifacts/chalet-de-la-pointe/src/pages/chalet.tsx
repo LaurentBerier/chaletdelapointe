@@ -54,6 +54,7 @@ const amenities = [
 export default function Chalet() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isGalleryHovered, setIsGalleryHovered] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [guests, setGuests] = useState(2);
 
@@ -75,7 +76,19 @@ export default function Chalet() {
     onSelect();
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+    };
   }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    if (!emblaApi || isGalleryHovered) return;
+    const autoplay = window.setInterval(() => {
+      emblaApi.scrollNext();
+    }, 5000);
+    return () => window.clearInterval(autoplay);
+  }, [emblaApi, isGalleryHovered]);
 
   const today = new Date();
   const bookedDays = [
@@ -92,7 +105,11 @@ export default function Chalet() {
   return (
     <div className="min-h-screen bg-background pt-20">
       {/* Edge-to-edge Gallery */}
-      <div className="relative w-full h-[60vh] bg-neutral-900 group">
+      <div
+        className="relative w-full h-[60vh] bg-neutral-900 group"
+        onMouseEnter={() => setIsGalleryHovered(true)}
+        onMouseLeave={() => setIsGalleryHovered(false)}
+      >
         <div className="overflow-hidden h-full" ref={emblaRef}>
           <div className="flex h-full">
             {images.map((src, index) => (
@@ -347,6 +364,41 @@ export default function Chalet() {
           </div>
         </div>
       </div>
+
+      <section className="px-6 pb-20">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-8"
+          >
+            <h2 className="text-3xl md:text-4xl font-serif text-primary mb-3">Galerie complète</h2>
+            <p className="text-muted-foreground">Toutes les photos du chalet</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            {images.map((src, index) => (
+              <motion.div
+                key={`bottom-gallery-${index}`}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: Math.min(index * 0.05, 0.3) }}
+                className="rounded-2xl overflow-hidden aspect-[4/3] bg-secondary/30"
+              >
+                <img
+                  src={src}
+                  alt={`Photo du chalet ${index + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
