@@ -1,4 +1,9 @@
-import express, { type Express } from "express";
+import express, {
+  type Express,
+  type NextFunction,
+  type Request,
+  type Response,
+} from "express";
 import cors from "cors";
 import pinoHttpModule, {
   type HttpLogger,
@@ -38,5 +43,42 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+app.get("/", (_req: Request, res: Response) => {
+  res.type("text/html").send(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chalet de la Pointe API</title>
+  </head>
+  <body>
+    <main>
+      <h1>Chalet de la Pointe API</h1>
+      <p>Service is running.</p>
+      <p><a href="/api/healthz">Health check</a></p>
+    </main>
+  </body>
+</html>`);
+});
+
+app.get("/favicon.ico", (_req: Request, res: Response) => {
+  res.status(204).end();
+});
+
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  logger.error(
+    {
+      err,
+      method: req.method,
+      path: req.path,
+    },
+    "Unhandled request error",
+  );
+
+  if (!res.headersSent) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 export default app;
