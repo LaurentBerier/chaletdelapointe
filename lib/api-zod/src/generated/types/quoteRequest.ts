@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface QuoteRequest {
+  propertyId: string;
+  startDate: Date;
+  endDate: Date;
+  /** @minimum 1 */
+  guests: number;
 }

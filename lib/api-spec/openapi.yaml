@@ -3,20 +3,27 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: ChaletDeLaPointe reservation API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: properties
+    description: Property listings
+  - name: reservations
+    description: Booking and reservations
+  - name: calendar
+    description: Public availability calendar
+  - name: admin
+    description: Admin overrides (admin only)
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +31,453 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /properties:
+    get:
+      operationId: listProperties
+      tags: [properties]
+      summary: List active properties
+      responses:
+        "200":
+          description: Active properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+
+  /properties/{id}:
+    get:
+      operationId: getProperty
+      tags: [properties]
+      summary: Get a property by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Property
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Property" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /reservations/quote:
+    post:
+      operationId: quoteReservation
+      tags: [reservations]
+      summary: Compute a price breakdown for a date range (no booking)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QuoteRequest" }
+      responses:
+        "200":
+          description: Quote
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Quote" }
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /reservations:
+    get:
+      operationId: listMyReservations
+      tags: [reservations]
+      summary: List the authenticated user's reservations
+      responses:
+        "200":
+          description: Reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Reservation" }
+        "401":
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    post:
+      operationId: createReservation
+      tags: [reservations]
+      summary: Create a reservation (status pending_payment)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateReservationInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reservation" }
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401":
+          description: Unauthenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: Date conflict
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /reservations/{id}:
+    get:
+      operationId: getReservation
+      tags: [reservations]
+      summary: Get a reservation (owner or admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Reservation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reservation" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /reservations/{id}/cancel:
+    post:
+      operationId: cancelReservation
+      tags: [reservations]
+      summary: Cancel own reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Cancelled
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reservation" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /calendar/{propertyId}:
+    get:
+      operationId: getPublicCalendar
+      tags: [calendar]
+      summary: Public confirmed-bookings calendar (no user info, no pricing)
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Confirmed date ranges
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CalendarEntry" }
+
+  /admin/reservations:
+    get:
+      operationId: adminListReservations
+      tags: [admin]
+      summary: Admin - list all reservations
+      responses:
+        "200":
+          description: Reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Reservation" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/reservations/{id}/confirm:
+    post:
+      operationId: adminConfirmReservation
+      tags: [admin]
+      summary: Admin - force confirm a reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminActionBody" }
+      responses:
+        "200":
+          description: Updated reservation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reservation" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: Date conflict
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/reservations/{id}/cancel:
+    post:
+      operationId: adminCancelReservation
+      tags: [admin]
+      summary: Admin - cancel a reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminActionBody" }
+      responses:
+        "200":
+          description: Updated reservation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reservation" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/reservations/{id}:
+    patch:
+      operationId: adminModifyReservation
+      tags: [admin]
+      summary: Admin - modify a reservation (dates, guests, status)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminModifyBody" }
+      responses:
+        "200":
+          description: Updated reservation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reservation" }
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: Date conflict
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]
+
+    SeasonName:
+      type: string
+      enum: [haute, mi, basse]
+
+    UserGroup:
+      type: string
+      enum: [proprietaire, ancien_proprietaire, famille, ami, public]
+
+    ReservationStatus:
+      type: string
+      enum: [draft, pending_payment, confirmed, cancelled, expired]
+
+    Property:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        description: { type: string }
+        city: { type: string }
+        province: { type: string }
+        country: { type: string }
+        bedrooms: { type: integer }
+        bathrooms: { type: integer }
+        maxGuests: { type: integer }
+        isActive: { type: boolean }
+      required:
+        [id, slug, name, description, city, province, country, bedrooms, bathrooms, maxGuests, isActive]
+
+    QuoteRequest:
+      type: object
+      properties:
+        propertyId: { type: string, format: uuid }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        guests: { type: integer, minimum: 1 }
+      required: [propertyId, startDate, endDate, guests]
+
+    SeasonBreakdownEntry:
+      type: object
+      properties:
+        seasonName: { $ref: "#/components/schemas/SeasonName" }
+        nights: { type: integer }
+        basePricePerNight: { type: integer }
+        effectivePricePerNight: { type: integer }
+        subtotal: { type: integer }
+      required:
+        [seasonName, nights, basePricePerNight, effectivePricePerNight, subtotal]
+
+    Quote:
+      type: object
+      properties:
+        propertyId: { type: string, format: uuid }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        nights: { type: integer }
+        subtotal: { type: integer }
+        discountAmount: { type: integer }
+        total: { type: integer }
+        appliedGroup: { $ref: "#/components/schemas/UserGroup" }
+        seasonBreakdown:
+          type: array
+          items: { $ref: "#/components/schemas/SeasonBreakdownEntry" }
+      required:
+        [propertyId, startDate, endDate, nights, subtotal, discountAmount, total, appliedGroup, seasonBreakdown]
+
+    CreateReservationInput:
+      type: object
+      properties:
+        propertyId: { type: string, format: uuid }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        guests: { type: integer, minimum: 1 }
+        notes: { type: ["string", "null"] }
+      required: [propertyId, startDate, endDate, guests]
+
+    Reservation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        propertyId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        guests: { type: integer }
+        nights: { type: integer }
+        subtotal: { type: integer }
+        discountAmount: { type: integer }
+        total: { type: integer }
+        status: { $ref: "#/components/schemas/ReservationStatus" }
+        notes: { type: ["string", "null"] }
+        seasonBreakdown:
+          type: array
+          items: { $ref: "#/components/schemas/SeasonBreakdownEntry" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required:
+        [id, propertyId, userId, startDate, endDate, guests, nights, subtotal, discountAmount, total, status, seasonBreakdown, createdAt, updatedAt]
+
+    CalendarEntry:
+      type: object
+      properties:
+        propertyId: { type: string, format: uuid }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+      required: [propertyId, startDate, endDate]
+
+    AdminActionBody:
+      type: object
+      properties:
+        reason: { type: ["string", "null"] }
+
+    AdminModifyBody:
+      type: object
+      properties:
+        startDate: { type: ["string", "null"], format: date }
+        endDate: { type: ["string", "null"], format: date }
+        guests: { type: ["integer", "null"], minimum: 1 }
+        status:
+          oneOf:
+            - { $ref: "#/components/schemas/ReservationStatus" }
+            - { type: "null" }
+        notes: { type: ["string", "null"] }
+        reason: { type: ["string", "null"] }
