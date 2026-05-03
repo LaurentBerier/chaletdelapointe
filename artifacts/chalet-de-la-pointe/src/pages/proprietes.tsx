@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { MapPin, Search } from "lucide-react";
-import heroImg from "@assets/Aerial_1777816601975.png";
+import heroImg from "@assets/Aerial_1777816601975.jpg";
 
 export default function Proprietes() {
   return (

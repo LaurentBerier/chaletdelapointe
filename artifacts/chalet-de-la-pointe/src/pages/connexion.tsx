@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import heroImg from "@assets/IMG_0559_1777733069151.jpeg";
+import heroImg from "@assets/IMG_0559_1777733069151.jpg";
 
 export default function Connexion() {
   const { login, isAuthenticated } = useAuth();

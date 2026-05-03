@@ -10,17 +10,17 @@ import {
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-import aerialImg from "@assets/Aerial_1777816601975.png";
-import beachImg from "@assets/Beach_1777816601977.png";
+import aerialImg from "@assets/Aerial_1777816601975.jpg";
+import beachImg from "@assets/Beach_1777816601977.jpg";
 import balconImg from "@assets/Balcon_1777816601977.jpg";
-import salleAMangerImg from "@assets/Salon_Salleamanger_1777816601977.png";
-import salonImg from "@assets/Ref_salon_1777816601977.png";
-import chambreImg from "@assets/Chambre1_1777816601977.png";
-import winterImg from "@assets/WideWinter_1777816601978.png";
-import sunsetImg from "@assets/1146C8D0-D3D0-4422-B54F-0D998326620C_1_105_c_1777781795373.jpeg";
-import mistyImg from "@assets/IMG_6664_1777733051950.JPG";
-import stormImg from "@assets/IMG_0508_1777733051950.jpeg";
-import lakeImg from "@assets/IMG_0559_1777733069151.jpeg";
+import salleAMangerImg from "@assets/Salon_Salleamanger_1777816601977.jpg";
+import salonImg from "@assets/Ref_salon_1777816601977.jpg";
+import chambreImg from "@assets/Chambre1_1777816601977.jpg";
+import winterImg from "@assets/WideWinter_1777816601978.jpg";
+import sunsetImg from "@assets/1146C8D0-D3D0-4422-B54F-0D998326620C_1_105_c_1777781795373.jpg";
+import mistyImg from "@assets/IMG_6664_1777733051950.jpg";
+import stormImg from "@assets/IMG_0508_1777733051950.jpg";
+import lakeImg from "@assets/IMG_0559_1777733069151.jpg";
 
 const images = [
   aerialImg,

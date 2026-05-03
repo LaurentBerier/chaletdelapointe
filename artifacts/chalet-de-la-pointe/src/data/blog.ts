@@ -1,6 +1,6 @@
-import mistyImg from "@assets/IMG_6664_1777733051950.JPG";
-import stormImg from "@assets/IMG_0508_1777733051950.jpeg";
-import heroImg from "@assets/IMG_0559_1777733069151.jpeg";
+import mistyImg from "@assets/IMG_6664_1777733051950.jpg";
+import stormImg from "@assets/IMG_0508_1777733051950.jpg";
+import heroImg from "@assets/IMG_0559_1777733069151.jpg";
 
 export interface BlogPost {
   id: number;

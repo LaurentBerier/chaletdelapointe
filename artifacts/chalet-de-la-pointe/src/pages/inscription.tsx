@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import mistyImg from "@assets/IMG_6664_1777733051950.JPG";
+import mistyImg from "@assets/IMG_6664_1777733051950.jpg";
 
 export default function Inscription() {
   const { register, isAuthenticated } = useAuth();
