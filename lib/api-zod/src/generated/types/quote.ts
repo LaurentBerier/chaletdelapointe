@@ -5,8 +5,8 @@
  * ChaletDeLaPointe reservation API
  * OpenAPI spec version: 0.1.0
  */
-import type { SeasonBreakdownEntry } from "./seasonBreakdownEntry";
-import type { UserGroup } from "./userGroup";
+import type { SeasonBreakdownEntry } from "./seasonBreakdownEntry.js";
+import type { UserGroup } from "./userGroup.js";
 
 export interface Quote {
   propertyId: string;

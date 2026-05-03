@@ -5,8 +5,8 @@
  * ChaletDeLaPointe reservation API
  * OpenAPI spec version: 0.1.0
  */
-import type { ReservationStatus } from "./reservationStatus";
-import type { SeasonBreakdownEntry } from "./seasonBreakdownEntry";
+import type { ReservationStatus } from "./reservationStatus.js";
+import type { SeasonBreakdownEntry } from "./seasonBreakdownEntry.js";
 
 export interface Reservation {
   id: string;

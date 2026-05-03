@@ -1,9 +1,9 @@
 import { pgTable, uuid, text, jsonb, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
-import { adminActionTypeEnum } from "./enums";
-import { usersTable } from "./users";
-import { reservationsTable } from "./reservations";
+import { adminActionTypeEnum } from "./enums.js";
+import { usersTable } from "./users.js";
+import { reservationsTable } from "./reservations.js";
 
 export const adminActionsTable = pgTable(
   "admin_actions",

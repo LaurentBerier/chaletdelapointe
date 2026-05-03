@@ -13,10 +13,10 @@ import {
   AdminModifyReservationBody,
   AdminModifyReservationResponse,
 } from "@workspace/api-zod";
-import { requireAdmin } from "../middlewares/auth";
-import { logAdminAction } from "../lib/admin-log";
-import { calculateReservationPrice, PricingError } from "../lib/pricing";
-import { toIsoDate } from "../lib/dates";
+import { requireAdmin } from "../middlewares/auth.js";
+import { logAdminAction } from "../lib/admin-log.js";
+import { calculateReservationPrice, PricingError } from "../lib/pricing.js";
+import { toIsoDate } from "../lib/dates.js";
 
 const router: IRouter = Router();
 

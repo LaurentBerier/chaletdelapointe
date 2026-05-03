@@ -6,8 +6,8 @@ import pinoHttpModule, {
   type ReqId,
 } from "pino-http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import router from "./routes";
-import { logger } from "./lib/logger";
+import router from "./routes/index.js";
+import { logger } from "./lib/logger.js";
 
 const app: Express = express();
 const pinoHttp = pinoHttpModule as unknown as (

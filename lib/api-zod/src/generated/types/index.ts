@@ -6,17 +6,17 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export * from "./adminActionBody";
-export * from "./adminModifyBody";
-export * from "./calendarEntry";
-export * from "./createReservationInput";
-export * from "./error";
-export * from "./healthStatus";
-export * from "./property";
-export * from "./quote";
-export * from "./quoteRequest";
-export * from "./reservation";
-export * from "./reservationStatus";
-export * from "./seasonBreakdownEntry";
-export * from "./seasonName";
-export * from "./userGroup";
+export * from "./adminActionBody.js";
+export * from "./adminModifyBody.js";
+export * from "./calendarEntry.js";
+export * from "./createReservationInput.js";
+export * from "./error.js";
+export * from "./healthStatus.js";
+export * from "./property.js";
+export * from "./quote.js";
+export * from "./quoteRequest.js";
+export * from "./reservation.js";
+export * from "./reservationStatus.js";
+export * from "./seasonBreakdownEntry.js";
+export * from "./seasonName.js";
+export * from "./userGroup.js";

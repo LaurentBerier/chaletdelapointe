@@ -7,7 +7,7 @@ import {
   type SeasonBreakdownEntry,
   type User,
 } from "@workspace/db";
-import { eachNight, diffNights } from "./dates";
+import { eachNight, diffNights } from "./dates.js";
 
 export interface PriceComputation {
   nights: number;

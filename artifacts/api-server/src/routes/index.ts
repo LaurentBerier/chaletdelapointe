@@ -1,11 +1,11 @@
 import { Router, type IRouter } from "express";
-import healthRouter from "./health";
-import propertiesRouter from "./properties";
-import reservationsRouter from "./reservations";
-import calendarRouter from "./calendar";
-import adminRouter from "./admin";
-import { loadUser } from "../middlewares/auth";
-import { requireDatabase } from "../middlewares/database";
+import healthRouter from "./health.js";
+import propertiesRouter from "./properties.js";
+import reservationsRouter from "./reservations.js";
+import calendarRouter from "./calendar.js";
+import adminRouter from "./admin.js";
+import { loadUser } from "../middlewares/auth.js";
+import { requireDatabase } from "../middlewares/database.js";
 
 const router: IRouter = Router();
 

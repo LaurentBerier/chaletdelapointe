@@ -11,9 +11,9 @@ import {
   CancelReservationResponse,
   ListMyReservationsResponse,
 } from "@workspace/api-zod";
-import { requireAuth } from "../middlewares/auth";
-import { calculateReservationPrice, PricingError } from "../lib/pricing";
-import { toIsoDate } from "../lib/dates";
+import { requireAuth } from "../middlewares/auth.js";
+import { calculateReservationPrice, PricingError } from "../lib/pricing.js";
+import { toIsoDate } from "../lib/dates.js";
 
 const router: IRouter = Router();
 

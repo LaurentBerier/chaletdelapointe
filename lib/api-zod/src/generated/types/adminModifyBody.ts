@@ -5,7 +5,7 @@
  * ChaletDeLaPointe reservation API
  * OpenAPI spec version: 0.1.0
  */
-import type { ReservationStatus } from "./reservationStatus";
+import type { ReservationStatus } from "./reservationStatus.js";
 
 export interface AdminModifyBody {
   /** @nullable */

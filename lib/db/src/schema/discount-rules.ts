@@ -1,8 +1,8 @@
 import { pgTable, uuid, integer, boolean, timestamp, index, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
-import { seasonNameEnum, userGroupEnum } from "./enums";
-import { propertiesTable } from "./properties";
+import { seasonNameEnum, userGroupEnum } from "./enums.js";
+import { propertiesTable } from "./properties.js";
 
 export const discountRulesTable = pgTable(
   "discount_rules",

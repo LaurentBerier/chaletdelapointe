@@ -3,9 +3,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
-import { reservationStatusEnum } from "./enums";
-import { propertiesTable } from "./properties";
-import { usersTable } from "./users";
+import { reservationStatusEnum } from "./enums.js";
+import { propertiesTable } from "./properties.js";
+import { usersTable } from "./users.js";
 
 export interface SeasonBreakdownEntry {
   seasonName: "haute" | "mi" | "basse";

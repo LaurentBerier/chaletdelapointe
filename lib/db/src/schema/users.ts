@@ -1,7 +1,7 @@
 import { pgTable, text, uuid, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
-import { userGroupEnum } from "./enums";
+import { userGroupEnum } from "./enums.js";
 
 export const usersTable = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
