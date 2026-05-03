@@ -8,6 +8,12 @@ import {
   MapPin, Umbrella, Eye, ChevronLeft, ChevronRight, Minus, Plus, Sparkles,
 } from "lucide-react";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import aerialImg from "@assets/Aerial_1777816601975.jpg";
@@ -55,6 +61,8 @@ export default function Chalet() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isGalleryHovered, setIsGalleryHovered] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [guests, setGuests] = useState(2);
 
@@ -101,6 +109,7 @@ export default function Chalet() {
   const subtotal = nights * pricePerNight;
   const serviceFee = Math.round(subtotal * 0.1);
   const total = subtotal + serviceFee;
+  const selectedImageSrc = selectedImageIndex !== null ? images[selectedImageIndex] : null;
 
   return (
     <div className="min-h-screen bg-background pt-20">
@@ -380,25 +389,53 @@ export default function Chalet() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {images.map((src, index) => (
-              <motion.div
+              <motion.button
                 key={`bottom-gallery-${index}`}
                 initial={{ opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: Math.min(index * 0.05, 0.3) }}
-                className="rounded-2xl overflow-hidden aspect-[4/3] bg-secondary/30"
+                type="button"
+                onClick={() => {
+                  setSelectedImageIndex(index);
+                  setIsImageDialogOpen(true);
+                }}
+                className="group rounded-2xl overflow-hidden aspect-[4/3] bg-secondary/30 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                aria-label={`Ouvrir la photo du chalet ${index + 1} en plein écran`}
               >
                 <img
                   src={src}
                   alt={`Photo du chalet ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />
-              </motion.div>
+              </motion.button>
             ))}
           </div>
         </div>
       </section>
+
+      <Dialog
+        open={isImageDialogOpen}
+        onOpenChange={(isOpen) => {
+          setIsImageDialogOpen(isOpen);
+          if (!isOpen) setSelectedImageIndex(null);
+        }}
+      >
+        <DialogContent className="h-[92vh] max-h-[92vh] w-[96vw] max-w-[96vw] border-none bg-black/95 p-2 shadow-none sm:rounded-lg sm:p-4 [&>button]:bg-black/50 [&>button]:text-white [&>button]:opacity-90 [&>button]:hover:opacity-100">
+          <DialogTitle className="sr-only">Photo du chalet en plein écran</DialogTitle>
+          <DialogDescription className="sr-only">
+            {selectedImageIndex !== null ? `Agrandissement de la photo du chalet ${selectedImageIndex + 1}` : "Agrandissement de photo du chalet"}
+          </DialogDescription>
+          {selectedImageSrc ? (
+            <img
+              src={selectedImageSrc}
+              alt={selectedImageIndex !== null ? `Photo du chalet ${selectedImageIndex + 1} en pleine résolution` : "Photo du chalet en pleine résolution"}
+              className="h-full w-full object-contain"
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
