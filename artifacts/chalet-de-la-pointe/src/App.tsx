@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { Layout } from "@/components/layout";
 import { ProtectedRoute } from "@/components/protected-route";
 import Home from "@/pages/home";
+import Proprietes from "@/pages/proprietes";
 import Chalet from "@/pages/chalet";
 import Calendrier from "@/pages/calendrier";
 import Blogue from "@/pages/blogue";
@@ -23,6 +24,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/proprietes" component={Proprietes} />
       <Route path="/chalet" component={Chalet} />
       <Route path="/calendrier" component={Calendrier} />
       <Route path="/blogue" component={Blogue} />

@@ -1,0 +1,229 @@
+ChaletDeLaPointe – Airbnb-Style Multi-Property Rental Platform
+
+You are a senior full-stack architect and React Native engineer.
+
+Build a production-grade, Airbnb-style rental marketplace named:
+
+ChaletDeLaPointe
+
+This is a scalable rental platform that will support multiple properties in the future.
+Phase One launches with:
+
+Chalet St-Mathieu (Saint-Mathieu-de-Rioux, Quebec, Canada)
+
+Architecture must be multi-property ready from day one.
+
+🧱 TECH STACK
+
+Frontend:
+
+React Native with Expo
+React Native Web
+Expo Router
+TypeScript (strict mode)
+NativeWind (Tailwind for RN)
+React Native Reanimated (for smooth animations)
+Gesture Handler
+High-quality icon library (Lucide or similar)
+
+Backend:
+
+Supabase (Auth + Postgres + RLS)
+Stripe (later phase)
+Clean modular architecture
+
+Must run on:
+
+Web
+iOS
+Android
+
+Single unified codebase.
+
+🎨 DESIGN & VISUAL QUALITY (CRITICAL)
+
+The platform must feel like Airbnb:
+
+Premium
+Minimal
+Clean
+Calm
+Nature-inspired
+Spacious layouts
+Large imagery
+Rounded 2xl cards
+Soft shadows
+Elegant typography
+Subtle depth layers
+
+Must include:
+
+Smooth screen transitions
+Micro-animations on buttons
+Hover states (web)
+Press states (mobile)
+Smooth image fade-ins
+Skeleton loading states
+Polished empty states
+Clean iconography system
+Subtle motion on cards
+Animated modal transitions
+
+No generic admin look.
+No bootstrap feel.
+No clutter.
+
+This should feel like a real startup product.
+
+PHASE 1 – Foundation + Marketplace UI
+
+Build:
+
+Multi-property schema
+Homepage with search-style hero
+Featured property cards
+Properties listing page (responsive grid)
+Property detail page:
+Image carousel
+Sidebar booking card (desktop)
+Sticky booking card
+Amenities icons
+Clean layout
+Public read-only calendar (mocked)
+Public blog layout
+Auth (Supabase login/register)
+Protected dashboard placeholder
+Theme system in /config/theme.ts
+Branding config in /config/platform.ts
+
+Seed with Chalet St-Mathieu but do NOT hardcode single-property logic.
+
+No booking validation yet.
+No Stripe yet.
+Just scalable structure + polished UI.
+
+PHASE 2 – Reservation Engine
+
+Implement:
+
+Date range validation
+Overlap prevention
+Reservation lifecycle:
+draft → pending_payment → confirmed → cancelled → expired
+Role-based access
+Admin override capability
+Strict RLS enforcement
+Public calendar safe view
+
+All validation must be backend-only.
+
+Add smooth booking modal transitions and animated date selection.
+
+PHASE 3 – Stripe Integration
+
+Implement:
+
+Stripe Checkout
+Secure webhook verification
+100% prepayment required
+Reservation confirmed only after successful webhook
+Manual admin refunds only
+Payment audit logging
+
+Include:
+
+Loading states during checkout
+Smooth redirect handling
+Success and failure animations
+
+Stripe must be source of truth.
+
+PHASE 4 – Blog (Community Journal)
+
+Implement:
+
+Authenticated users publish immediately
+Admin can edit/archive/delete any post
+Public sees only published posts
+Markdown support
+Edit history tracking
+Archive instead of hard delete
+Smooth content transitions
+
+Use polished article layouts similar to Airbnb journal.
+
+PHASE 5 – Expense Sharing (Splitwise-like)
+
+Restricted to proprietaire group.
+
+Implement:
+
+Expense creation
+Equal or custom split
+Deterministic rolling balance calculation
+Settlement tracking
+Immutable logs
+Admin correction logging
+
+UI must feel modern and clear, not like accounting software.
+
+Use clean cards, subtle balance highlighting, smooth list animations.
+
+PHASE 6 – Admin Control Center
+
+Admin can:
+
+Manage users
+Manage roles
+Override reservations
+Archive blog posts
+Edit expenses
+View audit logs
+Monitor payments
+Activate/deactivate properties
+
+Admin UI must be structured but not ugly.
+Clean layout with subtle separation and icon usage.
+
+ARCHITECTURAL REQUIREMENTS
+Multi-property scalable
+Public vs authenticated separation
+Backend enforces business logic
+RLS strictly enforced
+Modular components
+Animation layer integrated cleanly
+Future-ready for:
+Multiple chalets
+Reviews
+Seasonal pricing
+Search filters
+Map view
+Multi-currency
+Owner dashboards
+DELIVERABLES
+
+Generate:
+
+Project bootstrap
+Folder structure
+Database schema
+RLS policies
+Navigation structure
+Core UI components
+Animation system integration
+Property model
+Reservation engine
+Stripe integration
+Blog engine
+Expense module
+Admin dashboard
+README explaining architecture
+
+Use TypeScript everywhere.
+
+Build this like a real SaaS product.
+No demo shortcuts.
+No fragile code.
+No messy styling.
+
+Polished. Smooth. Scalable.
