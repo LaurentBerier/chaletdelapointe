@@ -33,3 +33,11 @@ externalPort = 3000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+SUPABASE_URL = "https://dbdclboaqxgnekbqntlk.supabase.co/rest/v1/"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiZGNsYm9hcXhnbmVrYnFudGxrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTM1NDgsImV4cCI6MjA5MzM2OTU0OH0.crKwfDDh9a6UyM_E3xTwy3UozFGyB_T5j0NYWofJOBU"
+SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiZGNsYm9hcXhnbmVrYnFudGxrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Nzc5MzU0OCwiZXhwIjoyMDkzMzY5NTQ4fQ.fanywKRJihew5M4wanfdpuAlJE8lyBOZdvTT8XyYPD4"
+SUPABASE_DB_URL = "postgresql://postgres.dbdclboaqxgnekbqntlk: 1QbWo8gsjot1km84@aws-1-us-east-1.pooler.supabase.com:5432/postgres"
