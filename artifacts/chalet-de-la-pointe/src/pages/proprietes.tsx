@@ -71,7 +71,7 @@ export default function Proprietes() {
                   <div className="flex justify-between items-start mb-2">
                     <h2 className="text-xl font-serif text-primary font-medium">Chalet St-Mathieu</h2>
                     <div className="flex items-center gap-1 bg-secondary/50 px-2 py-1 rounded text-sm font-medium">
-                      350 $ <span className="text-xs font-normal text-muted-foreground">/ nuit</span>
+                      300 $ <span className="text-xs font-normal text-muted-foreground">/ nuit</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 text-muted-foreground text-sm mb-4">

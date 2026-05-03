@@ -83,7 +83,7 @@ export default function Chalet() {
     { from: addDays(today, 10), to: addDays(today, 15) },
   ];
 
-  const pricePerNight = 350;
+  const pricePerNight = 300;
   const nights = dateRange?.from && dateRange?.to ? Math.max(1, differenceInDays(dateRange.to, dateRange.from)) : 5;
   const subtotal = nights * pricePerNight;
   const serviceFee = Math.round(subtotal * 0.1);

@@ -49,7 +49,7 @@ export const properties: Property[] = [
     city: "Saint-Mathieu-de-Rioux",
     province: "Québec",
     country: "Canada",
-    basePrice: 350,
+    basePrice: 300,
     coverImage: aerialImg,
     galleryImages: [
       aerialImg,
