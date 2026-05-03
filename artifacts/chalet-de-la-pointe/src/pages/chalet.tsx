@@ -183,7 +183,7 @@ export default function Chalet() {
                 <div className="text-primary shrink-0 mt-1"><Eye className="w-6 h-6" /></div>
                 <div>
                   <div className="font-serif text-primary text-lg mb-1">Emplacement unique</div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">Posé sur sa propre pointe — vue directe et imprenable sur le lac.</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Posé sur sa propre pointe, vue directe et imprenable sur le lac.</p>
                 </div>
               </div>
             </motion.div>
@@ -201,7 +201,7 @@ export default function Chalet() {
                 Le Chalet St-Mathieu occupe le plus bel emplacement du lac : sa propre pointe boisée, entourée d'eau sur trois côtés. Du balcon ou de la grande pièce à vivre, baignée de lumière par d'immenses fenêtres, vous avez l'impression de flotter au-dessus de l'eau.
               </p>
               <p>
-                À quelques pas, votre <strong>plage privée de sable</strong> descend doucement vers le lac — parfaite pour la baignade des enfants, un café au lever du jour ou un feu en fin de soirée. Un refuge authentique pour se reconnecter à la nature québécoise, en toute saison, sans sacrifier le confort.
+                À quelques pas, votre <strong>plage privée de sable</strong> descend doucement vers le lac, parfaite pour la baignade des enfants, un café au lever du jour ou un feu en fin de soirée. Un refuge authentique pour se reconnecter à la nature québécoise, en toute saison, sans sacrifier le confort.
               </p>
             </motion.div>
 

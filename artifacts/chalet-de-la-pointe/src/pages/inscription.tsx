@@ -38,7 +38,7 @@ export default function Inscription() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left — image */}
+      {/* Left, image */}
       <div className="hidden lg:block lg:w-1/2 relative">
         <img src={mistyImg} alt="Brume matinale" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-primary/20" />
@@ -48,7 +48,7 @@ export default function Inscription() {
         </div>
       </div>
 
-      {/* Right — form */}
+      {/* Right, form */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 xl:px-24 py-16 bg-background">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

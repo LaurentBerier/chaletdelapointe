@@ -30,11 +30,11 @@ C'est dans ces moments-là que le temps semble s'arrêter.
 
 La brume qui se forme sur le lac en début de journée est un phénomène naturel fascinant. Elle naît du contraste entre l'eau encore chaude de la nuit et l'air frais du matin. La vapeur monte en volutes légères, créant ce paysage irréel que les photographes chassent depuis l'aube.
 
-Au Chalet St-Mathieu, nous avons la chance d'observer ce spectacle depuis notre quai privé. Un café chaud dans les mains, pieds nus sur le bois humide — c'est une expérience qui marque pour longtemps.
+Au Chalet St-Mathieu, nous avons la chance d'observer ce spectacle depuis notre quai privé. Un café chaud dans les mains, pieds nus sur le bois humide, c'est une expérience qui marque pour longtemps.
 
 **Comment en profiter pleinement**
 
-Réveillez-vous au moins une heure avant le lever du soleil. Préparez un thermos de café ou de thé. Enfilez une veste légère — même en été, les matins sur le lac peuvent être frais. Et surtout, laissez votre téléphone de côté. Certaines choses méritent d'être vécues sans écran.
+Réveillez-vous au moins une heure avant le lever du soleil. Préparez un thermos de café ou de thé. Enfilez une veste légère, même en été, les matins sur le lac peuvent être frais. Et surtout, laissez votre téléphone de côté. Certaines choses méritent d'être vécues sans écran.
 
 Le kayak au lever du jour reste l'une des activités les plus recommandées par nos visiteurs. Glisser silencieusement sur une eau miroir, entouré de brume, est une expérience méditative incomparable.`,
     author: "Équipe ChaletDeLaPointe",
@@ -49,11 +49,11 @@ Le kayak au lever du jour reste l'une des activités les plus recommandées par 
     title: "La beauté dramatique des orages d'été",
     excerpt:
       "Il n'y a rien de plus spectaculaire que de regarder un orage se former au-dessus des îles boisées depuis le confort du salon. Une symphonie de la nature.",
-    content: `L'horizon s'assombrit. Les nuages s'accumulent en tours de coton gris, puis gris foncé, puis presque noirs. Le vent se lève sur le lac, créant de petites vaguelettes qui brisent le miroir tranquille du matin. Et puis — l'orage.
+    content: `L'horizon s'assombrit. Les nuages s'accumulent en tours de coton gris, puis gris foncé, puis presque noirs. Le vent se lève sur le lac, créant de petites vaguelettes qui brisent le miroir tranquille du matin. Et puis, l'orage.
 
 **Un spectacle de premier rang**
 
-Depuis le salon vitré du Chalet St-Mathieu, vous avez une loge de théâtre sur l'un des spectacles les plus impressionnants de la nature québécoise. Les orages d'été dans le Bas-Saint-Laurent sont une expérience à part entière — intenses, courts, et suivis de cette lumière particulière que les peintres adorent.
+Depuis le salon vitré du Chalet St-Mathieu, vous avez une loge de théâtre sur l'un des spectacles les plus impressionnants de la nature québécoise. Les orages d'été dans le Bas-Saint-Laurent sont une expérience à part entière, intenses, courts, et suivis de cette lumière particulière que les peintres adorent.
 
 La photo emblématique de notre galerie, prise depuis le quai lors d'un après-midi de juillet, montre exactement ce phénomène : deux masses nuageuses se disputant le ciel au-dessus des îles, pendant que les rayons du soleil percent encore sur la droite.
 
@@ -80,7 +80,7 @@ Dans une société qui valorise la productivité, la connexion permanente et l'a
 
 **Le concept japonais du "Ma"**
 
-Les Japonais ont un mot pour désigner cet espace entre les choses — une pause, un vide, un silence. Le *ma* n'est pas une absence, c'est une présence. Et c'est exactement ce que le Chalet St-Mathieu vous offre : l'espace pour ressentir le *ma*.
+Les Japonais ont un mot pour désigner cet espace entre les choses, une pause, un vide, un silence. Le *ma* n'est pas une absence, c'est une présence. Et c'est exactement ce que le Chalet St-Mathieu vous offre : l'espace pour ressentir le *ma*.
 
 Nos visiteurs reviennent souvent avec la même observation : les deux premiers jours sont les plus difficiles. L'envie de s'occuper, de planifier, de "faire quelque chose". Puis, progressivement, le lac travaille. Le rythme ralentit. Le silence cesse d'être inconfortable.
 
@@ -106,18 +106,18 @@ La quiétude du Bas-Saint-Laurent est un médicament. Prescrit sans ordonnance.`
     slug: "guide-activites-bas-saint-laurent",
     title: "Guide des activités : le Bas-Saint-Laurent en toute saison",
     excerpt:
-      "Randonnée, kayak, vélo de montagne ou observation des étoiles — le Bas-Saint-Laurent regorge d'activités pour chaque type de voyageur. Notre guide complet.",
+      "Randonnée, kayak, vélo de montagne ou observation des étoiles, le Bas-Saint-Laurent regorge d'activités pour chaque type de voyageur. Notre guide complet.",
     content: `Le Bas-Saint-Laurent est une région qui se révèle au fil des saisons. Chacune apporte son lot d'activités, de paysages et de découvertes. Voici notre guide pour profiter au maximum de votre séjour au Chalet St-Mathieu.
 
 **Été : l'eau comme terrain de jeu**
 
-L'été, le lac est au cœur de tout. Canot, kayak, natation, pêche — l'eau du lac Saint-Mathieu est à la fois fraîche et accueillante. Notre quai privé est équipé pour vous faciliter la mise à l'eau.
+L'été, le lac est au cœur de tout. Canot, kayak, natation, pêche, l'eau du lac Saint-Mathieu est à la fois fraîche et accueillante. Notre quai privé est équipé pour vous faciliter la mise à l'eau.
 
 À proximité, le Parc national du Bic offre des randonnées spectaculaires avec des vues sur le Saint-Laurent. Le cap Enragé mérite le détour pour sa vue à 360 degrés.
 
 **Automne : l'or des forêts**
 
-L'automne dans le Bas-Saint-Laurent est d'une beauté renversante. Les forêts qui entourent le lac se transforment en camaïeux de rouge, d'orange et d'or. C'est aussi la saison idéale pour l'observation de la faune — orignal, ours noir et cerf de Virginie sont plus actifs.
+L'automne dans le Bas-Saint-Laurent est d'une beauté renversante. Les forêts qui entourent le lac se transforment en camaïeux de rouge, d'orange et d'or. C'est aussi la saison idéale pour l'observation de la faune, orignal, ours noir et cerf de Virginie sont plus actifs.
 
 **Hiver : la quiétude extrême**
 
@@ -125,7 +125,7 @@ En hiver, le lac gelé devient une surface de glace parfaite pour la pêche blan
 
 **Printemps : le réveil de la nature**
 
-Le printemps est la saison la moins connue mais l'une des plus poétiques. La débâcle sur le lac, les oiseaux migrateurs qui reviennent, les premières fleurs qui percent la neige — c'est un spectacle intime et discret.`,
+Le printemps est la saison la moins connue mais l'une des plus poétiques. La débâcle sur le lac, les oiseaux migrateurs qui reviennent, les premières fleurs qui percent la neige, c'est un spectacle intime et discret.`,
     author: "Équipe ChaletDeLaPointe",
     date: "3 Mars 2023",
     readTime: "6 min",

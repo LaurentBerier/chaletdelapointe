@@ -42,9 +42,9 @@ export const properties: Property[] = [
     name: "Chalet St-Mathieu",
     slug: "chalet-st-mathieu",
     description:
-      "Niché sur sa propre pointe au cœur du lac Saint-Mathieu, ce chalet d'exception jouit du plus bel emplacement du lac — une vue directe et imprenable sur l'eau, et une plage de sable privée à quelques pas du balcon. Une retraite authentique pensée pour ceux qui cherchent l'espace, le silence et la beauté brute du Bas-Saint-Laurent en toute saison.",
+      "Niché sur sa propre pointe au cœur du lac Saint-Mathieu, ce chalet d'exception jouit du plus bel emplacement du lac, une vue directe et imprenable sur l'eau, et une plage de sable privée à quelques pas du balcon. Une retraite authentique pensée pour ceux qui cherchent l'espace, le silence et la beauté brute du Bas-Saint-Laurent en toute saison.",
     shortDescription:
-      "Le seul chalet sur sa propre pointe — vue directe sur le lac et plage privée de sable.",
+      "Le seul chalet sur sa propre pointe, vue directe sur le lac et plage privée de sable.",
     location: "Saint-Mathieu-de-Rioux, Bas-Saint-Laurent, Québec",
     city: "Saint-Mathieu-de-Rioux",
     province: "Québec",
@@ -66,7 +66,7 @@ export const properties: Property[] = [
     ],
     amenities: [
       { label: "Plage privée de sable", icon: "Umbrella" },
-      { label: "Sur la pointe — vue directe", icon: "Eye" },
+      { label: "Sur la pointe, vue directe", icon: "Eye" },
       { label: "Accès au lac", icon: "Waves" },
       { label: "Quai privé", icon: "Anchor" },
       { label: "Canots & kayaks", icon: "Ship" },

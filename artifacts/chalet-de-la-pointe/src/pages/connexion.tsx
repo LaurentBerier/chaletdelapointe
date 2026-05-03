@@ -33,7 +33,7 @@ export default function Connexion() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left — form */}
+      {/* Left, form */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 xl:px-24 py-16 bg-background">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -110,7 +110,7 @@ export default function Connexion() {
         </motion.div>
       </div>
 
-      {/* Right — image */}
+      {/* Right, image */}
       <div className="hidden lg:block lg:w-1/2 relative">
         <img src={heroImg} alt="Vue du lac" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-primary/20" />

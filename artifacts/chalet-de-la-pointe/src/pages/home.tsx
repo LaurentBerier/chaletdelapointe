@@ -49,7 +49,7 @@ export default function Home() {
             transition={{ delay: 0.55, duration: 0.8 }}
             className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto font-light"
           >
-            L'unique chalet posé sur sa propre pointe du lac Saint-Mathieu — vue directe sur l'eau et plage de sable privée.
+            L'unique chalet posé sur sa propre pointe du lac Saint-Mathieu, vue directe sur l'eau et plage de sable privée.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -99,7 +99,7 @@ export default function Home() {
       <section className="bg-secondary/30 border-y border-border">
         <div className="container mx-auto max-w-6xl px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4">
           {[
-            { icon: <Eye className="w-7 h-7" />, title: "Sur la pointe", text: "Le seul chalet posé sur la pointe — vue directe et imprenable sur le lac." },
+            { icon: <Eye className="w-7 h-7" />, title: "Sur la pointe", text: "Le seul chalet posé sur la pointe, vue directe et imprenable sur le lac." },
             { icon: <Umbrella className="w-7 h-7" />, title: "Plage privée", text: "Une plage de sable bien à vous, à quelques pas du balcon." },
             { icon: <Waves className="w-7 h-7" />, title: "Accès direct au lac", text: "Quai privé, canots et kayaks. Plongez quand bon vous semble." },
           ].map((item, i) => (
@@ -145,7 +145,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Découvrez le chalet — gallery */}
+      {/* Découvrez le chalet, gallery */}
       <section className="py-16 px-6 bg-background mb-16">
         <div className="container mx-auto max-w-6xl">
           <motion.h2
@@ -204,7 +204,7 @@ export default function Home() {
             >
               <h3 className="text-2xl md:text-4xl font-serif text-primary mb-6">Charme authentique</h3>
               <p className="text-secondary-foreground/80 mb-8 leading-relaxed">
-                Boiseries chaleureuses, grande table familiale, baies vitrées sur le lac. Le chalet conserve son âme québécoise tout en offrant le confort moderne — un cocon où l'on aime se rassembler après une journée au bord de l'eau.
+                Boiseries chaleureuses, grande table familiale, baies vitrées sur le lac. Le chalet conserve son âme québécoise tout en offrant le confort moderne, un cocon où l'on aime se rassembler après une journée au bord de l'eau.
               </p>
               <Link
                 href="/chalet"
