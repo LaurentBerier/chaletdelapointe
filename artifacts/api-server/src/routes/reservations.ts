@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request } from "express";
 import { and, eq, desc } from "drizzle-orm";
-import { db, reservationsTable, type Reservation } from "@workspace/db";
+import { db, reservationsTable, type Reservation } from "../../../../lib/db/src/index.js";
 import {
   QuoteReservationBody,
   QuoteReservationResponse,
@@ -10,7 +10,7 @@ import {
   CancelReservationParams,
   CancelReservationResponse,
   ListMyReservationsResponse,
-} from "@workspace/api-zod";
+} from "../../../../lib/api-zod/src/index.js";
 import { requireAuth } from "../middlewares/auth.js";
 import { calculateReservationPrice, PricingError } from "../lib/pricing.js";
 import { toIsoDate } from "../lib/dates.js";

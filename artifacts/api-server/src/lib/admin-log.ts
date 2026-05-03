@@ -1,4 +1,4 @@
-import { db, adminActionsTable } from "@workspace/db";
+import { db, adminActionsTable } from "../../../../lib/db/src/index.js";
 
 export async function logAdminAction(args: {
   adminUserId: string;

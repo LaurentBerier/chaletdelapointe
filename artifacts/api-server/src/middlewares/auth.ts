@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { eq } from "drizzle-orm";
-import { db, usersTable, type User } from "@workspace/db";
+import { db, usersTable, type User } from "../../../../lib/db/src/index.js";
 
 declare global {
   namespace Express {

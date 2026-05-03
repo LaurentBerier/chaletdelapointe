@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { sql } from "drizzle-orm";
-import { db } from "@workspace/db";
-import { GetPublicCalendarParams, GetPublicCalendarResponse } from "@workspace/api-zod";
+import { db } from "../../../../lib/db/src/index.js";
+import { GetPublicCalendarParams, GetPublicCalendarResponse } from "../../../../lib/api-zod/src/index.js";
 import { toIsoDate } from "../lib/dates.js";
 
 const router: IRouter = Router();

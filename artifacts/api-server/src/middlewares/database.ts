@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { isDatabaseConfigured } from "@workspace/db";
+import { isDatabaseConfigured } from "../../../../lib/db/src/index.js";
 
 export const requireDatabase: RequestHandler = (_req, res, next) => {
   if (isDatabaseConfigured) {

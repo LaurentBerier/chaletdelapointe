@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { desc, eq } from "drizzle-orm";
-import { db, reservationsTable, usersTable, type Reservation } from "@workspace/db";
+import { db, reservationsTable, usersTable, type Reservation } from "../../../../lib/db/src/index.js";
 import {
   AdminListReservationsResponse,
   AdminConfirmReservationParams,
@@ -12,7 +12,7 @@ import {
   AdminModifyReservationParams,
   AdminModifyReservationBody,
   AdminModifyReservationResponse,
-} from "@workspace/api-zod";
+} from "../../../../lib/api-zod/src/index.js";
 import { requireAdmin } from "../middlewares/auth.js";
 import { logAdminAction } from "../lib/admin-log.js";
 import { calculateReservationPrice, PricingError } from "../lib/pricing.js";

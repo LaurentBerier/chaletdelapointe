@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
-import { db, propertiesTable } from "@workspace/db";
-import { ListPropertiesResponse, GetPropertyParams, GetPropertyResponse } from "@workspace/api-zod";
+import { db, propertiesTable } from "../../../../lib/db/src/index.js";
+import { ListPropertiesResponse, GetPropertyParams, GetPropertyResponse } from "../../../../lib/api-zod/src/index.js";
 
 const router: IRouter = Router();
 
