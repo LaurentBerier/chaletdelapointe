@@ -422,7 +422,7 @@ export default function Chalet() {
           if (!isOpen) setSelectedImageIndex(null);
         }}
       >
-        <DialogContent className="h-[92vh] max-h-[92vh] w-[96vw] max-w-[96vw] border-none bg-black/95 p-2 shadow-none sm:rounded-lg sm:p-4 [&>button]:bg-black/50 [&>button]:text-white [&>button]:opacity-90 [&>button]:hover:opacity-100">
+        <DialogContent className="h-[92vh] max-h-[92vh] w-[96vw] max-w-[96vw] origin-center border-none bg-black/95 p-2 shadow-none data-[state=closed]:slide-out-to-left-0 data-[state=closed]:slide-out-to-top-0 data-[state=open]:slide-in-from-left-0 data-[state=open]:slide-in-from-top-0 sm:rounded-lg sm:p-4 [&>button]:bg-black/50 [&>button]:text-white [&>button]:opacity-90 [&>button]:hover:opacity-100">
           <DialogTitle className="sr-only">Photo du chalet en plein écran</DialogTitle>
           <DialogDescription className="sr-only">
             {selectedImageIndex !== null ? `Agrandissement de la photo du chalet ${selectedImageIndex + 1}` : "Agrandissement de photo du chalet"}
