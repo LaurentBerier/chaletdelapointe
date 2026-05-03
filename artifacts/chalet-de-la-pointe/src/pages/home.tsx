@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import useEmblaCarousel from "embla-carousel-react";
-import { Search, Umbrella, Eye, Waves, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Umbrella, Eye, Waves } from "lucide-react";
 import aerialImg from "@assets/Aerial_1777816601975.png";
 import beachImg from "@assets/Beach_1777816601977.png";
 import balconImg from "@assets/Balcon_1777816601977.jpg";
@@ -10,50 +8,7 @@ import winterImg from "@assets/WideWinter_1777816601978.png";
 import sunsetImg from "@assets/1146C8D0-D3D0-4422-B54F-0D998326620C_1_105_c_1777781795373.jpeg";
 import salleAMangerImg from "@assets/Salon_Salleamanger_1777816601977.png";
 
-const homeGalleryImages = [
-  { img: beachImg, title: "Votre plage privée" },
-  { img: balconImg, title: "Le balcon, face au lac" },
-  { img: winterImg, title: "Magique en toutes saisons" },
-  { img: salleAMangerImg, title: "Confort et chaleur" },
-];
-
 export default function Home() {
-  const [galleryRef, galleryApi] = useEmblaCarousel({ loop: true });
-  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState(0);
-  const [isGalleryHovered, setIsGalleryHovered] = useState(false);
-
-  const scrollGalleryPrev = useCallback(() => {
-    if (galleryApi) galleryApi.scrollPrev();
-  }, [galleryApi]);
-
-  const scrollGalleryNext = useCallback(() => {
-    if (galleryApi) galleryApi.scrollNext();
-  }, [galleryApi]);
-
-  const onGallerySelect = useCallback(() => {
-    if (!galleryApi) return;
-    setSelectedGalleryIndex(galleryApi.selectedScrollSnap());
-  }, [galleryApi]);
-
-  useEffect(() => {
-    if (!galleryApi) return;
-    onGallerySelect();
-    galleryApi.on("select", onGallerySelect);
-    galleryApi.on("reInit", onGallerySelect);
-    return () => {
-      galleryApi.off("select", onGallerySelect);
-      galleryApi.off("reInit", onGallerySelect);
-    };
-  }, [galleryApi, onGallerySelect]);
-
-  useEffect(() => {
-    if (!galleryApi || isGalleryHovered) return;
-    const autoplay = window.setInterval(() => {
-      galleryApi.scrollNext();
-    }, 4500);
-    return () => window.clearInterval(autoplay);
-  }, [galleryApi, isGalleryHovered]);
-
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -202,61 +157,27 @@ export default function Home() {
           >
             Un emplacement comme nul autre
           </motion.h2>
-          <div
-            className="relative group"
-            onMouseEnter={() => setIsGalleryHovered(true)}
-            onMouseLeave={() => setIsGalleryHovered(false)}
-          >
-            <div className="overflow-hidden rounded-2xl" ref={galleryRef}>
-              <div className="flex">
-                {homeGalleryImages.map((item, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: idx * 0.1 }}
-                    className="flex-[0_0_100%] min-w-0 aspect-[16/9] relative"
-                  >
-                    <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/35" />
-                    <div className="absolute bottom-8 left-8 right-8">
-                      <h3 className="text-white text-2xl md:text-3xl font-medium tracking-wide">{item.title}</h3>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={scrollGalleryPrev}
-              className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-primary p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              data-testid="home-carousel-prev"
-              aria-label="Image précédente"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-
-            <button
-              onClick={scrollGalleryNext}
-              className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-primary p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              data-testid="home-carousel-next"
-              aria-label="Image suivante"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-
-            <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-              {homeGalleryImages.map((_, idx) => (
-                <button
-                  key={idx}
-                  className={`h-2 rounded-full transition-all ${idx === selectedGalleryIndex ? "w-5 bg-white" : "w-2 bg-white/55"}`}
-                  onClick={() => galleryApi?.scrollTo(idx)}
-                  data-testid={`home-carousel-dot-${idx}`}
-                  aria-label={`Aller à l'image ${idx + 1}`}
-                />
-              ))}
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { img: beachImg, title: "Votre plage privée" },
+              { img: balconImg, title: "Le balcon, face au lac" },
+              { img: winterImg, title: "Magique en toutes saisons" },
+            ].map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                className="rounded-2xl overflow-hidden aspect-square relative group"
+              >
+                <img src={item.img} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-500" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <h3 className="text-white text-xl font-medium tracking-wide">{item.title}</h3>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
