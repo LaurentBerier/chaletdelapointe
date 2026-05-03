@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { MapPin, Search } from "lucide-react";
-import heroImg from "@assets/IMG_0559_1777733069151.jpeg";
+import heroImg from "@assets/Aerial_1777816601975.png";
 
 export default function Proprietes() {
   return (
@@ -79,8 +79,8 @@ export default function Proprietes() {
                     <span>Bas-Saint-Laurent, Québec</span>
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    <span className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">Lac</span>
-                    <span className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">Nature</span>
+                    <span className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">Plage privée</span>
+                    <span className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">Sur la pointe</span>
                     <span className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">8 voyageurs</span>
                   </div>
                 </div>

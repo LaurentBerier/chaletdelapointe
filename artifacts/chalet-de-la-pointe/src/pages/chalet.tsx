@@ -3,23 +3,42 @@ import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { DayPicker, DateRange } from "react-day-picker";
 import { differenceInDays, addDays, subDays } from "date-fns";
-import { 
-  Wifi, Anchor, Waves, Flame, ChefHat, Bed, Bath, Trees, Car, 
-  MapPin, Umbrella, Eye, ChevronLeft, ChevronRight, Minus, Plus 
+import {
+  Wifi, Anchor, Waves, Flame, ChefHat, Bed, Bath, Trees, Car,
+  MapPin, Umbrella, Eye, ChevronLeft, ChevronRight, Minus, Plus, Sparkles,
 } from "lucide-react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-import heroImg from "@assets/IMG_0559_1777733069151.jpeg";
+import aerialImg from "@assets/Aerial_1777816601975.png";
+import beachImg from "@assets/Beach_1777816601977.png";
+import balconImg from "@assets/Balcon_1777816601977.jpg";
+import salleAMangerImg from "@assets/Salon_Salleamanger_1777816601977.png";
+import salonImg from "@assets/Ref_salon_1777816601977.png";
+import chambreImg from "@assets/Chambre1_1777816601977.png";
+import winterImg from "@assets/WideWinter_1777816601978.png";
+import sunsetImg from "@assets/1146C8D0-D3D0-4422-B54F-0D998326620C_1_105_c_1777781795373.jpeg";
 import mistyImg from "@assets/IMG_6664_1777733051950.JPG";
 import stormImg from "@assets/IMG_0508_1777733051950.jpeg";
-import sunsetImg from "@assets/1146C8D0-D3D0-4422-B54F-0D998326620C_1_105_c_1777781795373.jpeg";
-import beachImg from "@assets/F4891ADE-8A04-4560-9623-CC579CE378E6_1_105_c_1777781804503.jpeg";
-import mistyImg2 from "@assets/IMG_6664_1777781698233.JPG";
+import lakeImg from "@assets/IMG_0559_1777733069151.jpeg";
 
-const images = [heroImg, mistyImg, stormImg, sunsetImg, beachImg, mistyImg2];
+const images = [
+  aerialImg,
+  beachImg,
+  balconImg,
+  salleAMangerImg,
+  salonImg,
+  chambreImg,
+  winterImg,
+  sunsetImg,
+  mistyImg,
+  stormImg,
+  lakeImg,
+];
 
 const amenities = [
+  { icon: <Umbrella className="w-5 h-5" />, label: "Plage privée de sable" },
+  { icon: <Eye className="w-5 h-5" />, label: "Vue directe sur le lac" },
   { icon: <Waves className="w-5 h-5" />, label: "Accès au lac" },
   { icon: <Anchor className="w-5 h-5" />, label: "Quai privé" },
   { icon: <Anchor className="w-5 h-5" />, label: "Canots & kayaks" },
@@ -30,8 +49,6 @@ const amenities = [
   { icon: <Bath className="w-5 h-5" />, label: "Salle de bain complète" },
   { icon: <Trees className="w-5 h-5" />, label: "Terrasse panoramique" },
   { icon: <Car className="w-5 h-5" />, label: "Stationnement" },
-  { icon: <Umbrella className="w-5 h-5" />, label: "Plage à proximité" },
-  { icon: <Eye className="w-5 h-5" />, label: "Vue sur le lac" },
 ];
 
 export default function Chalet() {
@@ -80,26 +97,26 @@ export default function Chalet() {
           <div className="flex h-full">
             {images.map((src, index) => (
               <div className="flex-[0_0_100%] min-w-0 relative h-full" key={index}>
-                <img 
-                  src={src} 
-                  alt={`Vue du chalet ${index + 1}`} 
+                <img
+                  src={src}
+                  alt={`Vue du chalet ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
               </div>
             ))}
           </div>
         </div>
-        
-        <button 
-          onClick={scrollPrev} 
+
+        <button
+          onClick={scrollPrev}
           className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-primary p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
           data-testid="carousel-prev"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
-        
-        <button 
-          onClick={scrollNext} 
+
+        <button
+          onClick={scrollNext}
           className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-primary p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
           data-testid="carousel-next"
         >
@@ -122,11 +139,15 @@ export default function Chalet() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           {/* Left Column - Details */}
           <div className="lg:col-span-2">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full mb-4">
+                <Sparkles className="w-3.5 h-3.5" />
+                Le seul chalet sur la pointe
+              </div>
               <h1 className="text-4xl md:text-5xl font-serif text-primary mb-4">Chalet St-Mathieu</h1>
               <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm font-medium">
                 <div className="flex items-center gap-1">
@@ -143,9 +164,33 @@ export default function Chalet() {
               </div>
             </motion.div>
 
+            {/* Highlight cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8"
+            >
+              <div className="flex items-start gap-4 p-5 rounded-2xl border border-border bg-secondary/20">
+                <div className="text-primary shrink-0 mt-1"><Umbrella className="w-6 h-6" /></div>
+                <div>
+                  <div className="font-serif text-primary text-lg mb-1">Plage privée de sable</div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Une plage à vous seuls, à quelques pas du chalet.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-5 rounded-2xl border border-border bg-secondary/20">
+                <div className="text-primary shrink-0 mt-1"><Eye className="w-6 h-6" /></div>
+                <div>
+                  <div className="font-serif text-primary text-lg mb-1">Emplacement unique</div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Posé sur sa propre pointe — vue directe et imprenable sur le lac.</p>
+                </div>
+              </div>
+            </motion.div>
+
             <hr className="my-8 border-border" />
 
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -153,10 +198,10 @@ export default function Chalet() {
               className="prose prose-lg text-muted-foreground leading-relaxed max-w-none"
             >
               <p>
-                Niché au cœur d'une forêt mature sur les rives du Lac Saint-Mathieu, ce chalet offre un équilibre parfait entre confort moderne et charme rustique. La grande pièce à vivre, baignée de lumière naturelle grâce à ses immenses fenêtres, vous donne l'impression de flotter au-dessus de l'eau.
+                Le Chalet St-Mathieu occupe le plus bel emplacement du lac : sa propre pointe boisée, entourée d'eau sur trois côtés. Du balcon ou de la grande pièce à vivre, baignée de lumière par d'immenses fenêtres, vous avez l'impression de flotter au-dessus de l'eau.
               </p>
               <p>
-                Que vous soyez ici pour admirer les nuages dramatiques d'une fin d'après-midi d'automne ou pour profiter d'un matin brumeux sur le lac lisse comme un miroir, le Chalet St-Mathieu est votre refuge personnel. Une retraite luxueuse pensée pour se reconnecter à la nature sans sacrifier le confort.
+                À quelques pas, votre <strong>plage privée de sable</strong> descend doucement vers le lac — parfaite pour la baignade des enfants, un café au lever du jour ou un feu en fin de soirée. Un refuge authentique pour se reconnecter à la nature québécoise, en toute saison, sans sacrifier le confort.
               </p>
             </motion.div>
 
@@ -189,8 +234,8 @@ export default function Chalet() {
             >
               <h2 className="text-2xl font-serif text-primary mb-6">Disponibilités</h2>
               <div className="bg-secondary/20 p-4 rounded-2xl inline-block pointer-events-none">
-                <DayPicker 
-                  mode="multiple" 
+                <DayPicker
+                  mode="multiple"
                   selected={bookedDays.flatMap(range => [range.from, range.to])}
                   modifiers={{ booked: bookedDays }}
                   modifiersStyles={{
@@ -204,7 +249,7 @@ export default function Chalet() {
 
           {/* Right Column - Sticky Booking Card */}
           <div className="relative">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -249,7 +294,7 @@ export default function Chalet() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-foreground">{guests} {guests > 1 ? 'voyageurs' : 'voyageur'}</span>
                     <div className="flex items-center gap-3">
-                      <button 
+                      <button
                         onClick={() => setGuests(Math.max(1, guests - 1))}
                         className="w-8 h-8 flex items-center justify-center rounded-full border border-border hover:border-primary text-primary transition-colors disabled:opacity-50"
                         disabled={guests <= 1}
@@ -258,7 +303,7 @@ export default function Chalet() {
                         <Minus className="w-4 h-4" />
                       </button>
                       <span className="w-4 text-center">{guests}</span>
-                      <button 
+                      <button
                         onClick={() => setGuests(Math.min(8, guests + 1))}
                         className="w-8 h-8 flex items-center justify-center rounded-full border border-border hover:border-primary text-primary transition-colors disabled:opacity-50"
                         disabled={guests >= 8}
@@ -271,13 +316,13 @@ export default function Chalet() {
                 </div>
               </div>
 
-              <button 
+              <button
                 className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:bg-primary/90 transition-colors"
                 data-testid="button-request-reservation"
               >
                 Demander une réservation
               </button>
-              
+
               <p className="text-center text-muted-foreground text-sm mt-4 mb-6">
                 Vous ne serez pas facturé pour le moment
               </p>
