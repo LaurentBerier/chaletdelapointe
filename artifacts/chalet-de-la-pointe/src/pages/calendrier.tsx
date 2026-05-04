@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { DayPicker } from "react-day-picker";
-import { addDays, subDays } from "date-fns";
+import { addDays, addMonths, subDays } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export default function Calendrier() {
   const today = new Date();
+  const nextYear = addMonths(today, 12);
   
   // Hardcoded mocked unavailable dates
   const bookedDays = [
@@ -33,12 +34,15 @@ export default function Calendrier() {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="bg-white p-6 md:p-12 shadow-sm border border-border/50 flex justify-center pointer-events-none"
+          className="bg-white p-6 md:p-12 shadow-sm border border-border/50 flex justify-center"
         >
           <DayPicker 
             mode="multiple"
             numberOfMonths={2}
             pagedNavigation
+            defaultMonth={today}
+            startMonth={today}
+            endMonth={nextYear}
             locale={fr}
             modifiers={{ booked: bookedDays }}
             modifiersStyles={{
@@ -54,6 +58,10 @@ export default function Calendrier() {
           <DayPicker 
             mode="multiple"
             numberOfMonths={1}
+            pagedNavigation
+            defaultMonth={today}
+            startMonth={today}
+            endMonth={nextYear}
             locale={fr}
             modifiers={{ booked: bookedDays }}
             modifiersStyles={{

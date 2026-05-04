@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { DayPicker, DateRange } from "react-day-picker";
-import { differenceInDays, addDays, subDays } from "date-fns";
+import { differenceInDays, addDays, addMonths, subDays } from "date-fns";
 import {
   Wifi, Anchor, Waves, Flame, ChefHat, Bed, Bath, Trees, Car,
   MapPin, Umbrella, Eye, ChevronLeft, ChevronRight, Minus, Plus, Sparkles,
@@ -46,7 +46,6 @@ const amenities = [
   { icon: <Umbrella className="w-5 h-5" />, label: "Plage privée de sable" },
   { icon: <Eye className="w-5 h-5" />, label: "Vue directe sur le lac" },
   { icon: <Waves className="w-5 h-5" />, label: "Accès au lac" },
-  { icon: <Anchor className="w-5 h-5" />, label: "Quai privé" },
   { icon: <Anchor className="w-5 h-5" />, label: "Canots & kayaks" },
   { icon: <Flame className="w-5 h-5" />, label: "Feu de camp" },
   { icon: <ChefHat className="w-5 h-5" />, label: "Cuisine équipée" },
@@ -99,6 +98,7 @@ export default function Chalet() {
   }, [emblaApi, isGalleryHovered]);
 
   const today = new Date();
+  const nextYear = addMonths(today, 12);
   const bookedDays = [
     { from: subDays(today, 2), to: addDays(today, 3) },
     { from: addDays(today, 10), to: addDays(today, 15) },
@@ -259,9 +259,14 @@ export default function Chalet() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-2xl font-serif text-primary mb-6">Disponibilités</h2>
-              <div className="bg-secondary/20 p-4 rounded-2xl inline-block pointer-events-none">
+              <div className="bg-secondary/20 p-4 rounded-2xl inline-block">
                 <DayPicker
                   mode="multiple"
+                  numberOfMonths={2}
+                  pagedNavigation
+                  defaultMonth={today}
+                  startMonth={today}
+                  endMonth={nextYear}
                   selected={bookedDays.flatMap(range => [range.from, range.to])}
                   modifiers={{ booked: bookedDays }}
                   modifiersStyles={{
@@ -310,6 +315,10 @@ export default function Chalet() {
                       selected={dateRange}
                       onSelect={setDateRange}
                       numberOfMonths={2}
+                      pagedNavigation
+                      defaultMonth={today}
+                      startMonth={today}
+                      endMonth={nextYear}
                       disabled={[{ before: today }, ...bookedDays]}
                     />
                   </PopoverContent>

@@ -101,7 +101,7 @@ export default function Home() {
           {[
             { icon: <Eye className="w-7 h-7" />, title: "Sur la pointe", text: "Le seul chalet posé sur la pointe, vue directe et imprenable sur le lac." },
             { icon: <Umbrella className="w-7 h-7" />, title: "Plage privée", text: "Une plage de sable bien à vous, à quelques pas du balcon." },
-            { icon: <Waves className="w-7 h-7" />, title: "Accès direct au lac", text: "Quai privé, canots et kayaks. Plongez quand bon vous semble." },
+            { icon: <Waves className="w-7 h-7" />, title: "Accès direct au lac", text: "Accès à l'eau, canots et kayaks. Plongez quand bon vous semble." },
           ].map((item, i) => (
             <motion.div
               key={i}

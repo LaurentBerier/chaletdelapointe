@@ -30,7 +30,7 @@ C'est dans ces moments-là que le temps semble s'arrêter.
 
 La brume qui se forme sur le lac en début de journée est un phénomène naturel fascinant. Elle naît du contraste entre l'eau encore chaude de la nuit et l'air frais du matin. La vapeur monte en volutes légères, créant ce paysage irréel que les photographes chassent depuis l'aube.
 
-Au Chalet St-Mathieu, nous avons la chance d'observer ce spectacle depuis notre quai privé. Un café chaud dans les mains, pieds nus sur le bois humide, c'est une expérience qui marque pour longtemps.
+Au Chalet St-Mathieu, nous avons la chance d'observer ce spectacle depuis la rive. Un café chaud dans les mains, pieds nus sur le sable humide, c'est une expérience qui marque pour longtemps.
 
 **Comment en profiter pleinement**
 
@@ -55,7 +55,7 @@ Le kayak au lever du jour reste l'une des activités les plus recommandées par 
 
 Depuis le salon vitré du Chalet St-Mathieu, vous avez une loge de théâtre sur l'un des spectacles les plus impressionnants de la nature québécoise. Les orages d'été dans le Bas-Saint-Laurent sont une expérience à part entière, intenses, courts, et suivis de cette lumière particulière que les peintres adorent.
 
-La photo emblématique de notre galerie, prise depuis le quai lors d'un après-midi de juillet, montre exactement ce phénomène : deux masses nuageuses se disputant le ciel au-dessus des îles, pendant que les rayons du soleil percent encore sur la droite.
+La photo emblématique de notre galerie, prise depuis la rive lors d'un après-midi de juillet, montre exactement ce phénomène : deux masses nuageuses se disputant le ciel au-dessus des îles, pendant que les rayons du soleil percent encore sur la droite.
 
 **Sécurité et émerveillement**
 
@@ -111,7 +111,7 @@ La quiétude du Bas-Saint-Laurent est un médicament. Prescrit sans ordonnance.`
 
 **Été : l'eau comme terrain de jeu**
 
-L'été, le lac est au cœur de tout. Canot, kayak, natation, pêche, l'eau du lac Saint-Mathieu est à la fois fraîche et accueillante. Notre quai privé est équipé pour vous faciliter la mise à l'eau.
+L'été, le lac est au cœur de tout. Canot, kayak, natation, pêche, l'eau du lac Saint-Mathieu est à la fois fraîche et accueillante. La plage en pente douce facilite la mise à l'eau.
 
 À proximité, le Parc national du Bic offre des randonnées spectaculaires avec des vues sur le Saint-Laurent. Le cap Enragé mérite le détour pour sa vue à 360 degrés.
 

@@ -68,7 +68,6 @@ export const properties: Property[] = [
       { label: "Plage privée de sable", icon: "Umbrella" },
       { label: "Sur la pointe, vue directe", icon: "Eye" },
       { label: "Accès au lac", icon: "Waves" },
-      { label: "Quai privé", icon: "Anchor" },
       { label: "Canots & kayaks", icon: "Ship" },
       { label: "Feu de camp", icon: "Flame" },
       { label: "Cuisine équipée", icon: "ChefHat" },
