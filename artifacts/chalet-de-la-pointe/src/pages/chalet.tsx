@@ -50,8 +50,8 @@ const amenities = [
   { icon: <Flame className="w-5 h-5" />, label: "Feu de camp" },
   { icon: <ChefHat className="w-5 h-5" />, label: "Cuisine équipée" },
   { icon: <Wifi className="w-5 h-5" />, label: "Wifi" },
-  { icon: <Bed className="w-5 h-5" />, label: "4 chambres" },
-  { icon: <Bath className="w-5 h-5" />, label: "Salle de bain complète" },
+  { icon: <Bed className="w-5 h-5" />, label: "Dortoir + 2 chambres semi-privées" },
+  { icon: <Bath className="w-5 h-5" />, label: "1 salle de bain avec douche" },
   { icon: <Trees className="w-5 h-5" />, label: "Terrasse panoramique" },
   { icon: <Car className="w-5 h-5" />, label: "Stationnement" },
 ];
@@ -182,9 +182,9 @@ export default function Chalet() {
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-4 text-primary text-base">
-                <span>4 chambres</span>
+                <span>Dortoir + 2 chambres semi-privées</span>
                 <span>•</span>
-                <span>2 salles de bain</span>
+                <span>1 salle de bain avec douche</span>
                 <span>•</span>
                 <span>8 voyageurs max</span>
               </div>
@@ -228,6 +228,9 @@ export default function Chalet() {
               </p>
               <p>
                 À quelques pas, votre <strong>plage privée de sable</strong> descend doucement vers le lac, parfaite pour la baignade des enfants, un café au lever du jour ou un feu en fin de soirée. Un refuge authentique pour se reconnecter à la nature québécoise, en toute saison, sans sacrifier le confort.
+              </p>
+              <p>
+                Le chalet comprend une seule salle de bain avec douche. Le dortoir offre deux chambres semi-privées munies de deux lits simples chacune, ainsi que deux lits simples et un lit double dans le dortoir. Le divan-lit se trouve au rez-de-chaussée.
               </p>
             </motion.div>
 
