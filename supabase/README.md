@@ -8,6 +8,8 @@ For a regression check, start a disposable local chalet stack with email confirm
 
 For the optional passwordless invitation check, also supply CHALET_TEST_AUTH_ADMIN_KEY from the local Supabase test stack. Never use production credentials for this check.
 
+Super-admin cancellations release the dates, write one audit entry and queue one email to the booker in the same transaction. The site attempts delivery immediately; the existing daily mail job also retries unsent booking notices. No database migration is needed for this feature.
+
 Apply 202611150005 before deploying the owner calendar. It assigns each owner a permanent color slot when their role is granted. Confirmed stays expose the booker’s name and, for owner bookings, that color only to signed-in owners. Pending stays and the public calendar contain neither field.
 
 Reservation access mail is separate from stay approvals. Migration 202611150002 queues the notification with the access change. The website sends it using SMTP_URL, BOOKING_EMAIL_FROM and WEBSITE_URL (the canonical public origin). Requests go to active super administrators; the member receives the decision. The signed-in admin must explicitly accept or refuse the referenced request. Configure CRON_SECRET as a Vercel production secret for the daily retry at /api/jobs/access-mail. The admin dashboard also retries due mail while open.

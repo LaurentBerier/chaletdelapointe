@@ -4,6 +4,7 @@ import {
   type AccountStatus,
 } from "../../../../lib/shared/membership";
 import { BookingAccessPanel } from "./booking-access";
+import { AdminCancelStay } from "./cancel-stay";
 import type { BookingAccess } from "../../../../lib/db/src/booking-access";
 import { IllustratedNote } from "./field-heading";
 import { useState, type FormEvent } from "react";
@@ -843,8 +844,7 @@ const labels: Record<string, string> = {
   pending_payment: "En attente de paiement",
 };
 function AdminStay({ s, name }: { s: Stay; name?: string }) {
-  const op = useAction(),
-    [cancel, setCancel] = useState(false);
+  const op = useAction();
   return (
     <details className="panel">
       <summary>
@@ -856,7 +856,7 @@ function AdminStay({ s, name }: { s: Stay; name?: string }) {
         </span>
         <span className={"badge status-" + s.status}>{labels[s.status]}</span>
       </summary>
-      <form
+      {s.status !== "cancelled" && <form
         className="account-form mt-4"
         onSubmit={(e) => {
           const f = values(e);
@@ -902,38 +902,9 @@ function AdminStay({ s, name }: { s: Stay; name?: string }) {
           <button className="action" disabled={op.busy}>
             Modifier le séjour
           </button>
-          {s.status !== "cancelled" && (
-            <button
-              type="button"
-              className="text-link"
-              onClick={() => setCancel(!cancel)}
-            >
-              Annuler le séjour…
-            </button>
-          )}
         </div>
-      </form>
-      {cancel && (
-        <div className="feedback">
-          <p>Libérer ces dates en annulant le séjour ?</p>
-          <button
-            className="text-link"
-            disabled={op.busy}
-            onClick={() =>
-              op.run(async () => {
-                await write(
-                  "/admin/reservations/" + s.id + "/cancel",
-                  "POST",
-                  {},
-                );
-                setCancel(false);
-              }, "Séjour annulé.")
-            }
-          >
-            Confirmer l’annulation
-          </button>
-        </div>
-      )}
+      </form>}
+      <AdminCancelStay stay={s} name={name} />
       {op.feedback}
     </details>
   );
@@ -951,7 +922,7 @@ export function StaysPanel() {
     <>
       <h2 className="section-title">Toutes les réservations</h2>
       <p className="section-note">
-        Modifiez les dates ou le nombre de voyageurs. Pour approuver ou refuser
+        Modifiez un séjour ou annulez une réservation pour libérer les dates et prévenir la personne qui a réservé. Pour approuver ou refuser
         une demande, ouvrez Approbations.
       </p>
       {q.isPending ? (

@@ -1,4 +1,5 @@
 import { deliverAccessEmails } from "../lib/access-email.js";
+import { deliverBookingEmails } from "../lib/booking-email.js";
 import management from "./management.js";
 import { Router, type IRouter } from "express";
 import reviewsRouter from "./reviews.js";
@@ -25,7 +26,7 @@ router.get("/jobs/access-mail", async (req, res) => {
     res.sendStatus(401);
     return;
   }
-  await deliverAccessEmails();
+  await Promise.all([deliverAccessEmails(), deliverBookingEmails()]);
   res.sendStatus(204);
 });
 router.use(loadUser);

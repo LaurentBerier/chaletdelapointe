@@ -1,4 +1,5 @@
 import { IllustratedNote } from "./field-heading";
+import { AdminCancelStay } from "./cancel-stay";
 import { CalendarDays } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { stayDates } from "../../../../lib/shared/stay-dates";
@@ -115,6 +116,8 @@ export function BookingList({ review = false }: { review?: boolean }) {
                 </button>
               </div>
             )}
+            {user?.isAdmin && s.status === "confirmed" &&
+              <AdminCancelStay stay={s} name={review ? s.ownerName : user.name} />}
           </li>
         ))}
       </ul>

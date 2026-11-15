@@ -12,6 +12,7 @@ import {
   CancelReservationResponse,
   ListMyReservationsResponse,
 } from "../../../../lib/api-zod/src/index.js";
+import { cancelStayAsAdmin } from "../lib/cancel-stay.js";
 import { requireBookingAccess } from "../middlewares/auth.js";
 import { calculateReservationPrice, validateStay, PricingError } from "../lib/pricing.js";
 import { deliverBookingEmails, reviewUrl } from "../lib/booking-email.js";
@@ -167,6 +168,10 @@ router.post("/reservations/:id/cancel", requireBookingAccess, async (req, res): 
   }
   if (row.userId !== req.user!.id && !req.user!.isAdmin) {
     res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  if (req.user!.isAdmin && row.userId !== req.user!.id) {
+    await cancelStayAsAdmin(res, row.id, req.user!.id);
     return;
   }
   if (row.status === "cancelled") {

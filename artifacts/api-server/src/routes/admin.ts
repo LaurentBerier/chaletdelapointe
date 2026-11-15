@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import { db, reservationsTable, usersTable, type Reservation } from "../../../../lib/db/src/index.js";
 import {
   AdminListReservationsResponse,
@@ -8,11 +8,11 @@ import {
   AdminConfirmReservationResponse,
   AdminCancelReservationParams,
   AdminCancelReservationBody,
-  AdminCancelReservationResponse,
   AdminModifyReservationParams,
   AdminModifyReservationBody,
   AdminModifyReservationResponse,
 } from "../../../../lib/api-zod/src/index.js";
+import { cancelStayAsAdmin } from "../lib/cancel-stay.js";
 import { requireAdmin } from "../middlewares/auth.js";
 import { logAdminAction } from "../lib/admin-log.js";
 import { calculateReservationPrice, validateStay, PricingError } from "../lib/pricing.js";
@@ -69,8 +69,9 @@ router.post("/admin/reservations/:id/confirm", requireAdmin, async (req, res): P
     const [updated] = await db
       .update(reservationsTable)
       .set({ status: "confirmed" })
-      .where(eq(reservationsTable.id, existing.id))
+      .where(and(eq(reservationsTable.id, existing.id), ne(reservationsTable.status, "cancelled")))
       .returning();
+    if (!updated) { res.status(409).json({ error: "Ce séjour a déjà été annulé." }); return; }
     await logAdminAction({
       adminUserId: req.user!.id,
       actionType: "confirm",
@@ -99,28 +100,7 @@ router.post("/admin/reservations/:id/cancel", requireAdmin, async (req, res): Pr
     res.status(400).json({ error: body.error.message });
     return;
   }
-  const [existing] = await db
-    .select()
-    .from(reservationsTable)
-    .where(eq(reservationsTable.id, params.data.id))
-    .limit(1);
-  if (!existing) {
-    res.status(404).json({ error: "Reservation not found" });
-    return;
-  }
-  const [updated] = await db
-    .update(reservationsTable)
-    .set({ status: "cancelled" })
-    .where(eq(reservationsTable.id, existing.id))
-    .returning();
-  await logAdminAction({
-    adminUserId: req.user!.id,
-    actionType: "cancel",
-    reservationId: updated.id,
-    reason: body.data.reason ?? null,
-    details: { previousStatus: existing.status },
-  });
-  res.json(AdminCancelReservationResponse.parse(serialize(updated)));
+  await cancelStayAsAdmin(res, params.data.id, req.user!.id, body.data.reason);
 });
 
 router.patch("/admin/reservations/:id", requireAdmin, async (req, res): Promise<void> => {
@@ -134,6 +114,14 @@ router.patch("/admin/reservations/:id", requireAdmin, async (req, res): Promise<
     res.status(400).json({ error: body.error.message });
     return;
   }
+  if (body.data.status === "cancelled") {
+    if (["startDate", "endDate", "guests", "notes"].some(key => req.body[key] != null)) {
+      res.status(400).json({ error: "Annulez le séjour séparément des autres modifications." });
+      return;
+    }
+    await cancelStayAsAdmin(res, params.data.id, req.user!.id, body.data.reason);
+    return;
+  }
   const [existing] = await db
     .select()
     .from(reservationsTable)
@@ -144,6 +132,10 @@ router.patch("/admin/reservations/:id", requireAdmin, async (req, res): Promise<
     return;
   }
 
+  if (existing.status === "cancelled") {
+    res.status(409).json({ error: "Ce séjour a déjà été annulé." });
+    return;
+  }
   const newStartDate = body.data.startDate ? toIsoDate(body.data.startDate) : toIsoDate(existing.startDate);
   const newEndDate = body.data.endDate ? toIsoDate(body.data.endDate) : toIsoDate(existing.endDate);
   const newGuests = body.data.guests ?? existing.guests;
@@ -206,8 +198,9 @@ router.patch("/admin/reservations/:id", requireAdmin, async (req, res): Promise<
         notes: newNotes,
         ...priced,
       })
-      .where(eq(reservationsTable.id, existing.id))
+      .where(and(eq(reservationsTable.id, existing.id), eq(reservationsTable.status, existing.status)))
       .returning();
+    if (!updated) { res.status(409).json({ error: "Le statut de ce séjour a changé. Actualisez la liste." }); return; }
 
     await logAdminAction({
       adminUserId: req.user!.id,
