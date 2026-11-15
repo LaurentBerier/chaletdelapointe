@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Redirect, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "react-day-picker/style.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,7 +14,6 @@ import Blogue from "@/pages/blogue";
 import Article from "@/pages/article";
 import Contact from "@/pages/contact";
 import Connexion from "@/pages/connexion";
-import Inscription from "@/pages/inscription";
 import TableauDeBord from "@/pages/tableau-de-bord";
 import NotFound from "@/pages/not-found";
 
@@ -31,7 +30,7 @@ function Router() {
       <Route path="/blogue/:slug" component={Article} />
       <Route path="/contact" component={Contact} />
       <Route path="/connexion" component={Connexion} />
-      <Route path="/inscription" component={Inscription} />
+      <Route path="/inscription"><Redirect to="/connexion" /></Route>
       <Route path="/tableau-de-bord">
         <ProtectedRoute>
           <TableauDeBord />

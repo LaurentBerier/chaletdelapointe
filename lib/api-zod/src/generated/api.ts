@@ -107,7 +107,9 @@ export const ListMyReservationsResponseItem = zod.object({
   status: zod.enum([
     "draft",
     "pending_payment",
+    "pending_approval",
     "confirmed",
+    "rejected",
     "cancelled",
     "expired",
   ]),
@@ -129,7 +131,7 @@ export const ListMyReservationsResponse = zod.array(
 );
 
 /**
- * @summary Create a reservation (status pending_payment)
+ * @summary Create a reservation (pending owner approval)
  */
 
 export const CreateReservationBody = zod.object({
@@ -161,7 +163,9 @@ export const GetReservationResponse = zod.object({
   status: zod.enum([
     "draft",
     "pending_payment",
+    "pending_approval",
     "confirmed",
+    "rejected",
     "cancelled",
     "expired",
   ]),
@@ -200,7 +204,9 @@ export const CancelReservationResponse = zod.object({
   status: zod.enum([
     "draft",
     "pending_payment",
+    "pending_approval",
     "confirmed",
+    "rejected",
     "cancelled",
     "expired",
   ]),
@@ -219,7 +225,7 @@ export const CancelReservationResponse = zod.object({
 });
 
 /**
- * @summary Public confirmed-bookings calendar (no user info, no pricing)
+ * @summary Availability with approved booking names for authenticated owners
  */
 export const GetPublicCalendarParams = zod.object({
   propertyId: zod.coerce.string().uuid(),
@@ -229,6 +235,8 @@ export const GetPublicCalendarResponseItem = zod.object({
   propertyId: zod.string().uuid(),
   startDate: zod.coerce.date(),
   endDate: zod.coerce.date(),
+  status: zod.enum(["held", "confirmed"]),
+  ownerName: zod.string().optional(),
 });
 export const GetPublicCalendarResponse = zod.array(
   GetPublicCalendarResponseItem,
@@ -251,7 +259,9 @@ export const AdminListReservationsResponseItem = zod.object({
   status: zod.enum([
     "draft",
     "pending_payment",
+    "pending_approval",
     "confirmed",
+    "rejected",
     "cancelled",
     "expired",
   ]),
@@ -297,7 +307,9 @@ export const AdminConfirmReservationResponse = zod.object({
   status: zod.enum([
     "draft",
     "pending_payment",
+    "pending_approval",
     "confirmed",
+    "rejected",
     "cancelled",
     "expired",
   ]),
@@ -340,7 +352,9 @@ export const AdminCancelReservationResponse = zod.object({
   status: zod.enum([
     "draft",
     "pending_payment",
+    "pending_approval",
     "confirmed",
+    "rejected",
     "cancelled",
     "expired",
   ]),
@@ -374,7 +388,9 @@ export const AdminModifyReservationBody = zod.object({
       zod.enum([
         "draft",
         "pending_payment",
+        "pending_approval",
         "confirmed",
+        "rejected",
         "cancelled",
         "expired",
       ]),
@@ -399,7 +415,9 @@ export const AdminModifyReservationResponse = zod.object({
   status: zod.enum([
     "draft",
     "pending_payment",
+    "pending_approval",
     "confirmed",
+    "rejected",
     "cancelled",
     "expired",
   ]),

@@ -437,7 +437,7 @@ export function useListMyReservations<
 }
 
 /**
- * @summary Create a reservation (status pending_payment)
+ * @summary Create a reservation (pending owner approval)
  */
 export const getCreateReservationUrl = () => {
   return `/api/reservations`;
@@ -500,7 +500,7 @@ export type CreateReservationMutationBody = BodyType<CreateReservationInput>;
 export type CreateReservationMutationError = ErrorType<Error>;
 
 /**
- * @summary Create a reservation (status pending_payment)
+ * @summary Create a reservation (pending owner approval)
  */
 export const useCreateReservation = <
   TError = ErrorType<Error>,
@@ -694,7 +694,7 @@ export const useCancelReservation = <
 };
 
 /**
- * @summary Public confirmed-bookings calendar (no user info, no pricing)
+ * @summary Availability with approved booking names for authenticated owners
  */
 export const getGetPublicCalendarUrl = (propertyId: string) => {
   return `/api/calendar/${propertyId}`;
@@ -756,7 +756,7 @@ export type GetPublicCalendarQueryResult = NonNullable<
 export type GetPublicCalendarQueryError = ErrorType<unknown>;
 
 /**
- * @summary Public confirmed-bookings calendar (no user info, no pricing)
+ * @summary Availability with approved booking names for authenticated owners
  */
 
 export function useGetPublicCalendar<

@@ -112,7 +112,7 @@ paths:
     post:
       operationId: createReservation
       tags: [reservations]
-      summary: Create a reservation (status pending_payment)
+      summary: Create a reservation (pending owner approval)
       requestBody:
         required: true
         content:
@@ -198,7 +198,7 @@ paths:
     get:
       operationId: getPublicCalendar
       tags: [calendar]
-      summary: Public confirmed-bookings calendar (no user info, no pricing)
+      summary: Availability with approved booking names for authenticated owners
       parameters:
         - name: propertyId
           in: path
@@ -206,7 +206,7 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         "200":
-          description: Confirmed date ranges
+          description: Held and confirmed date ranges
           content:
             application/json:
               schema:
@@ -367,7 +367,7 @@ components:
 
     ReservationStatus:
       type: string
-      enum: [draft, pending_payment, confirmed, cancelled, expired]
+      enum: [draft, pending_payment, pending_approval, confirmed, rejected, cancelled, expired]
 
     Property:
       type: object
@@ -462,7 +462,9 @@ components:
         propertyId: { type: string, format: uuid }
         startDate: { type: string, format: date }
         endDate: { type: string, format: date }
-      required: [propertyId, startDate, endDate]
+        status: { type: string, enum: [held, confirmed] }
+        ownerName: { type: string }
+      required: [propertyId, startDate, endDate, status]
 
     AdminActionBody:
       type: object

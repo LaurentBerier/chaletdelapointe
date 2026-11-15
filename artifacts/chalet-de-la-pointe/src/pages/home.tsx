@@ -73,25 +73,25 @@ export default function Home() {
           transition={{ delay: 0.9, duration: 0.8 }}
           className="absolute bottom-12 w-full px-6 flex justify-center z-20"
         >
-          <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-full shadow-2xl p-2 max-w-3xl w-full flex items-center">
-            <button className="flex-1 px-6 text-left border-r border-white/20 hover:bg-white/10 rounded-l-full py-2 transition-colors">
+          <Link href="/calendrier" aria-label="Choisir les dates et les voyageurs" className="backdrop-blur-md bg-white/20 border border-white/30 rounded-full shadow-2xl p-2 max-w-3xl w-full flex items-center">
+            <div className="flex-1 px-6 text-left border-r border-white/20 hover:bg-white/10 rounded-l-full py-2 transition-colors">
               <div className="text-[10px] font-bold text-white mb-1 uppercase tracking-wider">Destination</div>
               <div className="text-sm text-white/90 truncate">Saint-Mathieu-de-Rioux</div>
-            </button>
-            <button className="flex-1 px-6 text-left border-r border-white/20 hover:bg-white/10 py-2 transition-colors">
+            </div>
+            <div className="flex-1 px-6 text-left border-r border-white/20 hover:bg-white/10 py-2 transition-colors">
               <div className="text-[10px] font-bold text-white mb-1 uppercase tracking-wider">Dates</div>
               <div className="text-sm text-white/70 truncate">Choisir les dates</div>
-            </button>
+            </div>
             <div className="flex-1 pl-6 pr-2 flex items-center justify-between hover:bg-white/10 rounded-r-full py-2 transition-colors cursor-pointer">
               <div>
                 <div className="text-[10px] font-bold text-white mb-1 uppercase tracking-wider">Voyageurs</div>
                 <div className="text-sm text-white/70 truncate">Ajouter des voyageurs</div>
               </div>
-              <button className="bg-primary text-white p-3 rounded-full hover:bg-primary/90 transition-colors ml-4 shrink-0 shadow-lg" data-testid="button-search-hero">
+              <div className="bg-primary text-white p-3 rounded-full hover:bg-primary/90 transition-colors ml-4 shrink-0 shadow-lg" data-testid="button-search-hero">
                 <Search className="w-5 h-5" />
-              </button>
+              </div>
             </div>
-          </div>
+          </Link>
         </motion.div>
       </section>
 

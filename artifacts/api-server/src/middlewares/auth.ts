@@ -1,42 +1,64 @@
-import type { Request, Response, NextFunction } from "express";
-import { eq } from "drizzle-orm";
+import type { RequestHandler } from "express";
+import { and, eq } from "drizzle-orm";
 import { db, usersTable, type User } from "../../../../lib/db/src/index.js";
 
 declare global {
   namespace Express {
-    interface Request {
-      user?: User;
-    }
+    interface Request { user?: User }
   }
 }
 
-export async function loadUser(req: Request, _res: Response, next: NextFunction): Promise<void> {
-  const raw = req.header("x-user-id");
-  if (!raw || typeof raw !== "string") {
-    next();
+export const loadUser: RequestHandler = async (req, res, next) => {
+  res.set("Cache-Control", "private, no-store");
+  res.vary("Authorization");
+  const header = req.get("Authorization");
+  if (!header) return next();
+  const url = process.env.SUPABASE_URL;
+  const apikey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !apikey) {
+    res.status(503).json({ error: "Connexion indisponible." });
     return;
   }
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, raw)).limit(1);
-  if (user) req.user = user;
+  if (!/^Bearer [^\s]+$/.test(header)) {
+    res.status(401).json({ error: "Session invalide." });
+    return;
+  }
+  const result = await fetch(new URL("/auth/v1/user", url), {
+    headers: { Authorization: header, apikey }, signal: AbortSignal.timeout(8000),
+  });
+  if (!result.ok) {
+    res.status(result.status >= 500 ? 503 : 401).json({ error: "Session non vérifiée." });
+    return;
+  }
+  const identity = await result.json() as { id: string; email_confirmed_at?: string; is_anonymous?: boolean };
+  const [user] = await db.select().from(usersTable).where(and(
+    eq(usersTable.authUserId, identity.id), eq(usersTable.group, "proprietaire")
+  )).limit(1);
+  if (!user || !identity.email_confirmed_at || identity.is_anonymous) {
+    res.status(403).json({ error: "Compte propriétaire requis." });
+    return;
+  }
+  req.user = user;
   next();
-}
+};
 
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  if (!req.user) {
-    res.status(401).json({ error: "Authentication required (set X-User-Id header)" });
-    return;
-  }
+export const requireAuth: RequestHandler = (req, res, next) => {
+  if (!req.user) { res.status(401).json({ error: "Connexion requise." }); return; }
   next();
-}
+};
 
-export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  if (!req.user) {
-    res.status(401).json({ error: "Authentication required" });
-    return;
-  }
-  if (!req.user.isAdmin) {
-    res.status(403).json({ error: "Admin privileges required" });
+export const requireAdmin: RequestHandler = (req, res, next) => {
+  if (!req.user?.isAdmin) {
+    res.status(req.user ? 403 : 401).json({ error: "Accès administrateur requis." });
     return;
   }
   next();
-}
+};
+
+export const requireApprover: RequestHandler = (req, res, next) => {
+  if (!req.user?.canApprove) {
+    res.status(req.user ? 403 : 401).json({ error: "Accès au comité requis." });
+    return;
+  }
+  next();
+};

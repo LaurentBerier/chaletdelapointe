@@ -12,7 +12,9 @@ export type ReservationStatus =
 export const ReservationStatus = {
   draft: "draft",
   pending_payment: "pending_payment",
+  pending_approval: "pending_approval",
   confirmed: "confirmed",
+  rejected: "rejected",
   cancelled: "cancelled",
   expired: "expired",
 } as const;

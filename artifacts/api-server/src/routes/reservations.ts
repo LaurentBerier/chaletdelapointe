@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request } from "express";
-import { and, eq, desc } from "drizzle-orm";
-import { db, reservationsTable, type Reservation } from "../../../../lib/db/src/index.js";
+import { and, eq, desc, isNotNull } from "drizzle-orm";
+import { db, reservationsTable, usersTable, bookingEmailsTable, type Reservation } from "../../../../lib/db/src/index.js";
 import {
   QuoteReservationBody,
   QuoteReservationResponse,
@@ -12,7 +12,8 @@ import {
   ListMyReservationsResponse,
 } from "../../../../lib/api-zod/src/index.js";
 import { requireAuth } from "../middlewares/auth.js";
-import { calculateReservationPrice, PricingError } from "../lib/pricing.js";
+import { calculateReservationPrice, validateStay, PricingError } from "../lib/pricing.js";
+import { deliverBookingEmails, reviewUrl } from "../lib/booking-email.js";
 import { toIsoDate } from "../lib/dates.js";
 
 const router: IRouter = Router();
@@ -67,6 +68,7 @@ router.post("/reservations/quote", async (req: Request, res): Promise<void> => {
 });
 
 router.get("/reservations", requireAuth, async (req, res): Promise<void> => {
+  await deliverBookingEmails();
   const rows = await db
     .select()
     .from(reservationsTable)
@@ -85,50 +87,40 @@ router.post("/reservations", requireAuth, async (req, res): Promise<void> => {
   const startIso = toIsoDate(startDate);
   const endIso = toIsoDate(endDate);
 
-  if (new Date(startIso) < new Date(new Date().toISOString().slice(0, 10))) {
-    res.status(400).json({ error: "Cannot book in the past" });
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto" }).format(new Date());
+  if (startIso < today || req.body.startDate !== startIso || req.body.endDate !== endIso) {
+    res.status(400).json({ error: "Choisissez des dates valides à partir d’aujourd’hui." });
     return;
   }
-
-  let priced;
+  const owner = req.user!;
   try {
-    priced = await calculateReservationPrice({
-      propertyId,
-      startDate: startIso,
-      endDate: endIso,
-      guests,
-      user: req.user!,
+    const nights = await validateStay(propertyId, startIso, endIso, guests);
+    const created = await db.transaction(async (tx) => {
+      const approvers = await tx.select({ email: usersTable.email }).from(usersTable).where(and(
+        eq(usersTable.group, "proprietaire"), eq(usersTable.canApprove, true), isNotNull(usersTable.authUserId)
+      ));
+      const review = reviewUrl();
+      if (!approvers.length || !process.env.SMTP_URL || !process.env.BOOKING_EMAIL_FROM || !review) {
+        throw new PricingError("Les approbations par courriel ne sont pas encore configurées.", 503);
+      }
+      const [stay] = await tx.insert(reservationsTable).values({
+        propertyId, userId: owner.id, startDate: startIso, endDate: endIso,
+        guests, nights, subtotal: 0, discountAmount: 0, total: 0, seasonBreakdown: [],
+        status: "pending_approval", notes: notes ?? null,
+      }).returning();
+      await tx.insert(bookingEmailsTable).values(approvers.map(({ email }) => ({
+        reservationId: stay.id, recipient: email, subject: "Chalet St-Mathieu · Demande à approuver",
+        body: owner.name + " demande le chalet du " + startIso + " au " + endIso +
+          " pour " + guests + " personne(s).\n\nExaminer la demande : " + review,
+      })));
+      return stay;
     });
-  } catch (err) {
-    if (err instanceof PricingError) {
-      res.status(err.status).json({ error: err.message });
-      return;
-    }
-    throw err;
-  }
-
-  try {
-    const [created] = await db
-      .insert(reservationsTable)
-      .values({
-        propertyId,
-        userId: req.user!.id,
-        startDate: startIso,
-        endDate: endIso,
-        guests,
-        nights: priced.nights,
-        subtotal: priced.subtotal,
-        discountAmount: priced.discountAmount,
-        total: priced.total,
-        seasonBreakdown: priced.seasonBreakdown,
-        status: "pending_payment",
-        notes: notes ?? null,
-      })
-      .returning();
+    await deliverBookingEmails();
     res.status(201).json(GetReservationResponse.parse(serializeReservation(created)));
   } catch (err) {
+    if (err instanceof PricingError) { res.status(err.status).json({ error: err.message }); return; }
     if (isOverlapError(err)) {
-      res.status(409).json({ error: "These dates conflict with an existing reservation" });
+      res.status(409).json({ error: "Ces dates viennent d’être réservées. Choisissez un autre séjour." });
       return;
     }
     throw err;

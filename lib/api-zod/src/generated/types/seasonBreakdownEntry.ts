@@ -5,7 +5,7 @@
  * ChaletDeLaPointe reservation API
  * OpenAPI spec version: 0.1.0
  */
-import type { SeasonName } from "./seasonName.js";
+import type { SeasonName } from "./seasonName";
 
 export interface SeasonBreakdownEntry {
   seasonName: SeasonName;

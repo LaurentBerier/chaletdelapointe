@@ -1,0 +1,22 @@
+project_id = "chalet-st-mathieu-pilot"
+
+[api]
+port = 55321
+schemas = ["public"]
+[db]
+port = 55322
+major_version = 17
+[studio]
+enabled = false
+[inbucket]
+enabled = true
+port = 55324
+smtp_port = 55325
+[auth]
+site_url = "http://127.0.0.1:20529"
+additional_redirect_urls = ["http://127.0.0.1:20529/connexion"]
+enable_signup = false
+[auth.email]
+enable_signup = true
+[analytics]
+enabled = false

@@ -35,27 +35,7 @@ export async function calculateReservationPrice(args: {
 }): Promise<PriceComputation> {
   const { propertyId, startDate, endDate, guests, user } = args;
 
-  const nights = diffNights(startDate, endDate);
-  if (nights <= 0) {
-    throw new PricingError("endDate must be after startDate");
-  }
-
-  const [property] = await db
-    .select()
-    .from(propertiesTable)
-    .where(eq(propertiesTable.id, propertyId))
-    .limit(1);
-  if (!property) throw new PricingError("Property not found", 404);
-  if (!property.isActive) throw new PricingError("Property is not bookable", 400);
-  if (guests !== undefined && guests > property.maxGuests) {
-    throw new PricingError(
-      `This property accepts at most ${property.maxGuests} guests (received ${guests})`,
-      400,
-    );
-  }
-  if (guests !== undefined && guests < 1) {
-    throw new PricingError("guests must be at least 1", 400);
-  }
+  const nights = await validateStay(propertyId, startDate, endDate, guests);
 
   const seasons = await db
     .select()
@@ -135,4 +115,30 @@ export async function calculateReservationPrice(args: {
     appliedGroup: group,
     seasonBreakdown: breakdown,
   };
+}
+
+export async function validateStay(propertyId: string, startDate: string, endDate: string, guests?: number) {
+  const nights = diffNights(startDate, endDate);
+  if (nights <= 0) {
+    throw new PricingError("endDate must be after startDate");
+  }
+
+  const [property] = await db
+    .select()
+    .from(propertiesTable)
+    .where(eq(propertiesTable.id, propertyId))
+    .limit(1);
+  if (!property) throw new PricingError("Property not found", 404);
+  if (!property.isActive) throw new PricingError("Property is not bookable", 400);
+  if (guests !== undefined && guests > property.maxGuests) {
+    throw new PricingError(
+      `This property accepts at most ${property.maxGuests} guests (received ${guests})`,
+      400,
+    );
+  }
+  if (guests !== undefined && guests < 1) {
+    throw new PricingError("guests must be at least 1", 400);
+  }
+
+  return nights;
 }

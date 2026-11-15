@@ -50,3 +50,8 @@ Thumbs.db
 
 # Vercel local project metadata
 .vercel/
+supabase/.temp/
+supabase/.branches/
+.env.local
+
+/artifacts/api-server/public/

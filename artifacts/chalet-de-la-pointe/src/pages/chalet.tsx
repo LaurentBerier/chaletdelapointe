@@ -1,11 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
-import { DayPicker, DateRange } from "react-day-picker";
-import { differenceInDays, addDays, addMonths, subDays } from "date-fns";
+import { Link } from "wouter";
 import {
   Wifi, Anchor, Waves, Flame, ChefHat, Bed, Bath, Trees, Car,
-  MapPin, Umbrella, Eye, ChevronLeft, ChevronRight, Minus, Plus, Sparkles,
+  MapPin, Umbrella, Eye, ChevronLeft, ChevronRight, Sparkles,
 } from "lucide-react";
 
 import {
@@ -14,7 +13,6 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import aerialImg from "@assets/Aerial_1777816601975.jpg";
 import beachImg from "@assets/Beach_1777816601977.jpg";
@@ -62,9 +60,6 @@ export default function Chalet() {
   const [isGalleryHovered, setIsGalleryHovered] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [guests, setGuests] = useState(2);
-
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
   }, [emblaApi]);
@@ -97,18 +92,6 @@ export default function Chalet() {
     return () => window.clearInterval(autoplay);
   }, [emblaApi, isGalleryHovered]);
 
-  const today = new Date();
-  const nextYear = addMonths(today, 12);
-  const bookedDays = [
-    { from: subDays(today, 2), to: addDays(today, 3) },
-    { from: addDays(today, 10), to: addDays(today, 15) },
-  ];
-
-  const pricePerNight = 300;
-  const nights = dateRange?.from && dateRange?.to ? Math.max(1, differenceInDays(dateRange.to, dateRange.from)) : 5;
-  const subtotal = nights * pricePerNight;
-  const serviceFee = Math.round(subtotal * 0.1);
-  const total = subtotal + serviceFee;
   const selectedImageSrc = selectedImageIndex !== null ? images[selectedImageIndex] : null;
 
   return (
@@ -262,22 +245,7 @@ export default function Chalet() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-2xl font-serif text-primary mb-6">Disponibilités</h2>
-              <div className="bg-secondary/20 p-4 rounded-2xl inline-block">
-                <DayPicker
-                  mode="multiple"
-                  numberOfMonths={2}
-                  pagedNavigation
-                  defaultMonth={today}
-                  startMonth={today}
-                  endMonth={nextYear}
-                  selected={bookedDays.flatMap(range => [range.from, range.to])}
-                  modifiers={{ booked: bookedDays }}
-                  modifiersStyles={{
-                    booked: { backgroundColor: 'hsl(var(--destructive)/0.1)', color: 'hsl(var(--destructive))', textDecoration: 'line-through' }
-                  }}
-                  className="bg-transparent"
-                />
-              </div>
+              <Link href="/calendrier" className="text-primary underline">Consulter le calendrier partagé</Link>
             </motion.div>
           </div>
 
@@ -289,98 +257,9 @@ export default function Chalet() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="sticky top-32 bg-card border border-border shadow-xl rounded-2xl p-6"
             >
-              <div className="flex items-baseline gap-2 mb-6">
-                <span className="text-2xl font-bold text-foreground">{pricePerNight} $</span>
-                <span className="text-muted-foreground">/ nuit</span>
-              </div>
-
-              <div className="border border-border rounded-xl overflow-hidden mb-4">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button className="w-full flex text-left divide-x divide-border border-b border-border hover:bg-secondary/30 transition-colors" data-testid="button-date-picker">
-                      <div className="flex-1 p-3">
-                        <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Arrivée</div>
-                        <div className="text-sm text-foreground truncate">
-                          {dateRange?.from ? dateRange.from.toLocaleDateString('fr-CA') : 'Ajouter une date'}
-                        </div>
-                      </div>
-                      <div className="flex-1 p-3">
-                        <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Départ</div>
-                        <div className="text-sm text-foreground truncate">
-                          {dateRange?.to ? dateRange.to.toLocaleDateString('fr-CA') : 'Ajouter une date'}
-                        </div>
-                      </div>
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="end">
-                    <DayPicker
-                      mode="range"
-                      selected={dateRange}
-                      onSelect={setDateRange}
-                      numberOfMonths={2}
-                      pagedNavigation
-                      defaultMonth={today}
-                      startMonth={today}
-                      endMonth={nextYear}
-                      disabled={[{ before: today }, ...bookedDays]}
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <div className="p-3 bg-card hover:bg-secondary/30 transition-colors">
-                  <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Voyageurs</div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">{guests} {guests > 1 ? 'voyageurs' : 'voyageur'}</span>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setGuests(Math.max(1, guests - 1))}
-                        className="w-8 h-8 flex items-center justify-center rounded-full border border-border hover:border-primary text-primary transition-colors disabled:opacity-50"
-                        disabled={guests <= 1}
-                        data-testid="button-guests-minus"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="w-4 text-center">{guests}</span>
-                      <button
-                        onClick={() => setGuests(Math.min(8, guests + 1))}
-                        className="w-8 h-8 flex items-center justify-center rounded-full border border-border hover:border-primary text-primary transition-colors disabled:opacity-50"
-                        disabled={guests >= 8}
-                        data-testid="button-guests-plus"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium hover:bg-primary/90 transition-colors"
-                data-testid="button-request-reservation"
-              >
-                Demander une réservation
-              </button>
-
-              <p className="text-center text-muted-foreground text-sm mt-4 mb-6">
-                Vous ne serez pas facturé pour le moment
-              </p>
-
-              <div className="space-y-4 text-sm text-foreground/80 pb-6 border-b border-border">
-                <div className="flex justify-between">
-                  <span className="underline decoration-border underline-offset-4">{nights} nuits × {pricePerNight} $</span>
-                  <span>{subtotal} $</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="underline decoration-border underline-offset-4">Frais de service</span>
-                  <span>{serviceFee} $</span>
-                </div>
-              </div>
-
-              <div className="flex justify-between pt-6 text-foreground font-bold text-lg">
-                <span>Total</span>
-                <span>{total} $</span>
-              </div>
-
+              <h2 className="font-serif text-2xl mb-4">Votre séjour au chalet</h2>
+              <p className="text-muted-foreground mb-6">Choisissez vos nuits et le nombre de voyageurs dans le calendrier.</p>
+              <Link href="/calendrier" className="block rounded-lg bg-primary text-white text-center py-3" data-testid="button-request-reservation">Voir les disponibilités</Link>
             </motion.div>
           </div>
         </div>

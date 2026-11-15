@@ -21,10 +21,10 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   }
 
   if (!isAuthenticated) {
-    return <Redirect to="/connexion" />;
+    return <Redirect to={location.search.includes("onglet=approbations") ? "/connexion?suite=approbations" : "/connexion"} />;
   }
 
-  if (requireAdmin && user?.role !== "admin") {
+  if (requireAdmin && !user?.isAdmin) {
     return <Redirect to="/tableau-de-bord" />;
   }
 

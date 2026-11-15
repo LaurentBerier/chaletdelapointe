@@ -5,9 +5,12 @@
  * ChaletDeLaPointe reservation API
  * OpenAPI spec version: 0.1.0
  */
+import type { CalendarEntryStatus } from "./calendarEntryStatus";
 
 export interface CalendarEntry {
   propertyId: string;
   startDate: Date;
   endDate: Date;
+  status: CalendarEntryStatus;
+  ownerName?: string;
 }

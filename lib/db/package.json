@@ -8,9 +8,9 @@
     "./schema": "./src/schema/index.js"
   },
   "scripts": {
-    "push": "drizzle-kit push --config ./drizzle.config.ts && pnpm run apply-invariants",
-    "push-force": "drizzle-kit push --force --config ./drizzle.config.ts && pnpm run apply-invariants",
-    "apply-invariants": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f ./migrations/001_reservation_invariants.sql"
+    "push": "NODE_OPTIONS=\"--require tsx/cjs\" drizzle-kit push --config ./drizzle.config.ts && pnpm run apply-invariants",
+    "push-force": "NODE_OPTIONS=\"--require tsx/cjs\" drizzle-kit push --force --config ./drizzle.config.ts && pnpm run apply-invariants",
+    "apply-invariants": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f ./migrations/001_reservation_invariants.sql -f ./migrations/002_owner_pilot.sql"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/pg": "^8.18.0",
-    "drizzle-kit": "^0.31.9"
+    "drizzle-kit": "^0.31.9",
+    "tsx": "catalog:"
   }
 }

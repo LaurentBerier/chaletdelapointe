@@ -13,6 +13,8 @@ export const seasonNameEnum = pgEnum("season_name", ["haute", "mi", "basse"]);
 export const reservationStatusEnum = pgEnum("reservation_status", [
   "draft",
   "pending_payment",
+  "pending_approval",
+  "rejected",
   "confirmed",
   "cancelled",
   "expired",

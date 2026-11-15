@@ -37,7 +37,9 @@ export type ReservationStatus =
 export const ReservationStatus = {
   draft: "draft",
   pending_payment: "pending_payment",
+  pending_approval: "pending_approval",
   confirmed: "confirmed",
+  rejected: "rejected",
   cancelled: "cancelled",
   expired: "expired",
 } as const;
@@ -113,10 +115,20 @@ export interface Reservation {
   updatedAt: string;
 }
 
+export type CalendarEntryStatus =
+  (typeof CalendarEntryStatus)[keyof typeof CalendarEntryStatus];
+
+export const CalendarEntryStatus = {
+  held: "held",
+  confirmed: "confirmed",
+} as const;
+
 export interface CalendarEntry {
   propertyId: string;
   startDate: string;
   endDate: string;
+  status: CalendarEntryStatus;
+  ownerName?: string;
 }
 
 export interface AdminActionBody {

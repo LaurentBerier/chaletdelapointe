@@ -24,14 +24,10 @@ export default function Proprietes() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="bg-card border border-border shadow-md rounded-full p-2 max-w-3xl mb-16 flex items-center"
         >
+          <Link href="/calendrier" className="flex w-full items-center" aria-label="Choisir les dates et les voyageurs">
           <div className="flex-1 px-6 border-r border-border">
             <div className="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Destination</div>
-            <input 
-              type="text" 
-              placeholder="Saint-Mathieu-de-Rioux" 
-              className="w-full bg-transparent outline-none text-sm text-foreground placeholder:text-foreground/50"
-              readOnly
-            />
+            <span className="text-sm">Saint-Mathieu-de-Rioux</span>
           </div>
           <div className="flex-1 px-6 border-r border-border">
             <div className="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Date d'arrivée</div>
@@ -42,10 +38,11 @@ export default function Proprietes() {
               <div className="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Voyageurs</div>
               <div className="text-sm text-muted-foreground">Ajouter des voyageurs</div>
             </div>
-            <button className="bg-primary text-primary-foreground p-3 rounded-full hover:bg-primary/90 transition-colors" data-testid="button-search">
+            <span className="bg-primary text-primary-foreground p-3 rounded-full hover:bg-primary/90 transition-colors" data-testid="button-search">
               <Search className="w-5 h-5" />
-            </button>
+            </span>
           </div>
+          </Link>
         </motion.div>
 
         {/* Properties Grid */}
