@@ -1,3 +1,4 @@
+import { reviewId, reviewPath, rememberReview, rememberedReview } from "@/lib/access-review";
 import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
 import { KeyRound, Mail, ArrowLeft, Waves } from "lucide-react";
@@ -25,11 +26,13 @@ export default function Connexion() {
     setNotice("");
     setPassword("");
   };
+  const requestedReview = reviewId(location.search);
+  const returnReview = requestedReview || (auth.user?.isAdmin && rememberedReview());
   if (auth.isAuthenticated && !auth.recovery)
     return (
       <Redirect
         to={
-          new URLSearchParams(location.search).get("suite") === "approbations"
+          returnReview ? reviewPath(returnReview) : new URLSearchParams(location.search).get("suite") === "approbations"
             ? "/tableau-de-bord?onglet=approbations"
             : new URLSearchParams(location.search).get("suite")==="profil" ? "/tableau-de-bord?onglet=profil" : localStorage.getItem("chalet.calendar.sign-in-dates") &&
                 auth.user?.canBook
@@ -113,9 +116,10 @@ export default function Connexion() {
                 if (mode === "password")
                   await auth.passwordLogin(email, password);
                 if (mode === "link") {
+                  rememberReview(requestedReview);
                   await auth.login(email);
                   setNotice(
-                    "Si votre compte existe, un lien de connexion vous sera envoyé.",
+                    requestedReview ? "Consultez votre courriel de connexion. Si vous l’ouvrez sur un autre appareil, rouvrez ensuite le lien Examiner la demande." : "Si votre compte existe, un lien de connexion vous sera envoyé.",
                   );
                 }
                 if (mode === "forgot") {

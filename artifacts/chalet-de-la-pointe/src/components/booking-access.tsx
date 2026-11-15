@@ -39,8 +39,8 @@ export function BookingAccessPanel({ compact = false }: { compact?: boolean }) {
               Demande en attente
             </span>
             <p>
-              Votre demande d’accès a été envoyée. La décision de
-              l’administration s’affichera ici.
+              Votre demande a été transmise à l’administration du chalet. Vous
+              recevrez sa réponse par courriel.
             </p>
           </>
         ) : state === "denied" ? (

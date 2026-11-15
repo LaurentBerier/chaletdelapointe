@@ -7,3 +7,4 @@ export * from "./reservations.js";
 export * from "./admin-actions.js";
 export * from "./booking-emails.js";
 export * from "./blog-posts.js";
+export * from "./access-emails.js";

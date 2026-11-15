@@ -14,6 +14,7 @@ export const usersTable = pgTable("users", {
   isVip: boolean("is_vip").notNull().default(false),
   hasPassword: boolean("has_password").notNull().default(false),
   bookingAccess: text("booking_access", { enum: bookingAccessStates }).notNull().default("none"),
+  bookingAccessRequestId: uuid("booking_access_request_id"),
   bookingAccessRequestedAt: timestamp("booking_access_requested_at", { withTimezone: true }),
   isDisabled: boolean("is_disabled").notNull().default(false),
   isAdmin: boolean("is_admin").notNull().default(false),

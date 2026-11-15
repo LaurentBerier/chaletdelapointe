@@ -3,6 +3,7 @@
   "framework": "vite",
   "buildCommand": "pnpm run build",
   "outputDirectory": "public",
+  "crons": [{ "path": "/api/jobs/access-mail", "schedule": "15 12 * * *" }],
   "rewrites": [
     {
       "source": "/api/:path*",

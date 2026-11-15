@@ -18,6 +18,7 @@ type Account = {
   isDisabled: boolean;
   isAdmin: boolean;
   bookingAccess: BookingAccess;
+  bookingAccessRequestId: string | null;
   bookingAccessRequestedAt: string | null;
 };
 const groups: Record<string, string> = {
@@ -191,6 +192,7 @@ function AccessDecision({ account: a }: { account: Account }) {
       try {
         await write("/admin/accounts/" + a.id + "/booking-access", "POST", {
           decision,
+          requestId: a.bookingAccessRequestId,
         });
       } finally {
         await cache.invalidateQueries({ queryKey: ["admin-accounts"] });
@@ -322,12 +324,52 @@ function AccountRow({ a }: { a: Account }) {
     </details>
   );
 }
-export function AccountsPanel() {
+export function AccountsPanel({ requestId }: { requestId: string | null }) {
   const q = useQuery({
     queryKey: ["admin-accounts"],
     refetchInterval: 30000,
     queryFn: () => ownerRequest<Account[]>("/admin/accounts"),
   });
+  if (requestId) {
+    const member = q.data?.find(
+      (a) => a.bookingAccessRequestId === requestId && !a.isDisabled,
+    );
+    return (
+      <section className="access-queue" aria-label="Demande reçue par courriel">
+        <p className="eyebrow">Accès aux réservations</p>
+        <h2 className="section-title">Demande du membre</h2>
+        {q.isPending ? (
+          <p>Chargement…</p>
+        ) : q.isError ? (
+          <p role="alert">
+            Impossible de charger cette demande. Réessayez dans un instant.
+          </p>
+        ) : !member ? (
+          <p>Cette demande n’est plus active.</p>
+        ) : (
+          <div className="access-queue-item">
+            <strong>{member.name}</strong>
+            <p>{member.email}</p>
+            {member.bookingAccess === "pending" ? (
+              <>
+                <p>Le membre recevra votre décision par courriel.</p>
+                <AccessDecision account={member} />
+              </>
+            ) : (
+              <p role="status">
+                {member.bookingAccess === "granted"
+                  ? "Demande acceptée."
+                  : "Demande refusée."}
+              </p>
+            )}
+          </div>
+        )}
+        <Link className="text-link" href="/tableau-de-bord?onglet=comptes">
+          Voir tous les comptes
+        </Link>
+      </section>
+    );
+  }
   return (
     <>
       <h2 className="section-title">Comptes et accès</h2>

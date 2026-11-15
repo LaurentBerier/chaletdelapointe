@@ -1,3 +1,4 @@
+import { deliverAccessEmails } from "../lib/access-email.js";
 import management from "./management.js";
 import { Router, type IRouter } from "express";
 import reviewsRouter from "./reviews.js";
@@ -18,6 +19,15 @@ router.get("/auth/config", (_req, res) => {
   res.json({ url, key });
 });
 router.use(requireDatabase);
+router.get("/jobs/access-mail", async (req, res) => {
+  res.set("Cache-Control", "private, no-store");
+  if (!process.env.CRON_SECRET || req.get("Authorization") !== "Bearer " + process.env.CRON_SECRET) {
+    res.sendStatus(401);
+    return;
+  }
+  await deliverAccessEmails();
+  res.sendStatus(204);
+});
 router.use(loadUser);
 router.use(management);
 router.use(reviewsRouter);

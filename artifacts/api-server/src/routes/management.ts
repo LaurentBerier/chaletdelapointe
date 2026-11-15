@@ -7,6 +7,7 @@ import {
   propertiesTable as properties,
 } from "../../../../lib/db/src/index.js";
 import { requireAccount, requireAdmin } from "../middlewares/auth.js";
+import { deliverAccessEmails } from "../lib/access-email.js";
 import { randomUUID } from "node:crypto";
 
 const router: IRouter = Router();
@@ -23,6 +24,7 @@ const account = {
   isDisabled: users.isDisabled,
   isAdmin: users.isAdmin,
   bookingAccess: users.bookingAccess,
+  bookingAccessRequestId: users.bookingAccessRequestId,
   bookingAccessRequestedAt: users.bookingAccessRequestedAt,
 };
 router.patch("/me", requireAccount, async (req, res) => {
@@ -92,9 +94,13 @@ router.post("/me/booking-access", requireAccount, async (req, res) => {
         eq(users.bookingAccess, "none"),
       ),
     )
-    .returning({ bookingAccess: users.bookingAccess });
+    .returning({
+      bookingAccess: users.bookingAccess,
+      requestId: users.bookingAccessRequestId,
+    });
   if (row) {
-    res.status(201).json(row);
+    await deliverAccessEmails(row.requestId!);
+    res.status(201).json({ bookingAccess: row.bookingAccess });
     return;
   }
   const [current] = await db
@@ -119,6 +125,7 @@ router.post("/me/booking-access", requireAccount, async (req, res) => {
     .json({ error: "Votre accès a changé. Actualisez votre profil." });
 });
 router.get("/admin/booking-access/count", requireAdmin, async (_req, res) => {
+  await deliverAccessEmails();
   const [row] = await db
     .select({ pending: count() })
     .from(users)
@@ -135,7 +142,14 @@ router.post(
   "/admin/accounts/:id/booking-access",
   requireAdmin,
   async (req, res) => {
-    const decision = req.body?.decision;
+    const { decision, requestId } = req.body ?? {};
+    const review = decision === "approve" || decision === "deny";
+    if (review && !uuid(requestId)) {
+      res
+        .status(409)
+        .json({ error: "Actualisez la page pour examiner cette demande." });
+      return;
+    }
     if (
       !uuid(req.params.id) ||
       !["approve", "deny", "revoke", "reopen"].includes(decision)
@@ -168,6 +182,7 @@ router.post(
           eq(users.isDisabled, false),
           ne(users.group, "proprietaire"),
           eq(users.bookingAccess, before),
+          review ? eq(users.bookingAccessRequestId, requestId) : undefined,
         ),
       )
       .returning(account);
@@ -177,6 +192,7 @@ router.post(
         .json({ error: "Ce compte ou cette demande a déjà changé." });
       return;
     }
+    if (review) await deliverAccessEmails(requestId);
     res.json(row);
   },
 );

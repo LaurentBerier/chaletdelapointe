@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { rememberReview, reviewId } from "@/lib/access-review";
 import { useLocation, useSearch, Link } from "wouter";
 import {
   CalendarDays,
@@ -26,6 +28,10 @@ export default function TableauDeBord() {
   const { user, logout } = useAuth(),
     [, navigate] = useLocation(),
     search = useSearch();
+  const requestId = reviewId(search);
+  useEffect(() => {
+    if (requestId) rememberReview(null);
+  }, [requestId]);
   const count = useQuery({
     queryKey: ["admin-access-count", user?.id],
     enabled: !!user?.isAdmin,
@@ -77,7 +83,7 @@ export default function TableauDeBord() {
         : "Comptes et accès",
       icon: UsersRound,
       visible: user.isAdmin,
-      panel: <AccountsPanel />,
+      panel: <AccountsPanel requestId={requestId} />,
     },
     {
       id: "sejours",
@@ -181,7 +187,17 @@ export default function TableauDeBord() {
             </button>
           </nav>
           <section key={selected.id} className="account-content">
-            {selected.panel}
+            {requestId && !user.isAdmin ? (
+              <div className="panel" role="status">
+                <h2 className="section-title">Compte administrateur requis</h2>
+                <p>
+                  Pour examiner cette demande, déconnectez-vous puis rouvrez le
+                  lien du courriel avec votre compte administrateur.
+                </p>
+              </div>
+            ) : (
+              selected.panel
+            )}
           </section>
         </div>
       </div>
