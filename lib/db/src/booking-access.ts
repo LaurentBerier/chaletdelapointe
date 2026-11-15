@@ -5,11 +5,6 @@ export const bookingAccessStates = [
   "denied",
 ] as const;
 export type BookingAccess = (typeof bookingAccessStates)[number];
-export function mayBook(account: {
-  group: string;
-  bookingAccess: BookingAccess;
-}) {
-  return (
-    account.group === "proprietaire" || account.bookingAccess === "granted"
-  );
+export function mayBook(account: { bookingAccess: BookingAccess }) {
+  return account.bookingAccess === "granted";
 }

@@ -1,4 +1,9 @@
 import {
+  isRelationship,
+  type Relationship,
+  type AccountStatus,
+} from "../../../../lib/shared/membership";
+import {
   createContext,
   useContext,
   useState,
@@ -14,6 +19,8 @@ import { setAuthTokenGetter } from "@workspace/api-client-react";
 interface Owner {
   id: string;
   email: string;
+  accountStatus: AccountStatus;
+  declaredRelation: Relationship | null;
   isOwner: boolean;
   hasPassword: boolean;
   canBook: boolean;
@@ -29,7 +36,12 @@ interface AuthContextValue {
   authError: string;
   login: (email: string) => Promise<void>;
   passwordLogin: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    relation: Relationship,
+  ) => Promise<void>;
   sendRecovery: (email: string) => Promise<void>;
   savePassword: (password: string) => Promise<void>;
   saveName: (name: string) => Promise<void>;
@@ -67,7 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     retry: false,
     queryFn: () => ownerRequest<Owner>("/me"),
     refetchInterval: (q) =>
-      q.state.data?.bookingAccess === "pending" ? 10000 : false,
+      q.state.data?.bookingAccess === "pending" ||
+      q.state.data?.accountStatus === "pending"
+        ? 10000
+        : false,
     refetchOnWindowFocus: "always",
   });
   const user = identity && !account.isError ? (account.data ?? null) : null;
@@ -132,7 +147,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ).auth.signInWithPassword({ email: email.trim(), password });
     if (error) throw error;
   }
-  async function register(email: string, password: string, name: string) {
+  async function register(
+    email: string,
+    password: string,
+    name: string,
+    relation: Relationship,
+  ) {
+    if (!isRelationship(relation))
+      throw new Error("Choisissez votre lien avec le chalet.");
     if (!name.trim() || name.trim().length > 80)
       throw new Error("Nom invalide.");
     const { error } = await (
@@ -141,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: email.trim(),
       password,
       options: {
-        data: { display_name: name.trim() },
+        data: { display_name: name.trim(), declared_relation: relation },
         emailRedirectTo: new URL("/connexion", location.origin).href,
       },
     });

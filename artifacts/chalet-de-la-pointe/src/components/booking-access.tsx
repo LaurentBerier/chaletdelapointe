@@ -11,6 +11,21 @@ export function BookingAccessPanel({ compact = false }: { compact?: boolean }) {
     onSettled: () => cache.invalidateQueries({ queryKey: ["session-account"] }),
   });
   if (!user) return null;
+  if (user.accountStatus !== "approved")
+    return (
+      <div className="booking-access-compact">
+        <strong>
+          {user.accountStatus === "pending"
+            ? "Inscription en attente"
+            : "Inscription refusée"}
+        </strong>
+        <p>
+          {user.accountStatus === "pending"
+            ? "Vous pourrez demander à réserver une fois votre compte approuvé."
+            : "Vous pouvez toujours consulter les disponibilités publiques."}
+        </p>
+      </div>
+    );
   const state = user.canBook ? "granted" : user.bookingAccess;
   return (
     <section

@@ -4,8 +4,8 @@ import { chaletEmail } from "../../lib/shared/chalet-email.mjs";
 const letters = {
   confirmation: [
     "Inscription",
-    "Bienvenue au chalet",
-    "Confirmez votre adresse courriel pour activer votre profil.",
+    "Confirmez votre adresse courriel",
+    "Confirmez votre adresse pour transmettre votre demande de compte à l’administration du chalet. Vous recevrez ensuite sa décision par courriel.",
     "Confirmer mon adresse",
     "pointe",
   ],

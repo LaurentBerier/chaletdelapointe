@@ -1,16 +1,24 @@
+import { deliverAccessEmails } from "../lib/access-email.js";
 import { mayBook } from "../../../../lib/db/src/booking-access.js";
 import { stayDates } from "../../../../lib/shared/stay-dates.js";
 import { Router, type IRouter } from "express";
 import { and, desc, eq } from "drizzle-orm";
 import { db, reservationsTable as stays, usersTable, adminActionsTable, bookingEmailsTable } from "../../../../lib/db/src/index.js";
-import { requireAccount, requireApprover } from "../middlewares/auth.js";
+import { requireApprover } from "../middlewares/auth.js";
 import { deliverBookingEmails } from "../lib/booking-email.js";
 import { GetReservationParams } from "../../../../lib/api-zod/src/index.js";
 
 const router: IRouter = Router();
-router.get("/me", requireAccount, (req, res) => {
+router.get("/me", async (req, res) => {
+  if (req.applicant) {
+    const { id, name, email, accountStatus, declaredRelation, registrationRequestId, hasPassword } = req.applicant;
+    if (accountStatus === "pending" && registrationRequestId) await deliverAccessEmails(registrationRequestId);
+    res.json({ id, name, email, accountStatus, declaredRelation, hasPassword, canBook: false, bookingAccess: "none", isOwner: false, canApprove: false, isAdmin: false });
+    return;
+  }
+  if (!req.user) { res.status(401).json({ error: "Connexion requise." }); return; }
   const { id, name, email, canApprove, isAdmin, group, bookingAccess, hasPassword } = req.user!;
-  res.json({ id, name, email, canApprove, isAdmin, bookingAccess, hasPassword, canBook: mayBook(req.user!), isOwner: group === "proprietaire" });
+  res.json({ id, name, email, accountStatus: req.user.accountStatus, declaredRelation: req.user.declaredRelation, canApprove, isAdmin, bookingAccess, hasPassword, canBook: mayBook(req.user!), isOwner: group === "proprietaire" });
 });
 
 router.get("/reviews", requireApprover, async (_req, res) => {

@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   pgTable,
   text,
@@ -19,7 +20,17 @@ export const accessEmails = pgTable(
     recipientId: uuid("recipient_id")
       .notNull()
       .references(() => usersTable.id, { onDelete: "cascade" }),
-    kind: text("kind", { enum: ["pending", "granted", "denied"] }).notNull(),
+    kind: text("kind", {
+      enum: [
+        "pending",
+        "granted",
+        "denied",
+        "registration_pending",
+        "registration_approved",
+        "registration_denied",
+      ],
+    }).notNull(),
+    bookingAllowed: boolean("booking_allowed"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

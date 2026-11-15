@@ -1,3 +1,4 @@
+import { relationshipLabel } from "../../../../lib/shared/membership";
 import { useEffect } from "react";
 import { rememberReview, reviewId } from "@/lib/access-review";
 import { useLocation, useSearch, Link } from "wouter";
@@ -40,6 +41,52 @@ export default function TableauDeBord() {
     refetchInterval: 30000,
   });
   if (!user) return null;
+  if (user.accountStatus !== "approved") {
+    const waiting = user.accountStatus === "pending";
+    return (
+      <main className="dashboard">
+        <div className="account-wrap">
+          <section className="panel account-form">
+            <p className="eyebrow">Demande de création de compte</p>
+            <h1 className="section-title">
+              {waiting
+                ? "Votre inscription est en attente"
+                : "Votre inscription a été refusée"}
+            </h1>
+            <p>
+              {waiting
+                ? "Votre adresse est confirmée. L’administration du chalet examinera votre demande et vous répondra par courriel."
+                : "L’administration n’a pas accepté votre demande. Vous pouvez contacter le chalet si vous avez des questions."}
+            </p>
+            <p>
+              {user.name} · {user.email}
+              <br />
+              Lien déclaré : {relationshipLabel(user.declaredRelation)}
+            </p>
+            <div className="button-row">
+              <Link className="text-link" href="/calendrier">
+                Consulter les disponibilités
+              </Link>
+              {!waiting && (
+                <Link className="text-link" href="/contact">
+                  Contacter le chalet
+                </Link>
+              )}
+              <button
+                className="text-link"
+                onClick={async () => {
+                  await logout();
+                  navigate("/");
+                }}
+              >
+                Déconnexion
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
   const tabs = [
     {
       id: "reservations",

@@ -79,7 +79,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {isAuthenticated ? (
               <div className="relative" onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setAccountOpen(false);}} onKeyDown={e=>{if(e.key==="Escape")setAccountOpen(false);}}>
               <button aria-expanded={accountOpen} className={"account-trigger "+textColor} onClick={()=>setAccountOpen(v=>!v)}><User size={15}/><span>{user?.name}</span><ChevronDown size={15}/></button>
-              {accountOpen&&<div className="account-pop"><p className="eyebrow">Mon espace</p>{[["profil","Mon profil"],["securite","Sécurité"],...(user?.canBook?[["reservations","Mes réservations"]]:[]),...(user?.isAdmin?[["comptes","Super administration"]]:[])].map(([id,label])=><Link key={id} onClick={()=>setAccountOpen(false)} href={"/tableau-de-bord?onglet="+id}>{label}</Link>)}<button onClick={()=>{setAccountOpen(false);void logout();}}>Déconnexion</button></div>}</div>
+              {accountOpen&&<div className="account-pop"><p className="eyebrow">Mon espace</p>{[...(user?.accountStatus === "approved" ? [["profil","Mon profil"],["securite","Sécurité"]] : [["profil","Mon inscription"]]),...(user?.canBook?[["reservations","Mes réservations"]]:[]),...(user?.isAdmin?[["comptes","Super administration"]]:[])].map(([id,label])=><Link key={id} onClick={()=>setAccountOpen(false)} href={"/tableau-de-bord?onglet="+id}>{label}</Link>)}<button onClick={()=>{setAccountOpen(false);void logout();}}>Déconnexion</button></div>}</div>
             ) : (
               <Link
                 href="/connexion"

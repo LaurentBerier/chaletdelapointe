@@ -1,4 +1,13 @@
-import { reviewId, reviewPath, rememberReview, rememberedReview } from "@/lib/access-review";
+import {
+  relationships,
+  isRelationship,
+} from "../../../../lib/shared/membership";
+import {
+  reviewId,
+  reviewPath,
+  rememberReview,
+  rememberedReview,
+} from "@/lib/access-review";
 import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
 import { KeyRound, Mail, ArrowLeft, Waves } from "lucide-react";
@@ -11,6 +20,7 @@ export default function Connexion() {
   const [tab, setTab] = useState<"password" | "link" | "forgot">("password");
   const [email, setEmail] = useState(""),
     [name, setName] = useState(""),
+    [relation, setRelation] = useState(""),
     [password, setPassword] = useState(""),
     [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState(""),
@@ -27,22 +37,30 @@ export default function Connexion() {
     setPassword("");
   };
   const requestedReview = reviewId(location.search);
-  const returnReview = requestedReview || (auth.user?.isAdmin && rememberedReview());
+  const returnReview =
+    requestedReview || (auth.user?.isAdmin && rememberedReview());
   if (auth.isAuthenticated && !auth.recovery)
     return (
       <Redirect
         to={
-          returnReview ? reviewPath(returnReview) : new URLSearchParams(location.search).get("suite") === "approbations"
-            ? "/tableau-de-bord?onglet=approbations"
-            : new URLSearchParams(location.search).get("suite")==="profil" ? "/tableau-de-bord?onglet=profil" : localStorage.getItem("chalet.calendar.sign-in-dates") &&
-                auth.user?.canBook
-              ? "/calendrier?reprendre=1"
-              : auth.user?.canBook ? "/tableau-de-bord" : "/tableau-de-bord?onglet=profil"
+          returnReview
+            ? reviewPath(returnReview)
+            : new URLSearchParams(location.search).get("suite") ===
+                "approbations"
+              ? "/tableau-de-bord?onglet=approbations"
+              : new URLSearchParams(location.search).get("suite") === "profil"
+                ? "/tableau-de-bord?onglet=profil"
+                : localStorage.getItem("chalet.calendar.sign-in-dates") &&
+                    auth.user?.canBook
+                  ? "/calendrier?reprendre=1"
+                  : auth.user?.canBook
+                    ? "/tableau-de-bord"
+                    : "/tableau-de-bord?onglet=profil"
         }
       />
     );
   const title = {
-    signup: "Créer mon compte",
+    signup: "Demander un compte",
     password: "Bon retour au chalet",
     link: "Un lien par courriel",
     forgot: "Mot de passe oublié",
@@ -72,7 +90,7 @@ export default function Connexion() {
           <h1>{title}</h1>
           <p className="text-muted-foreground mb-6">
             {mode === "signup"
-              ? "Choisissez le nom qui signera vos articles et identifiera vos séjours auprès des propriétaires."
+              ? "Indiquez votre lien avec le chalet, puis confirmez votre courriel. L’administration examinera votre demande et vous répondra par courriel."
               : mode === "recover"
                 ? "Choisissez un mot de passe d’au moins 10 caractères."
                 : mode === "forgot"
@@ -107,10 +125,12 @@ export default function Connexion() {
               setNotice("");
               try {
                 if (mode === "signup") {
-                  await auth.register(email, password, name);
+                  if (!isRelationship(relation))
+                    throw new Error("Choisissez votre lien avec le chalet.");
+                  await auth.register(email, password, name, relation);
                   setPassword("");
                   setNotice(
-                    "Consultez votre boîte courriel pour confirmer votre inscription. Si vous avez déjà un compte, utilisez la connexion.",
+                    "Pour une nouvelle inscription, ouvrez le courriel de confirmation. Votre demande sera ensuite transmise à l’administration. Si vous avez déjà un compte, utilisez la connexion.",
                   );
                 }
                 if (mode === "password")
@@ -119,7 +139,9 @@ export default function Connexion() {
                   rememberReview(requestedReview);
                   await auth.login(email);
                   setNotice(
-                    requestedReview ? "Consultez votre courriel de connexion. Si vous l’ouvrez sur un autre appareil, rouvrez ensuite le lien Examiner la demande." : "Si votre compte existe, un lien de connexion vous sera envoyé.",
+                    requestedReview
+                      ? "Consultez votre courriel de connexion. Si vous l’ouvrez sur un autre appareil, rouvrez ensuite le lien Examiner la demande."
+                      : "Si votre compte existe, un lien de connexion vous sera envoyé.",
                   );
                 }
                 if (mode === "forgot") {
@@ -153,6 +175,26 @@ export default function Connexion() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
+              </label>
+            )}
+            {mode === "signup" && (
+              <label>
+                Lien avec le chalet
+                <select
+                  name="relation"
+                  value={relation}
+                  required
+                  onChange={(e) => setRelation(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Choisissez une réponse
+                  </option>
+                  {Object.entries(relationships).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </label>
             )}
             {mode !== "recover" && (
@@ -200,7 +242,18 @@ export default function Connexion() {
               </p>
             )}
             {notice && (
-              <div className="sent-note" role="status"><img src="/media/chalet/pine.jpg" width="480" height="320" alt=""/><div><strong>Votre boîte courriel</strong><p>{notice}</p></div></div>
+              <div className="sent-note" role="status">
+                <img
+                  src="/media/chalet/pine.jpg"
+                  width="480"
+                  height="320"
+                  alt=""
+                />
+                <div>
+                  <strong>Votre boîte courriel</strong>
+                  <p>{notice}</p>
+                </div>
+              </div>
             )}
             <button
               data-testid="button-submit"
@@ -210,7 +263,7 @@ export default function Connexion() {
               {busy
                 ? "Un instant…"
                 : {
-                    signup: "Créer mon compte",
+                    signup: "Demander un compte",
                     password: "Me connecter",
                     link: "Recevoir mon lien",
                     forgot: "Envoyer le lien",

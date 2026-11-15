@@ -1,3 +1,8 @@
+import {
+  relationshipLabel,
+  type Relationship,
+  type AccountStatus,
+} from "../../../../lib/shared/membership";
 import { BookingAccessPanel } from "./booking-access";
 import type { BookingAccess } from "../../../../lib/db/src/booking-access";
 import { IllustratedNote } from "./field-heading";
@@ -13,6 +18,9 @@ type Account = {
   id: string;
   name: string;
   email: string;
+  accountStatus: AccountStatus;
+  declaredRelation: Relationship | null;
+  registrationRequestId: string | null;
   group: string;
   canApprove: boolean;
   isDisabled: boolean;
@@ -181,7 +189,7 @@ function AccessDecision({ account: a }: { account: Account }) {
   const op = useAction(),
     cache = useQueryClient();
   if (
-    a.group === "proprietaire" ||
+    a.accountStatus !== "approved" ||
     a.isDisabled ||
     a.isAdmin ||
     a.bookingAccess === "none"
@@ -245,6 +253,108 @@ function AccessDecision({ account: a }: { account: Account }) {
     </div>
   );
 }
+function RegistrationCard({ a }: { a: Account }) {
+  const op = useAction(),
+    cache = useQueryClient();
+  const [group, setGroup] = useState("public"),
+    [canBook, setBook] = useState(false),
+    [canApprove, setApprove] = useState(false);
+  const decide = (decision: "approve" | "deny") =>
+    op.run(async () => {
+      try {
+        await write("/admin/accounts/" + a.id + "/registration", "POST", {
+          decision,
+          requestId: a.registrationRequestId,
+          ...(decision === "approve"
+            ? {
+                group,
+                canBook,
+                canApprove: group === "proprietaire" && canApprove,
+              }
+            : {}),
+        });
+      } finally {
+        await cache.invalidateQueries({ queryKey: ["admin-accounts"] });
+      }
+    });
+  return (
+    <article className="access-queue-item account-form">
+      <strong>{a.name}</strong>
+      <p>{a.email}</p>
+      <p>Lien déclaré : {relationshipLabel(a.declaredRelation)}</p>
+      {a.accountStatus !== "pending" ? (
+        <p role="status">
+          {a.accountStatus === "approved"
+            ? "Inscription approuvée."
+            : "Inscription refusée."}
+        </p>
+      ) : (
+        <>
+          <label>
+            Rôle à attribuer
+            <select
+              value={group}
+              onChange={(e) => {
+                setGroup(e.target.value);
+                setApprove(false);
+              }}
+            >
+              {Object.entries(groups).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {group === "proprietaire" && (
+            <p>
+              Un propriétaire peut voir les noms associés aux séjours confirmés.
+            </p>
+          )}
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={canBook}
+              onChange={(e) => setBook(e.target.checked)}
+            />{" "}
+            Autoriser à faire des réservations
+          </label>
+          {group === "proprietaire" && (
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={canApprove}
+                onChange={(e) => setApprove(e.target.checked)}
+              />{" "}
+              Recevoir et traiter les demandes de séjour
+            </label>
+          )}
+          <p>
+            Le membre recevra votre décision par courriel. Vous pourrez modifier
+            ses permissions plus tard.
+          </p>
+          <div className="button-row">
+            <button
+              className="action"
+              disabled={op.busy}
+              onClick={() => decide("approve")}
+            >
+              Approuver le compte
+            </button>
+            <button
+              className="secondary-action"
+              disabled={op.busy}
+              onClick={() => decide("deny")}
+            >
+              Refuser l’inscription
+            </button>
+          </div>
+        </>
+      )}
+      {op.feedback}
+    </article>
+  );
+}
 function AccountRow({ a }: { a: Account }) {
   const op = useAction(),
     [group, setGroup] = useState(a.group);
@@ -263,7 +373,10 @@ function AccountRow({ a }: { a: Account }) {
               : groups[a.group]}
         </span>
       </summary>
-      {a.bookingAccess !== "pending" && <AccessDecision account={a} />}
+      {a.declaredRelation && (
+        <p>Lien déclaré : {relationshipLabel(a.declaredRelation)}</p>
+      )}
+      {a.bookingAccess === "denied" && <AccessDecision account={a} />}
       {a.isAdmin ? (
         <p className="mt-4">
           Compte protégé. Modifiez votre nom dans Mon profil.
@@ -278,6 +391,10 @@ function AccountRow({ a }: { a: Account }) {
                 ...(f.name === a.name ? {} : { name: f.name }),
                 group,
                 canApprove: f.approve === "on",
+                ...(a.bookingAccess !== "pending" &&
+                (f.book === "on") !== (a.bookingAccess === "granted")
+                  ? { canBook: f.book === "on" }
+                  : {}),
                 isDisabled: f.disabled === "on",
               }),
             );
@@ -288,7 +405,7 @@ function AccountRow({ a }: { a: Account }) {
             <input name="name" defaultValue={a.name} maxLength={80} required />
           </label>
           <label>
-            Accès
+            Rôle attribué
             <select value={group} onChange={(e) => setGroup(e.target.value)}>
               {Object.entries(groups).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -297,6 +414,22 @@ function AccountRow({ a }: { a: Account }) {
               ))}
             </select>
           </label>
+          {a.bookingAccess === "pending" ? (
+            <p>
+              Une demande d’accès aux réservations est en attente : utilisez les
+              boutons de décision ci-dessus.
+            </p>
+          ) : (
+            <label className="check">
+              <input
+                key={a.bookingAccess}
+                name="book"
+                type="checkbox"
+                defaultChecked={a.bookingAccess === "granted"}
+              />{" "}
+              Autoriser à faire des réservations
+            </label>
+          )}
           {group === "proprietaire" && (
             <label className="check">
               <input
@@ -331,6 +464,23 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
     queryFn: () => ownerRequest<Account[]>("/admin/accounts"),
   });
   if (requestId) {
+    const applicant = q.data?.find(
+      (a) => a.registrationRequestId === requestId,
+    );
+    if (applicant)
+      return (
+        <section
+          className="access-queue"
+          aria-label="Inscription reçue par courriel"
+        >
+          <p className="eyebrow">Création de compte</p>
+          <h2 className="section-title">Demande d’inscription</h2>
+          <RegistrationCard a={applicant} key={applicant.id} />
+          <Link className="text-link" href="/tableau-de-bord?onglet=comptes">
+            Voir tous les comptes
+          </Link>
+        </section>
+      );
     const member = q.data?.find(
       (a) => a.bookingAccessRequestId === requestId && !a.isDisabled,
     );
@@ -381,6 +531,22 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
       {q.data && (
         <section
           className="access-queue"
+          aria-label="Demandes de création de compte"
+        >
+          <p className="eyebrow">Inscriptions</p>
+          <h3>Demandes de création de compte</h3>
+          {q.data.some((a) => a.accountStatus === "pending") ? (
+            q.data
+              .filter((a) => a.accountStatus === "pending")
+              .map((a) => <RegistrationCard key={a.id} a={a} />)
+          ) : (
+            <p>Aucune inscription en attente.</p>
+          )}
+        </section>
+      )}
+      {q.data && (
+        <section
+          className="access-queue"
           aria-label="Demandes d’accès aux réservations"
         >
           <p className="eyebrow">À examiner</p>
@@ -389,14 +555,14 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
             (a) =>
               a.bookingAccess === "pending" &&
               !a.isDisabled &&
-              a.group !== "proprietaire",
+              a.accountStatus === "approved",
           ) ? (
             q.data
               .filter(
                 (a) =>
                   a.bookingAccess === "pending" &&
                   !a.isDisabled &&
-                  a.group !== "proprietaire",
+                  a.accountStatus === "approved",
               )
               .sort((a, b) =>
                 (a.bookingAccessRequestedAt ?? "").localeCompare(
@@ -419,7 +585,19 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
         ? "Chargement…"
         : q.isError
           ? "Comptes indisponibles."
-          : q.data.map((a) => <AccountRow key={a.id} a={a} />)}
+          : q.data
+              .filter((a) => a.accountStatus === "approved")
+              .map((a) => <AccountRow key={a.id} a={a} />)}
+      {q.data?.some((a) => a.accountStatus === "denied") && (
+        <details className="panel">
+          <summary>Inscriptions refusées</summary>
+          {q.data
+            .filter((a) => a.accountStatus === "denied")
+            .map((a) => (
+              <RegistrationCard a={a} key={a.id} />
+            ))}
+        </details>
+      )}
     </>
   );
 }

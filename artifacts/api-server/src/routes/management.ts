@@ -1,5 +1,14 @@
 import { Router, type IRouter } from "express";
-import { and, asc, desc, eq, ne, count, getTableColumns } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ne,
+  or,
+  count,
+  getTableColumns,
+} from "drizzle-orm";
 import {
   db,
   usersTable as users,
@@ -19,6 +28,9 @@ const account = {
   id: users.id,
   name: users.name,
   email: users.email,
+  accountStatus: users.accountStatus,
+  declaredRelation: users.declaredRelation,
+  registrationRequestId: users.registrationRequestId,
   group: users.group,
   canApprove: users.canApprove,
   isDisabled: users.isDisabled,
@@ -43,18 +55,71 @@ router.patch("/me", requireAccount, async (req, res) => {
 router.get("/admin/accounts", requireAdmin, async (_req, res) => {
   res.json(await db.select(account).from(users).orderBy(asc(users.name)));
 });
+const validGroup = (group: unknown): group is typeof users.$inferSelect.group =>
+  typeof group === "string" &&
+  ["public", "proprietaire", "ancien_proprietaire", "famille", "ami"].includes(
+    group,
+  );
+
+router.post(
+  "/admin/accounts/:id/registration",
+  requireAdmin,
+  async (req, res) => {
+    const { decision, requestId, group, canBook, canApprove } = req.body ?? {};
+    if (
+      !uuid(req.params.id) ||
+      !uuid(requestId) ||
+      !["approve", "deny"].includes(decision) ||
+      (decision === "approve" &&
+        (!validGroup(group) ||
+          typeof canBook !== "boolean" ||
+          typeof canApprove !== "boolean" ||
+          (canApprove && group !== "proprietaire")))
+    ) {
+      res
+        .status(400)
+        .json({ error: "Vérifiez la décision et les permissions." });
+      return;
+    }
+    const [row] = await db
+      .update(users)
+      .set(
+        decision === "approve"
+          ? {
+              accountStatus: "approved",
+              isDisabled: false,
+              group,
+              canApprove,
+              bookingAccess: canBook ? "granted" : "none",
+            }
+          : { accountStatus: "denied" },
+      )
+      .where(
+        and(
+          eq(users.id, req.params.id),
+          eq(users.registrationRequestId, requestId),
+          eq(users.accountStatus, "pending"),
+          eq(users.isAdmin, false),
+        ),
+      )
+      .returning(account);
+    if (!row) {
+      res
+        .status(409)
+        .json({ error: "Cette demande d’inscription a déjà été traitée." });
+      return;
+    }
+    await deliverAccessEmails(requestId);
+    res.json(row);
+  },
+);
 router.patch("/admin/accounts/:id", requireAdmin, async (req, res) => {
-  const { name, group, canApprove, isDisabled } = req.body ?? {};
+  const { name, group, canApprove, isDisabled, canBook } = req.body ?? {};
   if (
     !uuid(req.params.id) ||
     (name !== undefined && !field(name, 80)) ||
-    ![
-      "public",
-      "proprietaire",
-      "ancien_proprietaire",
-      "famille",
-      "ami",
-    ].includes(group) ||
+    !validGroup(group) ||
+    (canBook !== undefined && typeof canBook !== "boolean") ||
     typeof canApprove !== "boolean" ||
     typeof isDisabled !== "boolean"
   ) {
@@ -66,13 +131,24 @@ router.patch("/admin/accounts/:id", requireAdmin, async (req, res) => {
     .set({
       ...(name === undefined ? {} : { name: name.trim() }),
       group,
-      ...(group === "proprietaire"
-        ? { bookingAccess: "none" as const, bookingAccessRequestedAt: null }
+      ...(canBook !== undefined
+        ? {
+            bookingAccess: canBook ? ("granted" as const) : ("none" as const),
+            bookingAccessRequestedAt: null,
+            bookingAccessRequestId: null,
+          }
         : {}),
       canApprove: group === "proprietaire" && canApprove,
       isDisabled,
     })
-    .where(and(eq(users.id, req.params.id), eq(users.isAdmin, false)))
+    .where(
+      and(
+        eq(users.id, req.params.id),
+        eq(users.isAdmin, false),
+        eq(users.accountStatus, "approved"),
+        canBook === undefined ? undefined : ne(users.bookingAccess, "pending"),
+      ),
+    )
     .returning(account);
   if (!row) {
     res.status(409).json({ error: "Compte introuvable ou protégé." });
@@ -90,7 +166,7 @@ router.post("/me/booking-access", requireAccount, async (req, res) => {
       and(
         eq(users.id, req.user!.id),
         eq(users.isDisabled, false),
-        ne(users.group, "proprietaire"),
+        eq(users.accountStatus, "approved"),
         eq(users.bookingAccess, "none"),
       ),
     )
@@ -106,7 +182,7 @@ router.post("/me/booking-access", requireAccount, async (req, res) => {
   const [current] = await db
     .select({
       bookingAccess: users.bookingAccess,
-      group: users.group,
+      accountStatus: users.accountStatus,
       isDisabled: users.isDisabled,
     })
     .from(users)
@@ -114,7 +190,7 @@ router.post("/me/booking-access", requireAccount, async (req, res) => {
   if (
     current &&
     !current.isDisabled &&
-    current.group !== "proprietaire" &&
+    current.accountStatus === "approved" &&
     current.bookingAccess === "pending"
   ) {
     res.json({ bookingAccess: "pending" });
@@ -130,10 +206,13 @@ router.get("/admin/booking-access/count", requireAdmin, async (_req, res) => {
     .select({ pending: count() })
     .from(users)
     .where(
-      and(
-        eq(users.bookingAccess, "pending"),
-        eq(users.isDisabled, false),
-        ne(users.group, "proprietaire"),
+      or(
+        eq(users.accountStatus, "pending"),
+        and(
+          eq(users.bookingAccess, "pending"),
+          eq(users.accountStatus, "approved"),
+          eq(users.isDisabled, false),
+        ),
       ),
     );
   res.json(row);
@@ -180,7 +259,7 @@ router.post(
           eq(users.id, req.params.id),
           eq(users.isAdmin, false),
           eq(users.isDisabled, false),
-          ne(users.group, "proprietaire"),
+          eq(users.accountStatus, "approved"),
           eq(users.bookingAccess, before),
           review ? eq(users.bookingAccessRequestId, requestId) : undefined,
         ),

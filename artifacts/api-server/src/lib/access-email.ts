@@ -1,3 +1,4 @@
+import { relationshipLabel } from "../../../../lib/shared/membership.js";
 import nodemailer from "nodemailer";
 import { and, asc, eq, isNull, lte, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -18,7 +19,70 @@ function letter(
   name: string,
   email: string,
   origin: string,
+  relation: string | null,
+  bookingAllowed: boolean | null,
 ) {
+  if (
+    kind === "registration_pending" ||
+    kind === "registration_approved" ||
+    kind === "registration_denied"
+  ) {
+    const pending = kind === "registration_pending",
+      approved = kind === "registration_approved";
+    const title = pending
+      ? "Nouvelle demande de création de compte"
+      : approved
+        ? "Votre compte au chalet est approuvé"
+        : "Votre demande de création de compte a été refusée";
+    const message = pending
+      ? name +
+        " (" +
+        email +
+        ") a confirmé son adresse courriel. Lien déclaré avec le chalet : " +
+        relationshipLabel(relation) +
+        ". Examinez l’inscription et choisissez ses permissions."
+      : "Bonjour " +
+        name +
+        ",\n\n" +
+        (approved
+          ? bookingAllowed
+            ? "Votre compte est ouvert. Vous pouvez maintenant choisir vos dates et demander une réservation."
+            : "Votre compte est ouvert. Vous pouvez accéder à votre profil. Pour réserver, demandez l’autorisation dans votre espace."
+          : "L’administration du chalet n’a pas accepté votre inscription. Pour toute question, vous pouvez répondre à ce courriel.");
+    const button = pending
+      ? "Examiner l’inscription"
+      : approved
+        ? bookingAllowed
+          ? "Ouvrir le calendrier"
+          : "Ouvrir mon espace"
+        : "Contacter le chalet";
+    const href = new URL(
+      pending
+        ? "/tableau-de-bord?onglet=comptes&demande=" + requestId
+        : approved
+          ? bookingAllowed
+            ? "/calendrier"
+            : "/tableau-de-bord?onglet=profil"
+          : "/contact",
+      origin,
+    ).href;
+    const note = pending
+      ? "L’ouverture du lien n’approuve pas le compte."
+      : "Chalet de la Pointe · Lac Saint-Mathieu";
+    return {
+      subject: "Chalet de la Pointe · " + title,
+      text: [title, message, button + " : " + href, note].join("\n\n"),
+      html: chaletEmail({
+        category: "Inscription au chalet",
+        title,
+        message,
+        href,
+        button,
+        note,
+        view: "pointe",
+      }),
+    };
+  }
   const review = kind === "pending";
   const granted = kind === "granted";
   const title = review
@@ -98,6 +162,10 @@ export async function deliverAccessEmails(requestId?: string) {
             disabled: recipient.isDisabled,
             activeRequest: usersTable.bookingAccessRequestId,
             state: usersTable.bookingAccess,
+            registrationId: usersTable.registrationRequestId,
+            membership: usersTable.accountStatus,
+            relation: usersTable.declaredRelation,
+            bookingAllowed: mail.bookingAllowed,
             memberDisabled: usersTable.isDisabled,
           })
           .from(mail)
@@ -116,7 +184,13 @@ export async function deliverAccessEmails(requestId?: string) {
         if (!row) return false;
         // Retired review links and suspended recipients no longer need a notification.
         if (
-          !row.disabled &&
+          (!row.disabled ||
+            (row.kind === "registration_denied" &&
+              row.membership === "denied")) &&
+          (row.kind !== "registration_pending" ||
+            (row.admin &&
+              row.membership === "pending" &&
+              row.registrationId === row.requestId)) &&
           (row.kind !== "pending" ||
             (row.admin &&
               !row.memberDisabled &&
@@ -127,7 +201,15 @@ export async function deliverAccessEmails(requestId?: string) {
             await transport.sendMail({
               from,
               to: { name: "", address: row.to },
-              ...letter(row.kind, row.requestId, row.name, row.email, origin),
+              ...letter(
+                row.kind,
+                row.requestId,
+                row.name,
+                row.email,
+                origin,
+                row.relation,
+                row.bookingAllowed,
+              ),
               messageId: "<access-" + row.id + "@chaletdelapointe.com>",
             });
           } catch {
