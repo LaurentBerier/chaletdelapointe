@@ -1,3 +1,4 @@
+import management from "./management.js";
 import { Router, type IRouter } from "express";
 import reviewsRouter from "./reviews.js";
 import healthRouter from "./health.js";
@@ -18,6 +19,7 @@ router.get("/auth/config", (_req, res) => {
 });
 router.use(requireDatabase);
 router.use(loadUser);
+router.use(management);
 router.use(reviewsRouter);
 router.use(propertiesRouter);
 router.use(reservationsRouter);

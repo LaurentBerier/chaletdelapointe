@@ -27,10 +27,10 @@ export default function Calendrier() {
   const properties = useQuery({ queryKey: ["chalet-listing"], queryFn: () => listProperties() });
   const chalet = properties.data?.find(p => p.slug === "chalet-saint-mathieu");
   const availability = useQuery({
-    queryKey: ["availability", chalet?.id, user?.id ?? "public"],
+    queryKey: ["availability", chalet?.id, user?.isOwner ? user.id : "public"],
     enabled: !!chalet && !isLoading, refetchInterval: 30000,
     queryFn: async () => {
-      if (user) return getPublicCalendar(chalet!.id);
+      if (user?.isOwner) return getPublicCalendar(chalet!.id);
       const res = await fetch("/api/calendar/" + chalet!.id, { cache: "no-store" });
       if (!res.ok) throw new Error("Calendrier indisponible.");
       return res.json() as Promise<CalendarEntry[]>;
@@ -124,10 +124,10 @@ export default function Calendrier() {
             />
             <div className="flex flex-wrap gap-4 mt-5 text-sm"><span>○ Disponible</span><span className="bg-[#f6e8c3] px-2 rounded">En attente</span><span className="bg-[#dce7e4] px-2 rounded">Réservé</span></div>
             {visible.length > 0 && <ul className="border-t mt-5 pt-3 text-sm space-y-2">{visible.map(s =>
-              <li key={s.startDate}>{readable(s.startDate)} → {readable(s.endDate)} · {s.status === "held" ? "En attente" : "Réservé"}{user && s.ownerName && " · " + s.ownerName}</li>)}</ul>}
+              <li key={s.startDate}>{readable(s.startDate)} → {readable(s.endDate)} · {s.status === "held" ? "En attente" : "Réservé"}{user?.isOwner && s.ownerName && " · " + s.ownerName}</li>)}</ul>}
           </section>
           <aside className="p-5 border rounded-2xl bg-background">
-            <h2 className="font-serif text-2xl text-primary">Votre séjour</h2>
+            <p className="eyebrow">{chalet?.name}</p><h2 className="font-serif text-2xl text-primary">Votre séjour</h2>{chalet?.description && <p className="text-sm mt-2">{chalet.description}</p>}
               <div className="my-4 space-y-2 text-sm">
                 <div className="flex items-baseline justify-between gap-2">
                   <dl><dt className="text-muted-foreground">Arrivée</dt><dd>{checkIn ? readable(checkIn) : "À choisir"}</dd></dl>
@@ -135,18 +135,18 @@ export default function Calendrier() {
                 </div>
                 <dl><dt className="text-muted-foreground">Départ</dt><dd>{checkOut ? readable(checkOut) : "À choisir"}</dd></dl>
               </div>
-              {user && <label className="flex items-center justify-between">Voyageurs <select className="border rounded-md p-2" value={guests} onChange={e => setGuests(Number(e.target.value))}>
+              {user?.isOwner && <label className="flex items-center justify-between">Voyageurs <select className="border rounded-md p-2" value={guests} onChange={e => setGuests(Number(e.target.value))}>
                 {Array.from({ length: chalet!.maxGuests }, (_, i) => <option key={i}>{i + 1}</option>)}</select></label>}
               {nights > 0 && <p className="mt-4">{nights} nuit{nights > 1 ? "s" : ""}</p>}
-              {user ?
+              {user?.isOwner ?
               <button disabled={editingArrival || !nights || conflicts(checkIn!, checkOut!) || booking.isPending} onClick={() => booking.mutate()} className="w-full bg-primary text-white rounded-lg p-3 mt-4 disabled:opacity-45">Demander la réservation</button>
-              : <Link className="block bg-primary text-white text-center px-4 py-3 mt-4 rounded-lg" href="/connexion" onClick={() => {
+              : user ? <p className="mt-4 text-sm">Les réservations sont ouvertes aux comptes approuvés comme propriétaires.</p> : <Link className="block bg-primary text-white text-center px-4 py-3 mt-4 rounded-lg" href="/connexion" onClick={() => {
                 if (checkIn) localStorage.setItem(signInDatesKey, [checkIn, checkOut ?? "", Date.now()].join("|"));
                 else localStorage.removeItem(signInDatesKey);
               }}>Se connecter pour réserver</Link>}
               {checkIn && <button disabled={booking.isPending} className="underline mt-3 text-sm" onClick={() => { localStorage.removeItem(signInDatesKey); setRange(undefined); setEditingArrival(false); setNotice(""); }}>Effacer les dates</button>}
               <p className="mt-3 text-sm" role="status">{notice}</p>
-              {user && <Link href="/tableau-de-bord" className="text-sm underline">Mes réservations</Link>}
+              {user?.isOwner && <Link href="/tableau-de-bord" className="text-sm underline">Mes réservations</Link>}
           </aside>
         </div>}
     </div>

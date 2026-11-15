@@ -15,7 +15,7 @@ import {
 } from "../../../../lib/api-zod/src/index.js";
 import { requireAdmin } from "../middlewares/auth.js";
 import { logAdminAction } from "../lib/admin-log.js";
-import { calculateReservationPrice, PricingError } from "../lib/pricing.js";
+import { calculateReservationPrice, validateStay, PricingError } from "../lib/pricing.js";
 import { toIsoDate } from "../lib/dates.js";
 
 const router: IRouter = Router();
@@ -161,8 +161,11 @@ router.patch("/admin/reservations/:id", requireAdmin, async (req, res): Promise<
     seasonBreakdown: existing.seasonBreakdown,
   };
 
-  if (datesChanged) {
+  if (datesChanged || newGuests !== existing.guests) {
     try {
+      if (existing.total === 0 && existing.seasonBreakdown.length === 0) {
+        priced.nights = await validateStay(existing.propertyId, newStartDate, newEndDate, newGuests);
+      } else {
       const [reservationUser] = await db
         .select()
         .from(usersTable)
@@ -182,6 +185,7 @@ router.patch("/admin/reservations/:id", requireAdmin, async (req, res): Promise<
         total: result.total,
         seasonBreakdown: result.seasonBreakdown,
       };
+      }
     } catch (err) {
       if (err instanceof PricingError) {
         res.status(err.status).json({ error: err.message });

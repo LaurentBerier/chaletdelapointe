@@ -136,7 +136,7 @@ export async function validateStay(propertyId: string, startDate: string, endDat
       400,
     );
   }
-  if (guests !== undefined && guests < 1) {
+  if (guests !== undefined && (!Number.isInteger(guests) || guests < 1)) {
     throw new PricingError("guests must be at least 1", 400);
   }
 

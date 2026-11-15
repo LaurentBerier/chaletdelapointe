@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { stayDates } from "../../../../lib/shared/stay-dates";
 import { Link } from "wouter";
 import { listMyReservations, type ReservationStatus, type Reservation } from "@workspace/api-client-react";
 import { ownerRequest, useAuth } from "@/context/AuthContext";
@@ -32,9 +33,9 @@ export function BookingList({ review = false }: { review?: boolean }) {
     {rows.isError && <p role="alert">Impossible de charger les demandes. <button className="underline" onClick={() => rows.refetch()}>Réessayer</button></p>}
     {decide.isError && <p role="alert">{decide.error.message}</p>}
     {rows.data?.length === 0 && <p>Aucune demande pour le moment.</p>}
-    <ul className="space-y-3">{rows.data?.map(s => <li key={s.id} className="bg-background border rounded-xl p-5">
-      <strong>{s.startDate} → {s.endDate}</strong>
-      <p className="text-sm my-2">{s.ownerName && s.ownerName + " · "}{s.guests} voyageur{s.guests > 1 && "s"} · {labels[s.status]}</p>
+    <ul className="space-y-3">{rows.data?.map(s => <li key={s.id} className="panel stay-card">
+      <span className={"badge status-"+s.status}>{labels[s.status]}</span><h3 className="font-serif text-xl mt-2">{stayDates(s.startDate,s.endDate)}</h3>
+      <p className="text-sm my-2">{s.ownerName && s.ownerName + " · "}{s.guests} voyageur{s.guests > 1 && "s"}</p>
       {review && s.status === "pending_approval" && <div className="flex gap-3">
         <button disabled={decide.isPending} onClick={() => decide.mutate({ id: s.id, decision: "approve" })} className="rounded bg-primary text-white px-4 py-2">Approuver</button>
         <button disabled={decide.isPending} onClick={() => decide.mutate({ id: s.id, decision: "reject" })} className="rounded border px-4 py-2">Refuser</button>

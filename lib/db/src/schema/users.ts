@@ -11,6 +11,7 @@ export const usersTable = pgTable("users", {
   name: text("name").notNull(),
   group: userGroupEnum("group").notNull().default("public"),
   isVip: boolean("is_vip").notNull().default(false),
+  isDisabled: boolean("is_disabled").notNull().default(false),
   isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })

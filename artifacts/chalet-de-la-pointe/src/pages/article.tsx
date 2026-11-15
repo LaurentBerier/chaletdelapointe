@@ -1,11 +1,13 @@
 import { Link, useParams } from "wouter";
 import { motion } from "framer-motion";
-import { blogPosts, getPostBySlug } from "@/data/blog";
+import { useJournal } from "@/data/blog";
 import NotFound from "@/pages/not-found";
 
 export default function Article() {
   const params = useParams<{ slug: string }>();
-  const post = getPostBySlug(params.slug);
+  const journal=useJournal(), blogPosts=journal.data ?? [];
+  if (journal.isPending || journal.isError) return <div className="pt-32 text-center">{journal.isPending?"Chargement de l’article…":"Article momentanément indisponible."}</div>;
+  const post = blogPosts.find(p=>p.slug===params.slug);
 
   if (!post) return <NotFound />;
 

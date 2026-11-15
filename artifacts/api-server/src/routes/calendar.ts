@@ -10,7 +10,7 @@ router.get("/calendar/:propertyId", async (req, res) => {
   if (!params.success) { res.status(400).json({ error: "Chalet invalide." }); return; }
   const rows = await db.select({
     propertyId: stays.propertyId, startDate: stays.startDate, endDate: stays.endDate,
-    status: stays.status, ...(req.user ? { ownerName: usersTable.name } : {}),
+    status: stays.status, ...(req.user?.group === "proprietaire" ? { ownerName: usersTable.name } : {}),
   }).from(stays).innerJoin(usersTable, eq(stays.userId, usersTable.id))
     .where(and(eq(stays.propertyId, params.data.propertyId),
       inArray(stays.status, ["pending_payment", "pending_approval", "confirmed"])))

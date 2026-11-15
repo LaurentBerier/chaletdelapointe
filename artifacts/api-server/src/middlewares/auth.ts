@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db, usersTable, type User } from "../../../../lib/db/src/index.js";
 
 declare global {
@@ -31,19 +31,22 @@ export const loadUser: RequestHandler = async (req, res, next) => {
     return;
   }
   const identity = await result.json() as { id: string; email_confirmed_at?: string; is_anonymous?: boolean };
-  const [user] = await db.select().from(usersTable).where(and(
-    eq(usersTable.authUserId, identity.id), eq(usersTable.group, "proprietaire")
-  )).limit(1);
-  if (!user || !identity.email_confirmed_at || identity.is_anonymous) {
-    res.status(403).json({ error: "Compte propriétaire requis." });
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.authUserId, identity.id)).limit(1);
+  if (!user || !identity.email_confirmed_at || identity.is_anonymous || user.isDisabled) {
+    res.status(403).json({ error: user?.isDisabled ? "Ce compte est suspendu." : "Confirmez votre adresse courriel pour accéder à votre compte." });
     return;
   }
   req.user = user;
   next();
 };
 
-export const requireAuth: RequestHandler = (req, res, next) => {
+export const requireAccount: RequestHandler = (req, res, next) => {
   if (!req.user) { res.status(401).json({ error: "Connexion requise." }); return; }
+  next();
+};
+
+export const requireAuth: RequestHandler = (req, res, next) => {
+  if (req.user?.group !== "proprietaire") { res.status(req.user ? 403 : 401).json({ error: "Accès propriétaire requis." }); return; }
   next();
 };
 
@@ -56,7 +59,7 @@ export const requireAdmin: RequestHandler = (req, res, next) => {
 };
 
 export const requireApprover: RequestHandler = (req, res, next) => {
-  if (!req.user?.canApprove) {
+  if (!req.user?.canApprove || req.user.group !== "proprietaire") {
     res.status(req.user ? 403 : 401).json({ error: "Accès au comité requis." });
     return;
   }

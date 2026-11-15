@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import { blogPosts } from "@/data/blog";
+import { useJournal } from "@/data/blog";
 
 export default function Blogue() {
+  const journal=useJournal(), blogPosts=journal.data ?? [];
   return (
     <div className="pt-24 min-h-screen bg-background">
       <div className="container mx-auto px-6 max-w-5xl pb-24">
@@ -19,6 +20,7 @@ export default function Blogue() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+          {journal.isPending && <p>Chargement des chroniques…</p>}{journal.isError && <p>Les chroniques sont momentanément indisponibles.</p>}{journal.isSuccess && !blogPosts.length && <p>Aucune chronique pour le moment.</p>}
           {blogPosts.map((post, index) => (
             <motion.article
               key={post.id}

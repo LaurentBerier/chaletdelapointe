@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, User, ChevronDown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
@@ -16,7 +16,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+  const [accountOpen,setAccountOpen]=useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
 
   const isHome = location === "/";
   const isAuthPage = location === "/connexion" || location === "/inscription";
@@ -29,7 +30,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setMobileMenuOpen(false);
+    setMobileMenuOpen(false); setAccountOpen(false);
   }, [location]);
 
   if (isAuthPage) {
@@ -76,18 +77,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ))}
 
             {isAuthenticated ? (
-              <Link
-                href="/tableau-de-bord"
-                className={`flex items-center gap-1.5 text-sm tracking-wide uppercase transition-colors ${
-                  isDashboard
-                    ? `${headerTransparent ? "text-white" : "text-primary"} font-medium`
-                    : mutedColor
-                }`}
-                data-testid="link-nav-dashboard"
-              >
-                <User size={14} />
-                {user?.name}
-              </Link>
+              <div className="relative" onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setAccountOpen(false);}} onKeyDown={e=>{if(e.key==="Escape")setAccountOpen(false);}}>
+              <button aria-expanded={accountOpen} className={"account-trigger "+textColor} onClick={()=>setAccountOpen(v=>!v)}><User size={15}/><span>{user?.name}</span><ChevronDown size={15}/></button>
+              {accountOpen&&<div className="account-pop"><p className="eyebrow">Mon espace</p>{[["profil","Mon profil"],...(user?.isOwner?[["reservations","Mes réservations"]]:[]),...(user?.isAdmin?[["comptes","Super administration"]]:[])].map(([id,label])=><Link key={id} onClick={()=>setAccountOpen(false)} href={"/tableau-de-bord?onglet="+id}>{label}</Link>)}<button onClick={()=>{setAccountOpen(false);void logout();}}>Déconnexion</button></div>}</div>
             ) : (
               <Link
                 href="/connexion"
@@ -108,7 +100,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className={`md:hidden p-2 -mr-2 transition-colors ${headerTransparent ? "text-white" : "text-foreground"}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             data-testid="button-mobile-menu"
-            aria-label="Toggle menu"
+            aria-label="Menu principal" aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -139,7 +131,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="border-t border-border pt-6 mt-2">
                 {isAuthenticated ? (
                   <Link href="/tableau-de-bord" className="text-2xl font-serif text-primary">
-                    Mon espace
+                    Mon espace · {user?.name}
                   </Link>
                 ) : (
                   <Link href="/connexion" className="text-2xl font-serif text-foreground/80">
@@ -171,7 +163,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <p>Saint-Mathieu-de-Rioux</p>
                 <p>Bas-Saint-Laurent, Québec</p>
                 <p>Canada</p>
-                <p className="mt-2">bonjour@chaletdelapointe.ca</p>
+                <p className="mt-2">reservations@chaletdelapointe.com</p>
               </address>
             </div>
             <div>

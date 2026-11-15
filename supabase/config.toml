@@ -15,8 +15,22 @@ smtp_port = 55325
 [auth]
 site_url = "http://127.0.0.1:20529"
 additional_redirect_urls = ["http://127.0.0.1:20529/connexion"]
-enable_signup = false
+enable_signup = true
+minimum_password_length = 10
 [auth.email]
 enable_signup = true
+enable_confirmations = true
 [analytics]
 enabled = false
+
+[auth.email.template.confirmation]
+subject = "Chalet de la Pointe · Confirmez votre inscription"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.magic_link]
+subject = "Chalet de la Pointe · Votre lien de connexion"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.recovery]
+subject = "Chalet de la Pointe · Votre nouveau mot de passe"
+content_path = "./supabase/templates/recovery.html"

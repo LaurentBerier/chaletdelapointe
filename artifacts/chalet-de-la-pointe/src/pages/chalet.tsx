@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { listProperties } from "@workspace/api-client-react";
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
@@ -55,6 +57,7 @@ const amenities = [
 ];
 
 export default function Chalet() {
+  const listing=useQuery({queryKey:["chalet-listing"],queryFn:()=>listProperties()}).data?.find(p=>p.slug==="chalet-saint-mathieu");
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isGalleryHovered, setIsGalleryHovered] = useState(false);
@@ -157,7 +160,7 @@ export default function Chalet() {
                 <Sparkles className="w-3.5 h-3.5" />
                 Le seul chalet sur la pointe
               </div>
-              <h1 className="text-4xl md:text-5xl font-serif text-primary mb-4">Chalet St-Mathieu</h1>
+              <h1 className="text-4xl md:text-5xl font-serif text-primary mb-4">{listing?.name ?? "Chalet St-Mathieu"}</h1>{listing?.description && <p className="mb-4">{listing.description}</p>}
               <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm font-medium">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
@@ -169,7 +172,7 @@ export default function Chalet() {
                 <span>•</span>
                 <span>1 salle de bain avec douche</span>
                 <span>•</span>
-                <span>8 voyageurs max</span>
+                <span>{listing?.maxGuests ?? 8} voyageurs max</span>
               </div>
             </motion.div>
 

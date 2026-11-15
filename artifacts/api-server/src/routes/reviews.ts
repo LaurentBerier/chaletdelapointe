@@ -1,14 +1,15 @@
+import { stayDates } from "../../../../lib/shared/stay-dates.js";
 import { Router, type IRouter } from "express";
 import { and, desc, eq } from "drizzle-orm";
 import { db, reservationsTable as stays, usersTable, adminActionsTable, bookingEmailsTable } from "../../../../lib/db/src/index.js";
-import { requireAuth, requireApprover } from "../middlewares/auth.js";
+import { requireAccount, requireApprover } from "../middlewares/auth.js";
 import { deliverBookingEmails } from "../lib/booking-email.js";
 import { GetReservationParams } from "../../../../lib/api-zod/src/index.js";
 
 const router: IRouter = Router();
-router.get("/me", requireAuth, (req, res) => {
-  const { id, name, canApprove, isAdmin } = req.user!;
-  res.json({ id, name, canApprove, isAdmin });
+router.get("/me", requireAccount, (req, res) => {
+  const { id, name, email, canApprove, isAdmin, group } = req.user!;
+  res.json({ id, name, email, canApprove, isAdmin, isOwner: group === "proprietaire" });
 });
 
 router.get("/reviews", requireApprover, async (_req, res) => {
@@ -41,7 +42,7 @@ router.post("/reviews/:id", requireApprover, async (req, res) => {
     const subject = "Chalet St-Mathieu · Demande " + (approved ? "approuvée" : "refusée");
     await tx.insert(bookingEmailsTable).values({
       reservationId: stay.id, recipient: owner.email, subject,
-      body: subject + "\nDu " + stay.startDate + " au " + stay.endDate + ".",
+      body: "Votre séjour : " + stayDates(stay.startDate,stay.endDate) + ".",
     });
     return true;
   });

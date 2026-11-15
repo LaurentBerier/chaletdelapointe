@@ -1,3 +1,4 @@
+import { bookingHtml } from "./mail-design.js";
 import nodemailer from "nodemailer";
 import { eq, isNull } from "drizzle-orm";
 import { db, bookingEmailsTable as messages } from "../../../../lib/db/src/index.js";
@@ -23,7 +24,7 @@ export async function deliverBookingEmails() {
         try {
           await mailer.sendMail({
             from, to: message.recipient, subject: message.subject,
-            text: message.body, messageId: '<' + message.id + '@chalet-booking>',
+            html: bookingHtml(message.subject,message.body,reviewUrl()), text: message.body, messageId: '<' + message.id + '@chalet-booking>',
           });
         } catch {
           logger.warn({ messageId: message.id }, "Booking email queued for retry");

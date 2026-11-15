@@ -1,3 +1,4 @@
+import { stayDates } from "../../../../lib/shared/stay-dates.js";
 import { Router, type IRouter, type Request } from "express";
 import { and, eq, desc, isNotNull } from "drizzle-orm";
 import { db, reservationsTable, usersTable, bookingEmailsTable, type Reservation } from "../../../../lib/db/src/index.js";
@@ -97,7 +98,7 @@ router.post("/reservations", requireAuth, async (req, res): Promise<void> => {
     const nights = await validateStay(propertyId, startIso, endIso, guests);
     const created = await db.transaction(async (tx) => {
       const approvers = await tx.select({ email: usersTable.email }).from(usersTable).where(and(
-        eq(usersTable.group, "proprietaire"), eq(usersTable.canApprove, true), isNotNull(usersTable.authUserId)
+        eq(usersTable.group, "proprietaire"), eq(usersTable.canApprove, true), eq(usersTable.isDisabled, false), isNotNull(usersTable.authUserId)
       ));
       const review = reviewUrl();
       if (!approvers.length || !process.env.SMTP_URL || !process.env.BOOKING_EMAIL_FROM || !review) {
@@ -110,8 +111,8 @@ router.post("/reservations", requireAuth, async (req, res): Promise<void> => {
       }).returning();
       await tx.insert(bookingEmailsTable).values(approvers.map(({ email }) => ({
         reservationId: stay.id, recipient: email, subject: "Chalet St-Mathieu · Demande à approuver",
-        body: owner.name + " demande le chalet du " + startIso + " au " + endIso +
-          " pour " + guests + " personne(s).\n\nExaminer la demande : " + review,
+        body: owner.name + " demande le chalet : " + stayDates(startIso,endIso) +
+          " pour " + guests + (guests > 1 ? " voyageurs." : " voyageur.") + "\n\nExaminer la demande : " + review,
       })));
       return stay;
     });

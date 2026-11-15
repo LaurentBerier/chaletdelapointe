@@ -1,97 +1,240 @@
 import { useState } from "react";
-import { Link, Redirect } from "wouter";
-import { motion } from "framer-motion";
+import { Link, Redirect, useLocation } from "wouter";
+import { KeyRound, Mail, ArrowLeft, Waves } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import heroImg from "@assets/IMG_0559_1777733069151.jpg";
+import hero from "@assets/IMG_0559_1777733069151.jpg";
 
 export default function Connexion() {
-  const { login, isAuthenticated, authError } = useAuth();
-  const [sent, setSent] = useState(false);
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  if (isAuthenticated) {
-    return <Redirect to={new URLSearchParams(location.search).get("suite") === "approbations" ? "/tableau-de-bord?onglet=approbations" : "/calendrier?reprendre=1"} />;
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const auth = useAuth(),
+    [path] = useLocation();
+  const [tab, setTab] = useState<"password" | "link" | "forgot">("password");
+  const [email, setEmail] = useState(""),
+    [name, setName] = useState(""),
+    [password, setPassword] = useState(""),
+    [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState(""),
+    [error, setError] = useState("");
+  const mode = auth.recovery
+    ? "recover"
+    : path === "/inscription"
+      ? "signup"
+      : tab;
+  const reset = (t: typeof tab) => {
+    setTab(t);
     setError("");
-    setIsLoading(true);
-    try {
-      await login(email);
-      setSent(true);
-    } catch {
-      setError("Envoi impossible. Vérifiez votre adresse de propriétaire ou réessayez plus tard.");
-    } finally {
-      setIsLoading(false);
-    }
+    setNotice("");
+    setPassword("");
   };
-
+  if (auth.isAuthenticated && !auth.recovery)
+    return (
+      <Redirect
+        to={
+          new URLSearchParams(location.search).get("suite") === "approbations"
+            ? "/tableau-de-bord?onglet=approbations"
+            : localStorage.getItem("chalet.calendar.sign-in-dates") &&
+                auth.user?.isOwner
+              ? "/calendrier?reprendre=1"
+              : "/tableau-de-bord"
+        }
+      />
+    );
+  const title = {
+    signup: "Créer mon compte",
+    password: "Bon retour au chalet",
+    link: "Un lien par courriel",
+    forgot: "Mot de passe oublié",
+    recover: "Nouveau mot de passe",
+  }[mode];
   return (
-    <div className="min-h-screen flex">
-      {/* Left, form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 xl:px-24 py-16 bg-background">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="max-w-sm w-full mx-auto"
-        >
-          <Link href="/" className="inline-block mb-12 text-sm tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors">
-            ← Accueil
-          </Link>
-
-          <h1 className="text-3xl md:text-4xl font-serif text-primary mb-2">Bienvenue</h1>
-          <p className="text-muted-foreground mb-10">Recevez un lien de connexion à votre adresse de propriétaire.</p>
-
-          {(error || authError) && (
-            <div className="mb-6 px-4 py-3 bg-destructive/10 border border-destructive/30 text-destructive text-sm rounded-sm">
-              {error || authError}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5" data-testid="form-connexion">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-xs tracking-widest uppercase text-muted-foreground">
-                Courriel
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setSent(false); }}
-                className="w-full border border-border bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                placeholder="vous@exemple.ca"
-                data-testid="input-email"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading || sent}
-              className="mt-2 w-full bg-primary text-primary-foreground py-4 text-sm tracking-widest uppercase hover:bg-primary/90 transition-colors disabled:opacity-60"
-              data-testid="button-connexion"
-            >
-              {isLoading ? "Envoi…" : "Recevoir mon lien"}
-            </button>
-          </form>
-
-          {sent && <p role="status" className="mt-6 text-primary">Si cette adresse est invitée, un lien de connexion vous attend dans votre boîte courriel.</p>}
-        </motion.div>
-      </div>
-
-      {/* Right, image */}
-      <div className="hidden lg:block lg:w-1/2 relative">
-        <img src={heroImg} alt="Vue du lac" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-primary/20" />
-        <div className="absolute bottom-12 left-12 right-12 text-white">
-          <p className="font-serif text-3xl leading-snug">"Le silence du lac est une langue que tout le monde comprend."</p>
-          <p className="mt-4 text-sm tracking-widest uppercase text-white/60">Chalet St-Mathieu</p>
+    <main className="auth-shell">
+      <div
+        className="auth-landscape"
+        style={{
+          backgroundImage:
+            "linear-gradient(0deg,#16342ed9,transparent 75%),url(" + hero + ")",
+        }}
+      >
+        <div>
+          <Waves />
+          <p className="eyebrow">Lac Saint-Mathieu · Québec</p>
+          <h2>Le chalet de la Pointe</h2>
         </div>
       </div>
-    </div>
+      <section className="auth-main">
+        <Link href="/" className="inline-flex gap-2 items-center text-sm">
+          <ArrowLeft size={16} /> Retour au chalet
+        </Link>
+        <div className="auth-form">
+          <p className="eyebrow">Espace personnel</p>
+          <h1>{title}</h1>
+          <p className="text-muted-foreground mb-6">
+            {mode === "signup"
+              ? "Choisissez le nom qui signera vos articles et identifiera vos séjours auprès des propriétaires."
+              : mode === "recover"
+                ? "Choisissez un mot de passe d’au moins 10 caractères."
+                : mode === "forgot"
+                  ? "Recevez un lien pour choisir un nouveau mot de passe."
+                  : "Retrouvez votre profil, vos séjours et les chroniques du lac."}
+          </p>
+          {(mode === "password" || mode === "link") && (
+            <div className="switcher">
+              {(["password", "link"] as const).map((t) => (
+                <button
+                  key={t}
+                  aria-pressed={t === tab}
+                  onClick={() => reset(t)}
+                >
+                  {t === "password" ? (
+                    <KeyRound size={15} />
+                  ) : (
+                    <Mail size={15} />
+                  )}{" "}
+                  {t === "password" ? "Mot de passe" : "Lien par courriel"}
+                </button>
+              ))}
+            </div>
+          )}
+          <form
+            className="account-form"
+            data-testid="form-connexion"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setBusy(true);
+              setError("");
+              setNotice("");
+              try {
+                if (mode === "signup") {
+                  await auth.register(email, password, name);
+                  setPassword("");
+                  setNotice(
+                    "Consultez votre boîte courriel pour confirmer votre inscription. Si vous avez déjà un compte, utilisez la connexion.",
+                  );
+                }
+                if (mode === "password")
+                  await auth.passwordLogin(email, password);
+                if (mode === "link") {
+                  await auth.login(email);
+                  setNotice(
+                    "Si votre compte existe, un lien de connexion vous sera envoyé.",
+                  );
+                }
+                if (mode === "forgot") {
+                  await auth.sendRecovery(email);
+                  setNotice(
+                    "Si votre compte existe, vous recevrez un lien de réinitialisation.",
+                  );
+                }
+                if (mode === "recover") {
+                  await auth.savePassword(password);
+                  setPassword("");
+                }
+              } catch {
+                setError(
+                  mode === "password"
+                    ? "Connexion impossible. Vérifiez votre courriel et votre mot de passe."
+                    : "Demande impossible. Vérifiez les champs ou réessayez dans un instant.",
+                );
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {mode === "signup" && (
+              <label>
+                Nom affiché
+                <input
+                  required
+                  maxLength={80}
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </label>
+            )}
+            {mode !== "recover" && (
+              <label>
+                Adresse courriel
+                <input
+                  data-testid="input-email"
+                  required
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </label>
+            )}
+            {["password", "signup", "recover"].includes(mode) && (
+              <label>
+                {mode === "password"
+                  ? "Mot de passe"
+                  : "Mot de passe (10 caractères minimum)"}
+                <input
+                  required
+                  type="password"
+                  minLength={mode === "password" ? 1 : 10}
+                  autoComplete={
+                    mode === "password" ? "current-password" : "new-password"
+                  }
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </label>
+            )}
+            {mode === "password" && (
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => reset("forgot")}
+              >
+                Mot de passe oublié ?
+              </button>
+            )}
+            {(error || auth.authError) && (
+              <p className="feedback" role="alert">
+                {error || auth.authError}
+              </p>
+            )}
+            {notice && (
+              <p className="feedback" role="status">
+                {notice}
+              </p>
+            )}
+            <button
+              data-testid="button-submit"
+              className="action"
+              disabled={busy || auth.isLoading}
+            >
+              {busy
+                ? "Un instant…"
+                : {
+                    signup: "Créer mon compte",
+                    password: "Me connecter",
+                    link: "Recevoir mon lien",
+                    forgot: "Envoyer le lien",
+                    recover: "Enregistrer mon mot de passe",
+                  }[mode]}
+            </button>
+          </form>
+          <div className="mt-7 border-t pt-4 text-sm">
+            {mode === "signup" ? (
+              <Link href="/connexion" onClick={() => reset("password")}>
+                Déjà membre ? <u>Se connecter</u>
+              </Link>
+            ) : mode === "forgot" ? (
+              <button onClick={() => reset("password")}>
+                ← Revenir à la connexion
+              </button>
+            ) : (
+              mode !== "recover" && (
+                <Link href="/inscription" onClick={() => reset("password")}>
+                  Première visite ? <u>Créer un compte</u>
+                </Link>
+              )
+            )}
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
