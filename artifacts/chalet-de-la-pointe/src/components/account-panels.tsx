@@ -1,3 +1,4 @@
+import { IllustratedNote } from "./field-heading";
 import { useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ownerRequest, useAuth } from "@/context/AuthContext";
@@ -434,7 +435,7 @@ export function BlogPanel() {
       ) : q.isError ? (
         "Articles indisponibles."
       ) : !q.data.length ? (
-        <p className="panel">Vous n’avez pas encore d’article.</p>
+        <IllustratedNote kind="pine"><h3>Votre première chronique</h3><p>Commencez un brouillon pour raconter un moment au chalet.</p></IllustratedNote>
       ) : (
         q.data.map((p) => (
           <div key={p.id} className="panel">

@@ -1,3 +1,4 @@
+import { FieldHeading } from "@/components/field-heading";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { DayPicker, type DateRange } from "react-day-picker";
@@ -104,9 +105,9 @@ export default function Calendrier() {
   const visibleStart = iso(startOfMonth(month)), visibleEnd = iso(addMonths(startOfMonth(month), mobile ? 1 : 2));
   const visible = stays.filter(s => s.startDate < visibleEnd && s.endDate > visibleStart);
   const ready = !!chalet && availability.isSuccess && !availability.isRefetchError;
-  return <main className="min-h-screen bg-secondary/20 pt-28 pb-20 px-4">
+  return <main className="calendar-page min-h-screen bg-secondary/20 pt-28 pb-20 px-4">
     <div className="max-w-5xl mx-auto">
-      <h1 className="text-4xl md:text-5xl font-serif text-primary">Calendrier des disponibilités</h1>
+      <FieldHeading kind="stay" title="Calendrier des disponibilités" />
       {(!ready && (properties.isError || availability.isError || (properties.isSuccess && !chalet)))
         ? <p role="alert">Les disponibilités sont momentanément indisponibles. <button className="underline" onClick={() => { void properties.refetch(); if (chalet) void availability.refetch(); }}>Réessayer</button></p>
         : !ready ? <p role="status">Chargement des disponibilités…</p>

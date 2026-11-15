@@ -56,11 +56,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className={`text-2xl font-serif tracking-tight font-medium transition-colors ${textColor}`}
             data-testid="link-logo"
           >
-            ChaletDeLaPointe
+            Chalet de la Pointe
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-7">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -97,7 +97,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Mobile toggle */}
           <button
-            className={`md:hidden p-2 -mr-2 transition-colors ${headerTransparent ? "text-white" : "text-foreground"}`}
+            className={`lg:hidden p-2 -mr-2 transition-colors ${headerTransparent ? "text-white" : "text-foreground"}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             data-testid="button-mobile-menu"
             aria-label="Menu principal" aria-expanded={mobileMenuOpen}
@@ -114,7 +114,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-background pt-24 px-6 pb-6 flex flex-col md:hidden"
+            className="fixed inset-0 z-40 bg-background pt-24 px-6 pb-6 flex flex-col lg:hidden"
           >
             <nav className="flex flex-col gap-6 mt-8">
               {navLinks.map((link) => (

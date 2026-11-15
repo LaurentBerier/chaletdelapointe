@@ -1,3 +1,4 @@
+import { FieldHeading } from "@/components/field-heading";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { useJournal } from "@/data/blog";
@@ -7,17 +8,7 @@ export default function Blogue() {
   return (
     <div className="pt-24 min-h-screen bg-background">
       <div className="container mx-auto px-6 max-w-5xl pb-24">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="mb-16 md:mb-24 text-center"
-        >
-          <h1 className="text-4xl md:text-6xl font-serif text-primary mb-6">Chroniques du Lac</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Histoires, réflexions et guides pour profiter pleinement de votre séjour au Bas-Saint-Laurent.
-          </p>
-        </motion.div>
+        <FieldHeading kind="journal" title="Chroniques du lac">Histoires et guides pour profiter du lac Saint-Mathieu et de la région.</FieldHeading>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
           {journal.isPending && <p>Chargement des chroniques…</p>}{journal.isError && <p>Les chroniques sont momentanément indisponibles.</p>}{journal.isSuccess && !blogPosts.length && <p>Aucune chronique pour le moment.</p>}

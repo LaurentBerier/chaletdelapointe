@@ -34,3 +34,7 @@ content_path = "./supabase/templates/magic_link.html"
 [auth.email.template.recovery]
 subject = "Chalet de la Pointe · Votre nouveau mot de passe"
 content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.invite]
+subject = "Chalet de la Pointe · Votre invitation"
+content_path = "./supabase/templates/invite.html"

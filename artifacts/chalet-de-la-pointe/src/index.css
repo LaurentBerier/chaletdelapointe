@@ -349,3 +349,39 @@
 .section-title {font-size:clamp(1.6rem,3vw,2.1rem);margin:.45rem 0 1rem}.section-note {color:#4f645a;margin-bottom:1rem}.panel-heading {justify-content:space-between;margin-bottom:.7rem}
 .account-grid {display:grid;align-items:start;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
 @media(max-width:850px){.account-layout{grid-template-columns:1fr}.account-nav{display:flex;flex-wrap:wrap}.account-nav .eyebrow{display:none}.account-nav a{padding:.5rem .65rem}.auth-shell{grid-template-columns:1fr}.auth-landscape{min-height:12rem;padding:1.4rem}.auth-landscape svg{display:none}.auth-main{padding:1.5rem}.auth-form{padding:1.5rem 0}.account-grid{grid-template-columns:1fr}}
+
+/* The account cover pairs the actual chalet with a separate, legible text panel. */
+.welcome {position:relative;display:grid;grid-template-columns:1fr minmax(0,48%);gap:0;align-items:stretch;padding:0;overflow:hidden;border-radius:1.05rem;background:#203f35}
+.welcome-copy {align-self:center;min-width:0;padding:clamp(1.45rem,3.7vw,3.2rem)}
+.welcome-copy .eyebrow,.field-heading .eyebrow {display:flex;align-items:center;gap:.65rem}
+.welcome-copy .eyebrow {color:#e6e6cf}.welcome-copy .eyebrow span,.field-heading .eyebrow span {width:1.7rem;height:2px;background:#ca9b52}
+.welcome-copy h1 {margin:.24em 0 .38em;font-weight:450}
+.welcome-copy .badge {background:#345447;border:1px solid #597365;color:#f3f2e7}
+.welcome-photo {position:relative;margin:0;min-height:12rem}.welcome-photo img {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 57%}
+.welcome-photo figcaption {position:absolute;bottom:.7rem;right:.85rem;padding:.24rem .55rem;border-radius:.3rem;background:#142a23db;color:white;font:italic .76rem/1.4 Georgia,serif}
+.account-nav .nav-group+.nav-group {border-top:1px solid #dce2d7;margin-top:.25rem;padding-top:.45rem}
+.account-nav .nav-logout {border-top:1px solid #dce2d7;display:flex;align-items:center;gap:.55rem;padding:.7rem .7rem .35rem;margin-top:.25rem;color:#58685c;font-size:.86rem}
+.nav-logout:hover,.calendar-link:hover {color:#1b4438;text-decoration:underline}
+.calendar-link {display:inline-flex;align-items:center;gap:.42rem;font-size:.87rem;font-weight:600;color:#315a49}
+.stays-heading .section-title {margin-bottom:.5rem}
+.stay-line {display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}
+.stay-card {position:relative;border-color:#d6ddd3;padding:1.15rem 1.35rem}
+.stay-card p {color:#536357;margin-bottom:0}
+.field-heading {display:flex;align-items:center;justify-content:space-between;isolation:isolate;gap:1.4rem;overflow:hidden;border-block:1px solid #d7d9c9;background:#f8f6eb;color:#254637;padding:clamp(1rem,2.5vw,2rem);min-width:0}
+.field-heading-copy {min-width:0}.field-heading .eyebrow {color:#536348;margin-bottom:.55rem}
+.field-heading h1 {font:450 clamp(1.9rem,4.4vw,3.85rem)/1.08 var(--font-serif);letter-spacing:-.035em;text-wrap:balance}
+.field-heading img,.illustrated-note img {mix-blend-mode:multiply;object-fit:contain;flex:none}
+.field-heading img {width:clamp(7rem,17vw,13rem);height:auto}
+.field-deck {max-width:42rem;color:#536157;margin-top:.75rem;line-height:1.6}.field-journal {margin-bottom:clamp(2rem,5vw,4rem)}
+.illustrated-note {display:flex;align-items:center;gap:1.4rem;padding:1.15rem;border:1px solid #d7d9c9;border-radius:1rem;background:#f8f6eb}
+.illustrated-note img {width:6rem;height:auto}.illustrated-note h3{font:500 1.4rem/1.25 var(--font-serif);margin-bottom:.4rem}
+@media(max-width:850px){.account-nav .nav-group {display:contents}.account-nav .nav-logout{border:0;padding:.5rem .65rem;margin:0}.account-nav .nav-group+.nav-group{border:0}.welcome-photo{min-height:10.5rem}}
+@media(max-width:600px){.welcome{grid-template-columns:minmax(0,1fr) 31%}.welcome-copy{padding:1.25rem .95rem}.welcome-copy h1{font-size:clamp(1.7rem,7vw,2.5rem)}.welcome-photo{min-height:8rem}.welcome-photo figcaption{display:none}.field-heading{gap:.5rem;padding:1.1rem .8rem}.field-heading img{width:clamp(4.5rem,18vw,6rem)}.field-heading h1{font-size:clamp(1.55rem,6vw,2.25rem)}.field-deck{font-size:.89rem}.stay-line{gap:.5rem}.account-layout{margin-top:1rem}.account-nav a,.account-nav .nav-logout{min-height:44px}.field-journal img{align-self:center}}
+.field-heading img,.illustrated-note img,.sent-note img {filter:brightness(1.055);mix-blend-mode:multiply}
+.field-heading img {width:clamp(6rem,15vw,10.5rem)}
+.calendar-page .rdp-root {--rdp-accent-color:#345d47;--rdp-accent-background-color:#e7ecdf;--rdp-range_middle-background-color:#e7ecdf;--rdp-range_middle-color:#243e32}
+.sent-note {display:flex;align-items:center;gap:.8rem;background:#f6f4e9;border:1px solid #d9dbca;border-radius:.65rem;padding:.8rem}
+.sent-note img {width:3.7rem;height:auto}.sent-note strong {font-family:var(--font-serif);font-size:1.1rem}.sent-note p{font-size:.88rem;line-height:1.5}
+.mobile-panel-menu {display:none}
+@media(max-width:850px){.account-nav{display:flex;align-items:center;justify-content:space-between;gap:1rem}.account-nav .nav-group{display:none}.mobile-panel-menu{display:grid;flex:1;min-width:0}.mobile-panel-menu .eyebrow{display:block;padding:0 .45rem;font-size:.6rem}.mobile-panel-menu select{background:transparent;width:100%;min-width:0;color:#234638;font:650 .97rem/1.45 var(--font-sans);padding:.45rem;min-height:44px}.account-nav .nav-logout{align-self:center;padding:.55rem .45rem}}
+@media(max-width:600px){.field-heading img{width:clamp(4.5rem,18vw,6rem)}.calendar-page .rdp-root{--rdp-day-width:clamp(31px,10.1vw,44px);--rdp-day_button-width:clamp(30px,9.8vw,42px)}.calendar-page{padding-top:5.7rem}}

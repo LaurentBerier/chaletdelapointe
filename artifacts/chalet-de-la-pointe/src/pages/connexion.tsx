@@ -196,9 +196,7 @@ export default function Connexion() {
               </p>
             )}
             {notice && (
-              <p className="feedback" role="status">
-                {notice}
-              </p>
+              <div className="sent-note" role="status"><img src="/media/chalet/pine.jpg" width="480" height="320" alt=""/><div><strong>Votre boîte courriel</strong><p>{notice}</p></div></div>
             )}
             <button
               data-testid="button-submit"

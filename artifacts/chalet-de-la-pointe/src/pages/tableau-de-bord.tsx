@@ -82,8 +82,10 @@ export default function TableauDeBord() {
     <div className="dashboard">
       <div className="account-wrap">
         <header className="welcome">
-          <div>
-            <p className="eyebrow">Chalet de la Pointe · Mon espace</p>
+          <div className="welcome-copy">
+            <p className="eyebrow">
+              <span aria-hidden="true" /> Espace personnel
+            </p>
             <h1>Bonjour, {user.name}</h1>
             <span className="badge">
               {user.isAdmin
@@ -95,30 +97,69 @@ export default function TableauDeBord() {
                     : "Membre"}
             </span>
           </div>
-          <button
-            className="logout"
-            onClick={async () => {
-              await logout();
-              navigate("/");
-            }}
-          >
-            <LogOut size={16} /> Déconnexion
-          </button>
+          <figure className="welcome-photo">
+            <img
+              src="/media/chalet/pointe-automne.jpg"
+              width="1120"
+              height="443"
+              alt="Le chalet sur sa pointe boisée au bord du lac"
+            />
+            <figcaption>La pointe en automne</figcaption>
+          </figure>
         </header>
         <div className="account-layout">
           <nav aria-label="Menu du compte" className="account-nav">
-            <p className="eyebrow">Mon espace</p>
-            {tabs.map((t) => (
-              <Link
-                key={t.id}
-                href={"/tableau-de-bord?onglet=" + t.id}
-                data-testid={"tab-" + t.id}
-                aria-current={selected.id === t.id ? "page" : undefined}
+            <label className="mobile-panel-menu">
+              <span className="eyebrow">Mon espace</span>
+              <select
+                aria-label="Choisir un panneau"
+                value={selected.id}
+                onChange={(e) =>
+                  navigate("/tableau-de-bord?onglet=" + e.target.value)
+                }
               >
-                <t.icon size={17} />
-                {t.label}
-              </Link>
-            ))}
+                {tabs.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {["Mon espace", "Administration"].map((group) => {
+              const entries = tabs.filter(
+                (t) =>
+                  (["comptes", "sejours", "chalet"].includes(t.id)
+                    ? "Administration"
+                    : "Mon espace") === group,
+              );
+              return (
+                entries.length > 0 && (
+                  <div key={group} className="nav-group">
+                    <p className="eyebrow">{group}</p>
+                    {entries.map((t) => (
+                      <Link
+                        key={t.id}
+                        href={"/tableau-de-bord?onglet=" + t.id}
+                        data-testid={"tab-" + t.id}
+                        aria-current={selected.id === t.id ? "page" : undefined}
+                      >
+                        <t.icon size={17} />
+                        {t.label}
+                      </Link>
+                    ))}
+                  </div>
+                )
+              );
+            })}
+            <button
+              className="nav-logout"
+              onClick={async () => {
+                await logout();
+                navigate("/");
+              }}
+            >
+              <LogOut size={16} /> Déconnexion
+            </button>
           </nav>
           <section key={selected.id} className="account-content">
             {selected.panel}

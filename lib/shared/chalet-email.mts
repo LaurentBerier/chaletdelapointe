@@ -1,0 +1,46 @@
+// Keep essential content and the action as real text when a mail client blocks images.
+type Letter = {
+  category: string;
+  title: string;
+  message: string;
+  button: string;
+  href?: string;
+  note: string;
+  view: "pointe" | "brume";
+};
+const photos = {
+  pointe: ["pointe-courriel.jpg", "Le chalet sur la pointe, en automne", 221],
+  brume: ["brume-du-lac.jpg", "Brume du matin sur le lac Saint-Mathieu", 182],
+} as const;
+const escape = (s: string) =>
+  s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ]!,
+  );
+export function chaletEmail(m: Letter): string {
+  const [file, alt, height] = photos[m.view];
+  const src = "https://www.chaletdelapointe.com/media/chalet/" + file;
+  return `<!doctype html>
+<html lang="fr-CA"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(m.title)}</title></head>
+<body style="margin:0;background:#f1eee6;color:#233c34;font-family:Arial,Helvetica,sans-serif">
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all">${escape(m.category === "Comité d’approbation" ? "Une demande de séjour attend votre décision." : m.category === "Votre réservation" ? "Une mise à jour vous attend dans votre espace." : m.message)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f1eee6"><tr><td align="center" style="padding:20px 12px">
+<!--[if mso]><table role="presentation" width="560" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#fffdf8" style="max-width:560px;border:1px solid #d8d9cd;border-collapse:separate;border-spacing:0">
+<tr><td bgcolor="#203f35" style="padding:19px 26px;color:#fffdf8;font:24px Georgia,'Times New Roman',serif">Chalet de la Pointe</td></tr>
+<tr><td bgcolor="#e3e7df"><img src="${src}" width="560" height="${height}" alt="${alt}" style="display:block;border:0;width:100%;max-width:560px;height:auto;font:14px Arial,sans-serif;color:#305346"></td></tr>
+<tr><td style="padding:26px 26px 28px">
+<p style="margin:0 0 10px;color:#58684e;font:bold 11px/16px Arial,sans-serif;letter-spacing:1.5px;text-transform:uppercase">${escape(m.category)}</p>
+<h1 style="margin:0 0 14px;color:#233c34;font:normal 32px/1.16 Georgia,'Times New Roman',serif">${escape(m.title)}</h1>
+<p style="margin:0;color:#3c4b43;font:16px/1.55 Arial,sans-serif">${escape(m.message).replace(/\n/g, "<br>")}</p>
+${m.href ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px"><tr><td bgcolor="#28503f" style="border-radius:5px;mso-padding-alt:13px 20px"><a href="${escape(m.href)}" style="display:inline-block;padding:13px 20px;color:#ffffff;text-decoration:none;font:bold 15px/20px Arial,sans-serif">${escape(m.button)}</a></td></tr></table>` : ""}
+</td></tr>
+<tr><td bgcolor="#f6f4eb" style="border-top:1px solid #dcdfd3;padding:16px 26px;color:#526055;font:13px/1.5 Arial,sans-serif">${escape(m.note)}</td></tr>
+</table>
+<!--[if mso]></td></tr></table><![endif]-->
+<p style="margin:15px 0;color:#596458;font:12px/1.5 Georgia,serif">Lac Saint-Mathieu &nbsp;·&nbsp; Bas-Saint-Laurent, Québec</p>
+</td></tr></table></body></html>`;
+}
