@@ -1,3 +1,4 @@
+import { bookingAccessStates } from "../booking-access.js";
 import { pgTable, text, uuid, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -11,6 +12,9 @@ export const usersTable = pgTable("users", {
   name: text("name").notNull(),
   group: userGroupEnum("group").notNull().default("public"),
   isVip: boolean("is_vip").notNull().default(false),
+  hasPassword: boolean("has_password").notNull().default(false),
+  bookingAccess: text("booking_access", { enum: bookingAccessStates }).notNull().default("none"),
+  bookingAccessRequestedAt: timestamp("booking_access_requested_at", { withTimezone: true }),
   isDisabled: boolean("is_disabled").notNull().default(false),
   isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

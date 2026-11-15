@@ -1,3 +1,4 @@
+import { mayBook } from "../../../../lib/db/src/booking-access.js";
 import { stayDates } from "../../../../lib/shared/stay-dates.js";
 import { Router, type IRouter } from "express";
 import { and, desc, eq } from "drizzle-orm";
@@ -8,8 +9,8 @@ import { GetReservationParams } from "../../../../lib/api-zod/src/index.js";
 
 const router: IRouter = Router();
 router.get("/me", requireAccount, (req, res) => {
-  const { id, name, email, canApprove, isAdmin, group } = req.user!;
-  res.json({ id, name, email, canApprove, isAdmin, isOwner: group === "proprietaire" });
+  const { id, name, email, canApprove, isAdmin, group, bookingAccess, hasPassword } = req.user!;
+  res.json({ id, name, email, canApprove, isAdmin, bookingAccess, hasPassword, canBook: mayBook(req.user!), isOwner: group === "proprietaire" });
 });
 
 router.get("/reviews", requireApprover, async (_req, res) => {

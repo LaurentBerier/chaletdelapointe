@@ -1,3 +1,5 @@
+import { BookingAccessPanel } from "./booking-access";
+import type { BookingAccess } from "../../../../lib/db/src/booking-access";
 import { IllustratedNote } from "./field-heading";
 import { useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +17,8 @@ type Account = {
   canApprove: boolean;
   isDisabled: boolean;
   isAdmin: boolean;
+  bookingAccess: BookingAccess;
+  bookingAccessRequestedAt: string | null;
 };
 const groups: Record<string, string> = {
   public: "Membre",
@@ -64,9 +68,8 @@ const values = (e: FormEvent<HTMLFormElement>) => {
   return Object.fromEntries(new FormData(e.currentTarget));
 };
 export function ProfilePanel() {
-  const { user, saveName, savePassword } = useAuth(),
-    nameAction = useAction(),
-    pw = useAction();
+  const { user, saveName } = useAuth(),
+    nameAction = useAction();
   return (
     <>
       <h2 className="section-title">Mon profil</h2>
@@ -99,22 +102,48 @@ export function ProfilePanel() {
           </button>
           {nameAction.feedback}
         </form>
+        <BookingAccessPanel />
+      </div>
+    </>
+  );
+}
+export function SecurityPanel() {
+  const { user, savePassword } = useAuth(),
+    pw = useAction();
+  const hasPassword = !!user?.hasPassword;
+  return (
+    <>
+      <h2 className="section-title">Sécurité</h2>
+      <div className="security-panel">
         <form
           className="panel account-form"
           onSubmit={(e) => {
             const form = e.currentTarget,
               f = values(e);
-            void pw.run(async () => {
-              if (f.password !== f.confirm)
-                throw Error("Les mots de passe ne correspondent pas.");
-              await savePassword(String(f.password));
-              form.reset();
-            }, "Mot de passe enregistré.");
+            void pw.run(
+              async () => {
+                if (f.password !== f.confirm)
+                  throw Error("Les mots de passe ne correspondent pas.");
+                await savePassword(String(f.password));
+                form.reset();
+              },
+              hasPassword
+                ? "Votre mot de passe a été modifié."
+                : "Votre mot de passe a été créé.",
+            );
           }}
         >
-          <p className="eyebrow">Sécurité</p>
-          <h3>Mon mot de passe</h3>
-          <p>Vous pouvez aussi continuer à utiliser les liens par courriel.</p>
+          <p className="eyebrow">Connexion au compte</p>
+          <h3>
+            {hasPassword
+              ? "Changer mon mot de passe"
+              : "Créer mon mot de passe"}
+          </h3>
+          <p>
+            {hasPassword
+              ? "Choisissez un nouveau mot de passe d’au moins 10 caractères."
+              : "Aucun mot de passe n’est défini. Choisissez-en un d’au moins 10 caractères pour vous connecter aussi sans lien par courriel."}
+          </p>
           <label>
             Nouveau mot de passe
             <input
@@ -135,12 +164,83 @@ export function ProfilePanel() {
             />
           </label>
           <button className="action" disabled={pw.busy}>
-            Enregistrer le mot de passe
+            {pw.busy
+              ? "Enregistrement…"
+              : hasPassword
+                ? "Enregistrer le nouveau mot de passe"
+                : "Créer le mot de passe"}
           </button>
           {pw.feedback}
         </form>
       </div>
     </>
+  );
+}
+function AccessDecision({ account: a }: { account: Account }) {
+  const op = useAction(),
+    cache = useQueryClient();
+  if (
+    a.group === "proprietaire" ||
+    a.isDisabled ||
+    a.isAdmin ||
+    a.bookingAccess === "none"
+  )
+    return null;
+  const decide = (decision: "approve" | "deny" | "revoke" | "reopen") =>
+    op.run(async () => {
+      try {
+        await write("/admin/accounts/" + a.id + "/booking-access", "POST", {
+          decision,
+        });
+      } finally {
+        await cache.invalidateQueries({ queryKey: ["admin-accounts"] });
+        await cache.invalidateQueries({ queryKey: ["admin-access-count"] });
+      }
+    });
+  return (
+    <div className="access-decision">
+      {a.bookingAccess === "pending" ? (
+        <div className="button-row">
+          <button
+            className="action"
+            disabled={op.busy}
+            onClick={() => decide("approve")}
+          >
+            Autoriser à réserver
+          </button>
+          <button
+            className="secondary-action"
+            disabled={op.busy}
+            onClick={() => decide("deny")}
+          >
+            Refuser l’accès
+          </button>
+        </div>
+      ) : a.bookingAccess === "granted" ? (
+        <>
+          <p>Accès aux réservations : autorisé.</p>
+          <button
+            className="text-link"
+            disabled={op.busy}
+            onClick={() => decide("revoke")}
+          >
+            Retirer le droit de réserver
+          </button>
+        </>
+      ) : (
+        <>
+          <p>La demande d’accès aux réservations a été refusée.</p>
+          <button
+            className="text-link"
+            disabled={op.busy}
+            onClick={() => decide("reopen")}
+          >
+            Permettre une nouvelle demande
+          </button>
+        </>
+      )}
+      {op.feedback}
+    </div>
   );
 }
 function AccountRow({ a }: { a: Account }) {
@@ -161,6 +261,7 @@ function AccountRow({ a }: { a: Account }) {
               : groups[a.group]}
         </span>
       </summary>
+      {a.bookingAccess !== "pending" && <AccessDecision account={a} />}
       {a.isAdmin ? (
         <p className="mt-4">
           Compte protégé. Modifiez votre nom dans Mon profil.
@@ -224,6 +325,7 @@ function AccountRow({ a }: { a: Account }) {
 export function AccountsPanel() {
   const q = useQuery({
     queryKey: ["admin-accounts"],
+    refetchInterval: 30000,
     queryFn: () => ownerRequest<Account[]>("/admin/accounts"),
   });
   return (
@@ -231,8 +333,46 @@ export function AccountsPanel() {
       <h2 className="section-title">Comptes et accès</h2>
       <p className="section-note">
         Les nouveaux membres apparaissent après confirmation de leur courriel.
-        Accordez l’accès propriétaire ici.
+        Le droit de réserver peut être accordé sans attribuer le rôle de
+        propriétaire.
       </p>
+      {q.data && (
+        <section
+          className="access-queue"
+          aria-label="Demandes d’accès aux réservations"
+        >
+          <p className="eyebrow">À examiner</p>
+          <h3>Demandes d’accès aux réservations</h3>
+          {q.data.some(
+            (a) =>
+              a.bookingAccess === "pending" &&
+              !a.isDisabled &&
+              a.group !== "proprietaire",
+          ) ? (
+            q.data
+              .filter(
+                (a) =>
+                  a.bookingAccess === "pending" &&
+                  !a.isDisabled &&
+                  a.group !== "proprietaire",
+              )
+              .sort((a, b) =>
+                (a.bookingAccessRequestedAt ?? "").localeCompare(
+                  b.bookingAccessRequestedAt ?? "",
+                ),
+              )
+              .map((a) => (
+                <div key={a.id} className="access-queue-item">
+                  <strong>{a.name}</strong>
+                  <p>{a.email}</p>
+                  <AccessDecision account={a} />
+                </div>
+              ))
+          ) : (
+            <p>Aucune demande en attente.</p>
+          )}
+        </section>
+      )}
       {q.isPending
         ? "Chargement…"
         : q.isError
@@ -435,7 +575,10 @@ export function BlogPanel() {
       ) : q.isError ? (
         "Articles indisponibles."
       ) : !q.data.length ? (
-        <IllustratedNote kind="pine"><h3>Votre première chronique</h3><p>Commencez un brouillon pour raconter un moment au chalet.</p></IllustratedNote>
+        <IllustratedNote kind="pine">
+          <h3>Votre première chronique</h3>
+          <p>Commencez un brouillon pour raconter un moment au chalet.</p>
+        </IllustratedNote>
       ) : (
         q.data.map((p) => (
           <div key={p.id} className="panel">

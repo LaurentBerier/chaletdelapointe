@@ -12,7 +12,7 @@ import {
   CancelReservationResponse,
   ListMyReservationsResponse,
 } from "../../../../lib/api-zod/src/index.js";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireBookingAccess } from "../middlewares/auth.js";
 import { calculateReservationPrice, validateStay, PricingError } from "../lib/pricing.js";
 import { deliverBookingEmails, reviewUrl } from "../lib/booking-email.js";
 import { toIsoDate } from "../lib/dates.js";
@@ -68,7 +68,7 @@ router.post("/reservations/quote", async (req: Request, res): Promise<void> => {
   }
 });
 
-router.get("/reservations", requireAuth, async (req, res): Promise<void> => {
+router.get("/reservations", requireBookingAccess, async (req, res): Promise<void> => {
   await deliverBookingEmails();
   const rows = await db
     .select()
@@ -78,7 +78,7 @@ router.get("/reservations", requireAuth, async (req, res): Promise<void> => {
   res.json(ListMyReservationsResponse.parse(rows.map(serializeReservation)));
 });
 
-router.post("/reservations", requireAuth, async (req, res): Promise<void> => {
+router.post("/reservations", requireBookingAccess, async (req, res): Promise<void> => {
   const parsed = CreateReservationBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -128,7 +128,7 @@ router.post("/reservations", requireAuth, async (req, res): Promise<void> => {
   }
 });
 
-router.get("/reservations/:id", requireAuth, async (req, res): Promise<void> => {
+router.get("/reservations/:id", requireBookingAccess, async (req, res): Promise<void> => {
   const params = GetReservationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -150,7 +150,7 @@ router.get("/reservations/:id", requireAuth, async (req, res): Promise<void> => 
   res.json(GetReservationResponse.parse(serializeReservation(row)));
 });
 
-router.post("/reservations/:id/cancel", requireAuth, async (req, res): Promise<void> => {
+router.post("/reservations/:id/cancel", requireBookingAccess, async (req, res): Promise<void> => {
   const params = CancelReservationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

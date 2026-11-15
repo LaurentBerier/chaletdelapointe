@@ -31,10 +31,10 @@ export default function Connexion() {
         to={
           new URLSearchParams(location.search).get("suite") === "approbations"
             ? "/tableau-de-bord?onglet=approbations"
-            : localStorage.getItem("chalet.calendar.sign-in-dates") &&
-                auth.user?.isOwner
+            : new URLSearchParams(location.search).get("suite")==="profil" ? "/tableau-de-bord?onglet=profil" : localStorage.getItem("chalet.calendar.sign-in-dates") &&
+                auth.user?.canBook
               ? "/calendrier?reprendre=1"
-              : "/tableau-de-bord"
+              : auth.user?.canBook ? "/tableau-de-bord" : "/tableau-de-bord?onglet=profil"
         }
       />
     );

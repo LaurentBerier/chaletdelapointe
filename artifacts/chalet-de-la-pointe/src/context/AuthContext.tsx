@@ -3,9 +3,11 @@ import {
   useContext,
   useState,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import type { BookingAccess } from "../../../../lib/db/src/booking-access";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
 
@@ -13,6 +15,9 @@ interface Owner {
   id: string;
   email: string;
   isOwner: boolean;
+  hasPassword: boolean;
+  canBook: boolean;
+  bookingAccess: BookingAccess;
   name: string;
   canApprove: boolean;
   isAdmin: boolean;
@@ -47,17 +52,29 @@ function client() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<Owner | null>(null);
-  const [isLoading, setLoading] = useState(true);
+  const [identity, setIdentity] = useState<string | null>(null);
+  const activeIdentity = useRef<string | null>(null);
+  const [starting, setStarting] = useState(true);
   const [recovery, setRecovery] = useState(
     () =>
       new URLSearchParams(location.hash.slice(1)).get("type") === "recovery",
   );
-  const [authError, setError] = useState("");
+  const [setupError, setError] = useState("");
   const cache = useQueryClient();
+  const account = useQuery({
+    queryKey: ["session-account", identity],
+    enabled: !!identity,
+    retry: false,
+    queryFn: () => ownerRequest<Owner>("/me"),
+    refetchInterval: (q) =>
+      q.state.data?.bookingAccess === "pending" ? 10000 : false,
+    refetchOnWindowFocus: "always",
+  });
+  const user = identity && !account.isError ? (account.data ?? null) : null;
+  const isLoading = starting || (!!identity && account.isPending);
+  const authError = setupError || (identity && account.error?.message) || "";
   useEffect(() => {
     let active = true;
-    let revision = 0;
     let subscription: { unsubscribe(): void } | undefined;
     client()
       .then((supabase) => {
@@ -68,49 +85,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             null,
         );
         subscription = supabase.auth.onAuthStateChange((event, session) => {
-          if (event === "PASSWORD_RECOVERY") setRecovery(true);
-          const current = ++revision;
-          if (!session) {
-            cache.clear();
-            setUser(null);
-            setRecovery(false);
-            setError("");
-            setLoading(false);
-            return;
+          const id = session?.user.id ?? null;
+          if (activeIdentity.current !== id) cache.clear();
+          activeIdentity.current = id;
+          setIdentity(id);
+          setStarting(false);
+          setError("");
+          if (!session) setRecovery(false);
+          else if (event === "PASSWORD_RECOVERY") setRecovery(true);
+          if (
+            id &&
+            ["SIGNED_IN", "USER_UPDATED", "TOKEN_REFRESHED"].includes(event)
+          ) {
+            // Do not await another Auth call while Supabase holds its event lock.
+            void cache.invalidateQueries({ queryKey: ["session-account", id] });
           }
-          fetch("/api/me", {
-            headers: { Authorization: "Bearer " + session.access_token },
-            cache: "no-store",
-          })
-            .then(async (res) => {
-              if (!res.ok)
-                throw new Error(
-                  (await res.json()).error || "Compte indisponible.",
-                );
-              return res.json() as Promise<Owner>;
-            })
-            .then((owner) => {
-              if (active && revision === current) {
-                setUser(owner);
-                setError("");
-              }
-            })
-            .catch((err) => {
-              if (active && revision === current) {
-                cache.clear();
-                setUser(null);
-                setError(err.message);
-              }
-            })
-            .finally(() => {
-              if (active && revision === current) setLoading(false);
-            });
         }).data.subscription;
       })
       .catch(() => {
         if (active) {
           setError("Connexion momentanément indisponible.");
-          setLoading(false);
+          setStarting(false);
         }
       });
     return () => {
@@ -138,7 +133,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }
   async function register(email: string, password: string, name: string) {
-    if (!name.trim() || name.trim().length > 80) throw new Error("Nom invalide.");
+    if (!name.trim() || name.trim().length > 80)
+      throw new Error("Nom invalide.");
     const { error } = await (
       await client()
     ).auth.signUp({
@@ -163,20 +159,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await (await client()).auth.updateUser({ password });
     if (error) throw error;
     setRecovery(false);
+    await cache.invalidateQueries({ queryKey: ["session-account", identity] });
   }
   async function saveName(name: string) {
-    const result = await ownerRequest<{ name: string }>("/me", {
+    await ownerRequest<{ name: string }>("/me", {
       method: "PATCH",
       body: JSON.stringify({ name }),
     });
-    setUser((u) => (u ? { ...u, name: result.name } : null));
     await cache.invalidateQueries();
   }
   async function logout() {
     const { error } = await (await client()).auth.signOut({ scope: "local" });
     if (error) throw error;
     cache.clear();
-    setUser(null);
+    setIdentity(null);
   }
   return (
     <AuthContext.Provider

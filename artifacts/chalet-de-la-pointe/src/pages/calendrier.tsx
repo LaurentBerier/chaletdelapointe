@@ -1,3 +1,4 @@
+import { BookingAccessPanel } from "@/components/booking-access";
 import { FieldHeading } from "@/components/field-heading";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
@@ -136,18 +137,19 @@ export default function Calendrier() {
                 </div>
                 <dl><dt className="text-muted-foreground">Départ</dt><dd>{checkOut ? readable(checkOut) : "À choisir"}</dd></dl>
               </div>
-              {user?.isOwner && <label className="flex items-center justify-between">Voyageurs <select className="border rounded-md p-2" value={guests} onChange={e => setGuests(Number(e.target.value))}>
+              {user?.canBook && <label className="flex items-center justify-between">Voyageurs <select className="border rounded-md p-2" value={guests} onChange={e => setGuests(Number(e.target.value))}>
                 {Array.from({ length: chalet!.maxGuests }, (_, i) => <option key={i}>{i + 1}</option>)}</select></label>}
               {nights > 0 && <p className="mt-4">{nights} nuit{nights > 1 ? "s" : ""}</p>}
-              {user?.isOwner ?
+              {user?.canBook ?
               <button disabled={editingArrival || !nights || conflicts(checkIn!, checkOut!) || booking.isPending} onClick={() => booking.mutate()} className="w-full bg-primary text-white rounded-lg p-3 mt-4 disabled:opacity-45">Demander la réservation</button>
-              : user ? <p className="mt-4 text-sm">Les réservations sont ouvertes aux comptes approuvés comme propriétaires.</p> : <Link className="block bg-primary text-white text-center px-4 py-3 mt-4 rounded-lg" href="/connexion" onClick={() => {
+              : user ? <BookingAccessPanel compact/> : <Link className="block bg-primary text-white text-center px-4 py-3 mt-4 rounded-lg" href="/connexion" onClick={() => {
                 if (checkIn) localStorage.setItem(signInDatesKey, [checkIn, checkOut ?? "", Date.now()].join("|"));
                 else localStorage.removeItem(signInDatesKey);
               }}>Se connecter pour réserver</Link>}
+              {!user && <p className="mt-3 text-sm">Pas encore d’accès aux réservations ? <Link href="/tableau-de-bord?onglet=profil" className="text-link">Me connecter pour demander l’accès</Link>.</p>}
               {checkIn && <button disabled={booking.isPending} className="underline mt-3 text-sm" onClick={() => { localStorage.removeItem(signInDatesKey); setRange(undefined); setEditingArrival(false); setNotice(""); }}>Effacer les dates</button>}
               <p className="mt-3 text-sm" role="status">{notice}</p>
-              {user?.isOwner && <Link href="/tableau-de-bord" className="text-sm underline">Mes réservations</Link>}
+              {user?.canBook && <Link href="/tableau-de-bord" className="text-sm underline">Mes réservations</Link>}
           </aside>
         </div>}
     </div>

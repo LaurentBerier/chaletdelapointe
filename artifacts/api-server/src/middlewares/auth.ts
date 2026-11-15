@@ -1,3 +1,4 @@
+import { mayBook } from "../../../../lib/db/src/booking-access.js";
 import type { RequestHandler } from "express";
 import { eq } from "drizzle-orm";
 import { db, usersTable, type User } from "../../../../lib/db/src/index.js";
@@ -45,8 +46,8 @@ export const requireAccount: RequestHandler = (req, res, next) => {
   next();
 };
 
-export const requireAuth: RequestHandler = (req, res, next) => {
-  if (req.user?.group !== "proprietaire") { res.status(req.user ? 403 : 401).json({ error: "Accès propriétaire requis." }); return; }
+export const requireBookingAccess: RequestHandler = (req, res, next) => {
+  if (!req.user || !mayBook(req.user)) { res.status(req.user ? 403 : 401).json({ error: "Accès aux réservations requis." }); return; }
   next();
 };
 

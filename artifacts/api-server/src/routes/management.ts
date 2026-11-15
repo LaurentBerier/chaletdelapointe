@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, asc, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, asc, desc, eq, ne, count, getTableColumns } from "drizzle-orm";
 import {
   db,
   usersTable as users,
@@ -22,6 +22,8 @@ const account = {
   canApprove: users.canApprove,
   isDisabled: users.isDisabled,
   isAdmin: users.isAdmin,
+  bookingAccess: users.bookingAccess,
+  bookingAccessRequestedAt: users.bookingAccessRequestedAt,
 };
 router.patch("/me", requireAccount, async (req, res) => {
   const name = req.body?.name;
@@ -62,6 +64,9 @@ router.patch("/admin/accounts/:id", requireAdmin, async (req, res) => {
     .set({
       ...(name === undefined ? {} : { name: name.trim() }),
       group,
+      ...(group === "proprietaire"
+        ? { bookingAccess: "none" as const, bookingAccessRequestedAt: null }
+        : {}),
       canApprove: group === "proprietaire" && canApprove,
       isDisabled,
     })
@@ -73,6 +78,108 @@ router.patch("/admin/accounts/:id", requireAdmin, async (req, res) => {
   }
   res.json(row);
 });
+// A member can request only for their own identity. A separate administrator
+// decision grants booking rights without changing ownership or calendar privacy.
+router.post("/me/booking-access", requireAccount, async (req, res) => {
+  const [row] = await db
+    .update(users)
+    .set({ bookingAccess: "pending", bookingAccessRequestedAt: new Date() })
+    .where(
+      and(
+        eq(users.id, req.user!.id),
+        eq(users.isDisabled, false),
+        ne(users.group, "proprietaire"),
+        eq(users.bookingAccess, "none"),
+      ),
+    )
+    .returning({ bookingAccess: users.bookingAccess });
+  if (row) {
+    res.status(201).json(row);
+    return;
+  }
+  const [current] = await db
+    .select({
+      bookingAccess: users.bookingAccess,
+      group: users.group,
+      isDisabled: users.isDisabled,
+    })
+    .from(users)
+    .where(eq(users.id, req.user!.id));
+  if (
+    current &&
+    !current.isDisabled &&
+    current.group !== "proprietaire" &&
+    current.bookingAccess === "pending"
+  ) {
+    res.json({ bookingAccess: "pending" });
+    return;
+  }
+  res
+    .status(409)
+    .json({ error: "Votre accès a changé. Actualisez votre profil." });
+});
+router.get("/admin/booking-access/count", requireAdmin, async (_req, res) => {
+  const [row] = await db
+    .select({ pending: count() })
+    .from(users)
+    .where(
+      and(
+        eq(users.bookingAccess, "pending"),
+        eq(users.isDisabled, false),
+        ne(users.group, "proprietaire"),
+      ),
+    );
+  res.json(row);
+});
+router.post(
+  "/admin/accounts/:id/booking-access",
+  requireAdmin,
+  async (req, res) => {
+    const decision = req.body?.decision;
+    if (
+      !uuid(req.params.id) ||
+      !["approve", "deny", "revoke", "reopen"].includes(decision)
+    ) {
+      res.status(400).json({ error: "Décision invalide." });
+      return;
+    }
+    const before =
+      decision === "revoke"
+        ? "granted"
+        : decision === "reopen"
+          ? "denied"
+          : "pending";
+    const after =
+      decision === "approve"
+        ? "granted"
+        : decision === "deny"
+          ? "denied"
+          : "none";
+    const [row] = await db
+      .update(users)
+      .set({
+        bookingAccess: after,
+        ...(after === "none" ? { bookingAccessRequestedAt: null } : {}),
+      })
+      .where(
+        and(
+          eq(users.id, req.params.id),
+          eq(users.isAdmin, false),
+          eq(users.isDisabled, false),
+          ne(users.group, "proprietaire"),
+          eq(users.bookingAccess, before),
+        ),
+      )
+      .returning(account);
+    if (!row) {
+      res
+        .status(409)
+        .json({ error: "Ce compte ou cette demande a déjà changé." });
+      return;
+    }
+    res.json(row);
+  },
+);
 router.patch("/admin/properties/:id", requireAdmin, async (req, res) => {
   const { name, description, maxGuests } = req.body ?? {};
   if (

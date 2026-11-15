@@ -4,15 +4,18 @@ import {
   BookOpen,
   LogOut,
   ShieldCheck,
+  KeyRound,
   UserRound,
   UsersRound,
   House,
   CalendarRange,
 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { ownerRequest, useAuth } from "@/context/AuthContext";
 import { BookingList } from "@/components/booking-list";
 import {
   ProfilePanel,
+  SecurityPanel,
   AccountsPanel,
   StaysPanel,
   BlogPanel,
@@ -23,13 +26,20 @@ export default function TableauDeBord() {
   const { user, logout } = useAuth(),
     [, navigate] = useLocation(),
     search = useSearch();
+  const count = useQuery({
+    queryKey: ["admin-access-count", user?.id],
+    enabled: !!user?.isAdmin,
+    queryFn: () =>
+      ownerRequest<{ pending: number }>("/admin/booking-access/count"),
+    refetchInterval: 30000,
+  });
   if (!user) return null;
   const tabs = [
     {
       id: "reservations",
       label: "Mes réservations",
       icon: CalendarDays,
-      visible: user.isOwner,
+      visible: user.canBook,
       panel: <BookingList />,
     },
     {
@@ -38,6 +48,13 @@ export default function TableauDeBord() {
       icon: UserRound,
       visible: true,
       panel: <ProfilePanel />,
+    },
+    {
+      id: "securite",
+      label: "Sécurité",
+      icon: KeyRound,
+      visible: true,
+      panel: <SecurityPanel />,
     },
     {
       id: "blogue",
@@ -55,7 +72,9 @@ export default function TableauDeBord() {
     },
     {
       id: "comptes",
-      label: "Comptes et accès",
+      label: count.data?.pending
+        ? "Comptes et accès (" + count.data.pending + ")"
+        : "Comptes et accès",
       icon: UsersRound,
       visible: user.isAdmin,
       panel: <AccountsPanel />,
