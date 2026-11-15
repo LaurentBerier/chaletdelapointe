@@ -1,5 +1,7 @@
 import { BookingAccessPanel } from "@/components/booking-access";
 import { FieldHeading } from "@/components/field-heading";
+import { CalendarDayButton, StayInspection, stayStyle } from "@/components/calendar-stay";
+import { stayDates } from "../../../../lib/shared/stay-dates";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { DayPicker, type DateRange } from "react-day-picker";
@@ -26,6 +28,8 @@ export default function Calendrier() {
   const calendar = useRef<HTMLElement>(null);
   const [guests, setGuests] = useState(1);
   const [notice, setNotice] = useState("");
+  const [pinned, setPinned] = useState<string | null>(null);
+  const [previewDay, setPreviewDay] = useState<string | null>(null);
   const properties = useQuery({ queryKey: ["chalet-listing"], queryFn: () => listProperties() });
   const chalet = properties.data?.find(p => p.slug === "chalet-saint-mathieu");
   const availability = useQuery({
@@ -39,6 +43,23 @@ export default function Calendrier() {
     },
   });
   const stays = availability.data ?? [];
+  const ownerStays = user?.isOwner ? stays.filter(s => s.status === "confirmed" && s.ownerName) : [];
+  const stayFor = (day: string) => ownerStays.find(s => s.startDate <= day && day < s.endDate);
+  const firstMonth = startOfMonth(ownerStays[0]?.startDate < iso(today) ? parseISO(ownerStays[0].startDate) : today);
+  useEffect(() => {
+    if (!pinned && !previewDay) return;
+    const close = () => { setPinned(null); setPreviewDay(null); };
+    const outside = (e: PointerEvent) => {
+      if (!(e.target instanceof Element && e.target.closest(".calendar-stay-day"))) close();
+    };
+    const escape = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [pinned, previewDay]);
   // The email link can return the owner in a different tab of the same browser.
   useEffect(() => {
     if (!resumeAfterLogin.current || !user || !availability.data) return;
@@ -80,6 +101,8 @@ export default function Calendrier() {
   }
   function select(date: Date) {
     const day = iso(date);
+    setPreviewDay(null);
+    setPinned(stayFor(day) ? previous => previous === day ? null : day : null);
     if (booking.isPending || disabled(date)) return;
     localStorage.removeItem(signInDatesKey);
     setNotice("");
@@ -115,18 +138,26 @@ export default function Calendrier() {
         : <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_17rem] items-start">
           <section ref={calendar} tabIndex={-1} aria-label="Dates du séjour" className="bg-background border rounded-2xl p-4 md:p-6 scroll-mt-24">
             <p className="mb-4 text-sm text-muted-foreground" role="status">{editingArrival ? "Choisissez votre nouvelle date d’arrivée dans le calendrier." : selectingEnd ? "Choisissez maintenant votre date de départ." : "Sélectionnez votre arrivée, puis votre départ."}</p>
-            <DayPicker locale={fr} mode="range" month={month} onMonthChange={setMonth}
-              numberOfMonths={mobile ? 1 : 2} startMonth={startOfMonth(today)} selected={range}
-              onSelect={(_range, day) => select(day)} disabled={disabled}
+            {user?.isOwner && visible.some(s => s.status === "confirmed" && s.ownerName) &&
+              <p className="calendar-inspect-hint">Survolez ou touchez une nuit réservée pour voir qui séjourne au chalet.</p>}
+            <StayInspection.Provider value={{ stayFor, active: previewDay ?? pinned,
+              preview: (day, visible) => setPreviewDay(prev => visible ? day : prev === day ? null : prev) }}>
+            <DayPicker locale={fr} mode="range" month={month} onMonthChange={m => { setPinned(null); setPreviewDay(null); setMonth(m); }}
+              numberOfMonths={mobile ? 1 : 2} startMonth={firstMonth} selected={range}
+              components={{ DayButton: CalendarDayButton }}
+              onSelect={(_range, day) => select(day)} disabled={d => !stayFor(iso(d)) && disabled(d)}
               modifiers={{
                 held: d => stays.some(s => s.status === "held" && s.startDate <= iso(d) && iso(d) < s.endDate),
-                booked: d => stays.some(s => s.status === "confirmed" && s.startDate <= iso(d) && iso(d) < s.endDate),
+                booked: d => !stayFor(iso(d)) && stays.some(s => s.status === "confirmed" && s.startDate <= iso(d) && iso(d) < s.endDate),
               }}
               modifiersStyles={{ held: { backgroundColor: "#f6e8c3", color: "#594418" }, booked: { backgroundColor: "#dce7e4", color: "#26463d" } }}
             />
+            </StayInspection.Provider>
             <div className="flex flex-wrap gap-4 mt-5 text-sm"><span>○ Disponible</span><span className="bg-[#f6e8c3] px-2 rounded">En attente</span><span className="bg-[#dce7e4] px-2 rounded">Réservé</span></div>
             {visible.length > 0 && <ul className="border-t mt-5 pt-3 text-sm space-y-2">{visible.map(s =>
-              <li key={s.startDate}>{readable(s.startDate)} → {readable(s.endDate)} · {s.status === "held" ? "En attente" : "Réservé"}{user?.isOwner && s.ownerName && " · " + s.ownerName}</li>)}</ul>}
+              <li key={s.startDate} className="calendar-stay-row">{user?.isOwner && s.status === "confirmed" && s.ownerName
+                ? <><span className="calendar-swatch" style={stayStyle(s.ownerColorSlot)} aria-hidden="true" /><span><strong>{s.ownerName}</strong> · {stayDates(s.startDate, s.endDate)}</span></>
+                : <span>{stayDates(s.startDate, s.endDate)} · {s.status === "held" ? "En attente" : "Réservé"}</span>}</li>)}</ul>}
           </section>
           <aside className="p-5 border rounded-2xl bg-background">
             <p className="eyebrow">{chalet?.name}</p><h2 className="font-serif text-2xl text-primary">Votre séjour</h2>{chalet?.description && <p className="text-sm mt-2">{chalet.description}</p>}

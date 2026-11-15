@@ -236,7 +236,19 @@ export const GetPublicCalendarResponseItem = zod.object({
   startDate: zod.coerce.date(),
   endDate: zod.coerce.date(),
   status: zod.enum(["held", "confirmed"]),
-  ownerName: zod.string().optional(),
+  ownerName: zod
+    .string()
+    .optional()
+    .describe(
+      "Booking member’s display name; visible to owners only, after confirmation.",
+    ),
+  ownerColorSlot: zod
+    .number()
+    .min(1)
+    .optional()
+    .describe(
+      "Stable calendar color for an owner’s confirmed stay; visible to owners only.",
+    ),
 });
 export const GetPublicCalendarResponse = zod.array(
   GetPublicCalendarResponseItem,

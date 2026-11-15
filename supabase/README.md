@@ -8,6 +8,8 @@ For a regression check, start a disposable local chalet stack with email confirm
 
 For the optional passwordless invitation check, also supply CHALET_TEST_AUTH_ADMIN_KEY from the local Supabase test stack. Never use production credentials for this check.
 
+Apply 202611150005 before deploying the owner calendar. It assigns each owner a permanent color slot when their role is granted. Confirmed stays expose the booker’s name and, for owner bookings, that color only to signed-in owners. Pending stays and the public calendar contain neither field.
+
 Reservation access mail is separate from stay approvals. Migration 202611150002 queues the notification with the access change. The website sends it using SMTP_URL, BOOKING_EMAIL_FROM and WEBSITE_URL (the canonical public origin). Requests go to active super administrators; the member receives the decision. The signed-in admin must explicitly accept or refuse the referenced request. Configure CRON_SECRET as a Vercel production secret for the daily retry at /api/jobs/access-mail. The admin dashboard also retries due mail while open.
 
 For the account-review rollout apply 202611150003 first, deploy the registration-aware API and UI, then activate new applications with 202611150004. Existing members keep their actual roles and booking rights. Self-signups require review even when using an older client. The admin can assign roles, booking permission and owner committee rights on approval or later, under Comptes et accès. The registration and decision emails share the access-mail outbox and retry job. Update the hosted Auth confirmation body from supabase/templates/confirmation.html.

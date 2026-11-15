@@ -1,5 +1,5 @@
 import { bookingAccessStates } from "../booking-access.js";
-import { pgTable, text, uuid, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid, boolean, integer, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { userGroupEnum } from "./enums.js";
@@ -11,6 +11,7 @@ export const usersTable = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   group: userGroupEnum("group").notNull().default("public"),
+  calendarColorSlot: integer("calendar_color_slot").unique(),
   isVip: boolean("is_vip").notNull().default(false),
   hasPassword: boolean("has_password").notNull().default(false),
   accountStatus: text("account_status", {
@@ -42,6 +43,7 @@ export const usersTable = pgTable("users", {
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({
   id: true,
+  calendarColorSlot: true,
   createdAt: true,
   updatedAt: true,
 });

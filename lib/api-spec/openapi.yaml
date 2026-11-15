@@ -463,7 +463,8 @@ components:
         startDate: { type: string, format: date }
         endDate: { type: string, format: date }
         status: { type: string, enum: [held, confirmed] }
-        ownerName: { type: string }
+        ownerName: { type: string, description: "Booking member’s display name; visible to owners only, after confirmation." }
+        ownerColorSlot: { type: integer, minimum: 1, description: "Stable calendar color for an owner’s confirmed stay; visible to owners only." }
       required: [propertyId, startDate, endDate, status]
 
     AdminActionBody:
