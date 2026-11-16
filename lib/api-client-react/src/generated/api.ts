@@ -694,7 +694,7 @@ export const useCancelReservation = <
 };
 
 /**
- * @summary Availability with approved booking names for authenticated owners
+ * @summary Availability with pending and confirmed booking names for authenticated owners
  */
 export const getGetPublicCalendarUrl = (propertyId: string) => {
   return `/api/calendar/${propertyId}`;
@@ -756,7 +756,7 @@ export type GetPublicCalendarQueryResult = NonNullable<
 export type GetPublicCalendarQueryError = ErrorType<unknown>;
 
 /**
- * @summary Availability with approved booking names for authenticated owners
+ * @summary Availability with pending and confirmed booking names for authenticated owners
  */
 
 export function useGetPublicCalendar<

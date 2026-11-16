@@ -225,7 +225,7 @@ export const CancelReservationResponse = zod.object({
 });
 
 /**
- * @summary Availability with approved booking names for authenticated owners
+ * @summary Availability with pending and confirmed booking names for authenticated owners
  */
 export const GetPublicCalendarParams = zod.object({
   propertyId: zod.coerce.string().uuid(),
@@ -240,14 +240,14 @@ export const GetPublicCalendarResponseItem = zod.object({
     .string()
     .optional()
     .describe(
-      "Booking member’s display name; visible to owners only, after confirmation.",
+      "Booking member’s display name on pending and confirmed stays; visible to signed-in owners only.",
     ),
   ownerColorSlot: zod
     .number()
     .min(1)
     .optional()
     .describe(
-      "Stable calendar color for an owner’s confirmed stay; visible to owners only.",
+      "Stable calendar color for an owner’s stay; visible to signed-in owners only.",
     ),
 });
 export const GetPublicCalendarResponse = zod.array(

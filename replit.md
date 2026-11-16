@@ -40,7 +40,7 @@ Premium Airbnb-style rental site for Chalet St-Mathieu (Saint-Mathieu-de-Rioux, 
 
 ### Hard guarantees
 - **No double-booking**: PostgreSQL `EXCLUDE USING gist` constraint on `(property_id, daterange(start_date, end_date, '[)'))` filtered to `pending_payment|pending_approval|confirmed`. Requires `btree_gist` extension. Returns 409 to clients.
-- The calendar API lists held and confirmed date ranges. Verified owners also receive the booking owner's name for confirmed stays.
+- The calendar API lists held and confirmed date ranges. Signed-in owners also see the booker’s name for both. The departure date is marked and remains available for a new arrival if its night is free.
 
 ### Owner pilot
 
@@ -59,7 +59,7 @@ Iterates each night between start/end (exclusive end), looks up the matching pri
 - `GET /properties`, `GET /properties/{id}` — public
 - `POST /reservations/quote` — anonymous-ok price preview
 - `POST /reservations`, `GET /reservations`, `GET /reservations/{id}`, `POST /reservations/{id}/cancel` — authenticated
-- `GET /calendar/{propertyId}` — public date ranges, approved names for signed-in owners
+- `GET /calendar/{propertyId}` — public date ranges, pending and confirmed names for signed-in owners
 - `GET /admin/reservations`, `POST /admin/reservations/{id}/confirm`, `POST /admin/reservations/{id}/cancel`, `PATCH /admin/reservations/{id}` — admin only, all logged in `admin_actions`
 
 - `GET /me` — signed-in owner profile

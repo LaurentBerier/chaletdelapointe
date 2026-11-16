@@ -128,10 +128,10 @@ export interface CalendarEntry {
   startDate: string;
   endDate: string;
   status: CalendarEntryStatus;
-  /** Booking member’s display name; visible to owners only, after confirmation. */
+  /** Booking member’s display name on pending and confirmed stays; visible to signed-in owners only. */
   ownerName?: string;
   /**
-   * Stable calendar color for an owner’s confirmed stay; visible to owners only.
+   * Stable calendar color for an owner’s stay; visible to signed-in owners only.
    * @minimum 1
    */
   ownerColorSlot?: number;

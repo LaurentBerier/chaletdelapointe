@@ -13,30 +13,54 @@ export function stayStyle(slot?: number): CSSProperties {
   return { "--stay-accent": accent } as CSSProperties;
 }
 
+type DayStays = { night?: CalendarEntry; departure?: CalendarEntry };
 export const StayInspection = createContext<{
-  stayFor: (day: string) => CalendarEntry | undefined;
+  staysFor: (day: string) => DayStays;
+  ownerView: boolean;
   active: string | null;
   preview: (day: string, visible: boolean) => void;
-}>({ stayFor: () => undefined, active: null, preview: () => {} });
+}>({ staysFor: () => ({}), ownerView: false, active: null, preview: () => {} });
+
+const statusLabel = (stay: CalendarEntry) => stay.status === "held" ? "Demande en attente" : "Séjour confirmé";
+
+function StayDetail({ stay, prefix }: { stay: CalendarEntry; prefix?: string }) {
+  return <span className="calendar-tip-entry">
+    <span>{prefix && prefix + " · "}{statusLabel(stay)}</span>
+    <strong>{stay.ownerName}</strong>
+    <span>{stayDates(stay.startDate, stay.endDate)}</span>
+  </span>;
+}
 
 export function CalendarDayButton(props: DayButtonProps) {
-  const { stayFor, active, preview } = useContext(StayInspection);
+  const { staysFor, ownerView, active, preview } = useContext(StayInspection);
   const date = props.day.date;
   const day = format(date, "yyyy-MM-dd");
-  const stay = stayFor(day);
-  if (!stay?.ownerName) return <DayButton {...props} />;
-  const dates = stayDates(stay.startDate, stay.endDate);
+  const { night, departure } = staysFor(day);
+  const inspect = ownerView && !!(night?.ownerName || departure?.ownerName);
+  if (!inspect && !departure) return <DayButton {...props} />;
+
+  const describe = (s: CalendarEntry) => statusLabel(s) +
+    (ownerView && s.ownerName ? " : " + s.ownerName : "") + ", " + stayDates(s.startDate, s.endDate) + ".";
+  const label = [props["aria-label"], departure && "Départ. " + describe(departure),
+    night ? (departure ? "Arrivée. " : "") + describe(night) : "Nuit disponible."].filter(Boolean).join(" ");
+  const markedButton = <DayButton {...props} aria-expanded={inspect ? active === day : undefined} aria-label={label}>
+    {props.children}{departure && <span aria-hidden="true" className="calendar-checkout-label">Départ</span>}
+  </DayButton>;
+  if (!inspect) return <span className="calendar-checkout-day">{markedButton}</span>;
+
   const column = (date.getDay() + 6) % 7; // French calendar starts on Monday.
-  return <span className="calendar-stay-day" style={stayStyle(stay.ownerColorSlot)}
+  return <span className="calendar-stay-day" style={stayStyle((night ?? departure)?.ownerColorSlot)}
+    data-night={night?.status} data-checkout={departure ? true : undefined}
     data-edge={column < 2 ? "start" : column > 4 ? "end" : undefined}
     onPointerEnter={e => { if (e.pointerType === "mouse") preview(day, true); }}
     onPointerLeave={e => { if (e.pointerType === "mouse") preview(day, false); }}
     onFocus={e => { if (e.target.matches(":focus-visible")) preview(day, true); }}
     onBlur={() => preview(day, false)}>
-    <DayButton {...props} aria-expanded={active === day}
-      aria-label={`${props["aria-label"]}. Réservé par ${stay.ownerName}. Séjour : ${dates}.`} />
+    {markedButton}
     {active === day && <span aria-hidden="true" className="calendar-stay-tip">
-      <span>Séjour confirmé</span><strong>{stay.ownerName}</strong><span>{dates}</span>
+      {departure && <StayDetail stay={departure} prefix="Départ" />}
+      {night ? <StayDetail stay={night} prefix={departure ? "Arrivée" : undefined} />
+        : <span className="calendar-tip-free">Nuit disponible</span>}
     </span>}
   </span>;
 }

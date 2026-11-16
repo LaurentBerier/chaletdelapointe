@@ -21,8 +21,8 @@ router.get("/calendar/:propertyId", async (req, res) => {
   res.json(rows.map(({ propertyId, startDate, endDate, ownerName, bookerGroup, color, status }) => ({
     propertyId, startDate: toIsoDate(startDate), endDate: toIsoDate(endDate),
     status: status === "confirmed" ? "confirmed" : "held",
-    ...(status === "confirmed" && ownerName ? { ownerName } : {}),
-    ...(status === "confirmed" && bookerGroup === "proprietaire" && color ? { ownerColorSlot: color } : {}),
+    ...(ownerName ? { ownerName } : {}),
+    ...(bookerGroup === "proprietaire" && color ? { ownerColorSlot: color } : {}),
   })));
 });
 export default router;

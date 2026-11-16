@@ -2,7 +2,7 @@ import { BookingAccessPanel } from "@/components/booking-access";
 import { FieldHeading } from "@/components/field-heading";
 import { CalendarDayButton, StayInspection, stayStyle } from "@/components/calendar-stay";
 import { stayDates } from "../../../../lib/shared/stay-dates";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { addMonths, differenceInCalendarDays, format, parseISO, startOfMonth } from "date-fns";
@@ -43,9 +43,18 @@ export default function Calendrier() {
     },
   });
   const stays = availability.data ?? [];
-  const ownerStays = user?.isOwner ? stays.filter(s => s.status === "confirmed" && s.ownerName) : [];
-  const stayFor = (day: string) => ownerStays.find(s => s.startDate <= day && day < s.endDate);
-  const firstMonth = startOfMonth(ownerStays[0]?.startDate < iso(today) ? parseISO(ownerStays[0].startDate) : today);
+  const ownerView = !!user?.isOwner;
+  const departures = useMemo(() => new Map(availability.data?.map(s => [s.endDate, s])), [availability.data]);
+  // A turnover day belongs to two different stays: the outgoing stay and the incoming night.
+  const nightFor = (day: string) => stays.find(s => s.startDate <= day && day < s.endDate);
+  const genericStatus = (day: string) => {
+    const night = nightFor(day);
+    return ownerView && night?.ownerName ? undefined : night?.status;
+  };
+  const staysFor = (day: string) => ({ night: nightFor(day), departure: departures.get(day) });
+  const canInspect = (day: string) => ownerView && !!(nightFor(day)?.ownerName || departures.get(day)?.ownerName);
+  const earliest = ownerView && stays[0]?.startDate;
+  const firstMonth = startOfMonth(earliest && earliest < iso(today) ? parseISO(earliest) : today);
   useEffect(() => {
     if (!pinned && !previewDay) return;
     const close = () => { setPinned(null); setPreviewDay(null); };
@@ -83,7 +92,6 @@ export default function Calendrier() {
   const checkOut = range?.to && iso(range.to);
   const nights = range?.from && range.to ? differenceInCalendarDays(range.to, range.from) : 0;
   const conflicts = (start: string, end: string) => stays.some(s => start < s.endDate && s.startDate < end);
-  const occupied = (day: string) => stays.some(s => s.startDate <= day && day < s.endDate);
   const selectingEnd = !!checkIn && !checkOut && !editingArrival;
   function editArrival() {
     if (!range?.from) return;
@@ -97,12 +105,12 @@ export default function Calendrier() {
     const day = iso(date);
     if (day < iso(today)) return true;
     if (selectingEnd && day > checkIn!) return conflicts(checkIn!, day);
-    return occupied(day);
+    return !!nightFor(day);
   }
   function select(date: Date) {
     const day = iso(date);
     setPreviewDay(null);
-    setPinned(stayFor(day) ? previous => previous === day ? null : day : null);
+    setPinned(canInspect(day) ? previous => previous === day ? null : day : null);
     if (booking.isPending || disabled(date)) return;
     localStorage.removeItem(signInDatesKey);
     setNotice("");
@@ -127,7 +135,7 @@ export default function Calendrier() {
     },
   });
   const visibleStart = iso(startOfMonth(month)), visibleEnd = iso(addMonths(startOfMonth(month), mobile ? 1 : 2));
-  const visible = stays.filter(s => s.startDate < visibleEnd && s.endDate > visibleStart);
+  const visible = stays.filter(s => s.startDate < visibleEnd && s.endDate >= visibleStart);
   const ready = !!chalet && availability.isSuccess && !availability.isRefetchError;
   return <main className="calendar-page min-h-screen bg-secondary/20 pt-28 pb-20 px-4">
     <div className="max-w-5xl mx-auto">
@@ -138,25 +146,26 @@ export default function Calendrier() {
         : <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_17rem] items-start">
           <section ref={calendar} tabIndex={-1} aria-label="Dates du séjour" className="bg-background border rounded-2xl p-4 md:p-6 scroll-mt-24">
             <p className="mb-4 text-sm text-muted-foreground" role="status">{editingArrival ? "Choisissez votre nouvelle date d’arrivée dans le calendrier." : selectingEnd ? "Choisissez maintenant votre date de départ." : "Sélectionnez votre arrivée, puis votre départ."}</p>
-            {user?.isOwner && visible.some(s => s.status === "confirmed" && s.ownerName) &&
-              <p className="calendar-inspect-hint">Survolez ou touchez une nuit réservée pour voir qui séjourne au chalet.</p>}
-            <StayInspection.Provider value={{ stayFor, active: previewDay ?? pinned,
+            {ownerView && visible.some(s => s.ownerName) &&
+              <p className="calendar-inspect-hint">Survolez ou touchez une date pour voir qui a réservé ou fait une demande.</p>}
+            <StayInspection.Provider value={{ staysFor, ownerView, active: previewDay ?? pinned,
               preview: (day, visible) => setPreviewDay(prev => visible ? day : prev === day ? null : prev) }}>
             <DayPicker locale={fr} mode="range" month={month} onMonthChange={m => { setPinned(null); setPreviewDay(null); setMonth(m); }}
               numberOfMonths={mobile ? 1 : 2} startMonth={firstMonth} selected={range}
               components={{ DayButton: CalendarDayButton }}
-              onSelect={(_range, day) => select(day)} disabled={d => !stayFor(iso(d)) && disabled(d)}
+              onSelect={(_range, day) => select(day)} disabled={d => !canInspect(iso(d)) && disabled(d)}
               modifiers={{
-                held: d => stays.some(s => s.status === "held" && s.startDate <= iso(d) && iso(d) < s.endDate),
-                booked: d => !stayFor(iso(d)) && stays.some(s => s.status === "confirmed" && s.startDate <= iso(d) && iso(d) < s.endDate),
+                held: d => genericStatus(iso(d)) === "held",
+                booked: d => genericStatus(iso(d)) === "confirmed",
               }}
               modifiersStyles={{ held: { backgroundColor: "#f6e8c3", color: "#594418" }, booked: { backgroundColor: "#dce7e4", color: "#26463d" } }}
             />
             </StayInspection.Provider>
             <div className="flex flex-wrap gap-4 mt-5 text-sm"><span>○ Disponible</span><span className="bg-[#f6e8c3] px-2 rounded">En attente</span><span className="bg-[#dce7e4] px-2 rounded">Réservé</span></div>
+            <p className="mt-2 text-sm text-muted-foreground"><strong>Départ</strong> : une nouvelle arrivée est possible ce jour-là si la nuit est libre.</p>
             {visible.length > 0 && <ul className="border-t mt-5 pt-3 text-sm space-y-2">{visible.map(s =>
-              <li key={s.startDate} className="calendar-stay-row">{user?.isOwner && s.status === "confirmed" && s.ownerName
-                ? <><span className="calendar-swatch" style={stayStyle(s.ownerColorSlot)} aria-hidden="true" /><span><strong>{s.ownerName}</strong> · {stayDates(s.startDate, s.endDate)}</span></>
+              <li key={s.startDate} className="calendar-stay-row">{ownerView && s.ownerName
+                ? <><span className="calendar-swatch" style={stayStyle(s.ownerColorSlot)} aria-hidden="true" /><span><strong>{s.ownerName}</strong> · {stayDates(s.startDate, s.endDate)} · {s.status === "held" ? "En attente" : "Approuvée"}</span></>
                 : <span>{stayDates(s.startDate, s.endDate)} · {s.status === "held" ? "En attente" : "Réservé"}</span>}</li>)}</ul>}
           </section>
           <aside className="p-5 border rounded-2xl bg-background">
