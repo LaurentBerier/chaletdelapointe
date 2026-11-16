@@ -1,9 +1,11 @@
+import { managesStays } from "../../../../lib/shared/reservation-roles";
 import {
   relationships,
   isRelationship,
 } from "../../../../lib/shared/membership";
 import {
   reviewId,
+  returnPanel,
   reviewPath,
   rememberReview,
   rememberedReview,
@@ -37,25 +39,23 @@ export default function Connexion() {
     setPassword("");
   };
   const requestedReview = reviewId(location.search);
+  const panel = returnPanel(location.search, "suite");
   const returnReview =
-    requestedReview || (auth.user?.isAdmin && rememberedReview());
+    requestedReview || (managesStays(auth.user) && rememberedReview());
   if (auth.isAuthenticated && !auth.recovery)
     return (
       <Redirect
         to={
           returnReview
             ? reviewPath(returnReview)
-            : new URLSearchParams(location.search).get("suite") ===
-                "approbations"
-              ? "/tableau-de-bord?onglet=approbations"
-              : new URLSearchParams(location.search).get("suite") === "profil"
-                ? "/tableau-de-bord?onglet=profil"
-                : localStorage.getItem("chalet.calendar.sign-in-dates") &&
-                    auth.user?.canBook
-                  ? "/calendrier?reprendre=1"
-                  : auth.user?.canBook
-                    ? "/tableau-de-bord"
-                    : "/tableau-de-bord?onglet=profil"
+            : panel
+              ? "/tableau-de-bord?onglet=" + panel
+              : localStorage.getItem("chalet.calendar.sign-in-dates") &&
+                  auth.user?.canBook
+                ? "/calendrier?reprendre=1"
+                : auth.user?.canBook
+                  ? "/tableau-de-bord"
+                  : "/tableau-de-bord?onglet=profil"
         }
       />
     );

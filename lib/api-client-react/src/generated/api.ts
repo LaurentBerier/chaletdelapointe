@@ -18,6 +18,7 @@ import type {
 
 import type {
   AdminActionBody,
+  AdminListReservations200Item,
   AdminModifyBody,
   CalendarEntry,
   CreateReservationInput,
@@ -791,11 +792,14 @@ export const getAdminListReservationsUrl = () => {
 
 export const adminListReservations = async (
   options?: RequestInit,
-): Promise<Reservation[]> => {
-  return customFetch<Reservation[]>(getAdminListReservationsUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<AdminListReservations200Item[]> => {
+  return customFetch<AdminListReservations200Item[]>(
+    getAdminListReservationsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getAdminListReservationsQueryKey = () => {

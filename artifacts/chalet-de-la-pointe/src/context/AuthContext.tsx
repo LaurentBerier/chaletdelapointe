@@ -1,3 +1,4 @@
+import { returnPanel } from "@/lib/access-review";
 import {
   isRelationship,
   type Relationship,
@@ -27,6 +28,7 @@ interface Owner {
   bookingAccess: BookingAccess;
   name: string;
   canApprove: boolean;
+  isReservationAdmin: boolean;
   isAdmin: boolean;
 }
 interface AuthContextValue {
@@ -130,9 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [cache]);
 
   async function login(email: string) {
-    const next = new URLSearchParams(location.search).get("suite");
+    const next = returnPanel(location.search, "suite");
     const redirect = new URL("/connexion", location.origin);
-    if (next === "approbations") redirect.searchParams.set("suite", next);
+    if (next) redirect.searchParams.set("suite", next);
     const { error } = await (
       await client()
     ).auth.signInWithOtp({

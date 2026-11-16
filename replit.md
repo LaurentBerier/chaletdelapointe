@@ -50,7 +50,7 @@ Set `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `WEBSITE_URL`, `
 
 For hosted Supabase, set `DATABASE_CA_CERT` to the PEM certificate downloaded from Database Settings and leave SSL options out of `DATABASE_URL` so the server verifies the pool's certificate. Give the web server a restricted database role. A Vercel preview can use its deployment URL for review links if `WEBSITE_URL` is unset.
 
-To invite a single owner, run `node lib/db/scripts/invite-owner.mjs EMAIL NAME [--approver]` with the intended project's provisioning environment (a database role that can read Auth identities and manage owner profiles) and `SUPABASE_SECRET_KEY`. The server uses `can_approve` to send approval requests and authorize decisions. A single decision finalizes each request. Booking email is queued in the reservation transaction and retried after bookings, reviews, and dashboard visits.
+To invite a single owner, run `node lib/db/scripts/invite-owner.mjs EMAIL NAME [--approver]` with the intended project's provisioning environment (a database role that can read Auth identities and manage owner profiles) and `SUPABASE_SECRET_KEY`. The selected owner committee receives stay approval emails. Committee owners and both administrator roles can make stay decisions. A single decision finalizes each request. Booking email is queued in the reservation transaction and retried after bookings, reviews, and dashboard visits.
 
 ### Pricing engine (`artifacts/api-server/src/lib/pricing.ts`)
 Iterates each night between start/end (exclusive end), looks up the matching pricing_season row, finds the best discount rule for `(season, user.group, user.is_vip)`, and aggregates a per-season breakdown. Errors as `PricingError` with proper HTTP status.
@@ -63,7 +63,7 @@ Iterates each night between start/end (exclusive end), looks up the matching pri
 - `GET /admin/reservations`, `POST /admin/reservations/{id}/confirm`, `POST /admin/reservations/{id}/cancel`, `PATCH /admin/reservations/{id}` — admin only, all logged in `admin_actions`
 
 - `GET /me` — signed-in owner profile
-- `GET /reviews`, `POST /reviews/{id}` — selected approvers
+- `GET /reviews`, `POST /reviews/{id}` — selected committee members and administrators
 
 ### Historical demo seed data
 - 1 property (`chalet-saint-mathieu`)

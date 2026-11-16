@@ -1,3 +1,4 @@
+import { managementLinks, panelHref } from "@/lib/management-navigation";
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +20,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [accountOpen,setAccountOpen]=useState(false);
   const { isAuthenticated, user, logout } = useAuth();
 
+  const staffLinks = managementLinks(user);
+  const personalLinks = user?.accountStatus === "approved"
+    ? [["profil", "Mon profil"], ["securite", "Sécurité"], ...(user.canBook ? [["reservations", "Mes réservations"]] : [])]
+    : [["profil", "Mon inscription"]];
+  const staffMenu = staffLinks.length > 0 && <div className="staff-menu">
+    <p className="eyebrow">Administration</p>
+    {staffLinks.map(link => <Link key={link.id} href={panelHref(link.id)} onClick={() => { setMobileMenuOpen(false); setAccountOpen(false); }}>
+      <link.icon size={16} aria-hidden="true" />{link.label}
+    </Link>)}
+  </div>;
   const isHome = location === "/";
   const isAuthPage = location === "/connexion" || location === "/inscription";
   const isDashboard = location === "/tableau-de-bord";
@@ -79,7 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {isAuthenticated ? (
               <div className="relative" onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setAccountOpen(false);}} onKeyDown={e=>{if(e.key==="Escape")setAccountOpen(false);}}>
               <button aria-expanded={accountOpen} className={"account-trigger "+textColor} onClick={()=>setAccountOpen(v=>!v)}><User size={15}/><span>{user?.name}</span><ChevronDown size={15}/></button>
-              {accountOpen&&<div className="account-pop"><p className="eyebrow">Mon espace</p>{[...(user?.accountStatus === "approved" ? [["profil","Mon profil"],["securite","Sécurité"]] : [["profil","Mon inscription"]]),...(user?.canBook?[["reservations","Mes réservations"]]:[]),...(user?.isAdmin?[["comptes","Super administration"]]:[])].map(([id,label])=><Link key={id} onClick={()=>setAccountOpen(false)} href={"/tableau-de-bord?onglet="+id}>{label}</Link>)}<button onClick={()=>{setAccountOpen(false);void logout();}}>Déconnexion</button></div>}</div>
+              {accountOpen&&<div className="account-pop"><p className="eyebrow">Mon espace</p>{personalLinks.map(([id,label])=><Link key={id} onClick={()=>setAccountOpen(false)} href={"/tableau-de-bord?onglet="+id}>{label}</Link>)}{staffMenu}<button onClick={()=>{setAccountOpen(false);void logout();}}>Déconnexion</button></div>}</div>
             ) : (
               <Link
                 href="/connexion"
@@ -114,12 +125,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-background pt-24 px-6 pb-6 flex flex-col lg:hidden"
+            className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-background pt-20 px-6 pb-8 lg:hidden"
           >
-            <nav className="flex flex-col gap-6 mt-8">
+            <nav aria-label="Navigation mobile" className="mobile-site-nav">
+              {isAuthenticated && <div className="mobile-account-links">
+                <Link href="/tableau-de-bord" className="font-semibold text-primary" onClick={() => setMobileMenuOpen(false)}>Mon espace · {user?.name}</Link>
+                {staffMenu}
+              </div>}
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
                   href={link.href}
                   className={`text-2xl font-serif transition-colors ${
                     location === link.href ? "text-primary" : "text-foreground/80"
@@ -128,17 +144,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   {link.label}
                 </Link>
               ))}
-              <div className="border-t border-border pt-6 mt-2">
-                {isAuthenticated ? (
-                  <Link href="/tableau-de-bord" className="text-2xl font-serif text-primary">
-                    Mon espace · {user?.name}
-                  </Link>
-                ) : (
-                  <Link href="/connexion" className="text-2xl font-serif text-foreground/80">
-                    Connexion
-                  </Link>
-                )}
-              </div>
+              {!isAuthenticated && <Link href="/connexion" className="text-2xl font-serif">Connexion</Link>}
             </nav>
           </motion.div>
         )}

@@ -1,3 +1,4 @@
+import { managesStays } from "../../../../lib/shared/reservation-roles";
 import { IllustratedNote } from "./field-heading";
 import { AdminCancelStay } from "./cancel-stay";
 import { CalendarDays } from "lucide-react";
@@ -43,6 +44,7 @@ export function BookingList({ review = false }: { review?: boolean }) {
     onSettled: async () => {
       await cache.invalidateQueries({ queryKey: ["bookings"] });
       await cache.invalidateQueries({ queryKey: ["availability"] });
+      await cache.invalidateQueries({ queryKey: ["admin-stays"] });
     },
   });
   return (
@@ -116,8 +118,8 @@ export function BookingList({ review = false }: { review?: boolean }) {
                 </button>
               </div>
             )}
-            {user?.isAdmin && s.status === "confirmed" &&
-              <AdminCancelStay stay={s} name={review ? s.ownerName : user.name} />}
+            {managesStays(user) && s.status === "confirmed" &&
+              <AdminCancelStay stay={s} name={review ? s.ownerName : user?.name} />}
           </li>
         ))}
       </ul>

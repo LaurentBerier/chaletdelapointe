@@ -7,6 +7,7 @@
  */
 
 export * from "./adminActionBody";
+export * from "./adminListReservations200Item";
 export * from "./adminModifyBody";
 export * from "./calendarEntry";
 export * from "./calendarEntryStatus";

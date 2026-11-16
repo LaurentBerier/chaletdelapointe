@@ -15,7 +15,11 @@ import {
   posts,
   propertiesTable as properties,
 } from "../../../../lib/db/src/index.js";
-import { requireAccount, requireAdmin } from "../middlewares/auth.js";
+import {
+  requireAccount,
+  requireAdmin,
+  requireStaff,
+} from "../middlewares/auth.js";
 import { deliverAccessEmails } from "../lib/access-email.js";
 import { randomUUID } from "node:crypto";
 
@@ -35,6 +39,7 @@ const account = {
   canApprove: users.canApprove,
   isDisabled: users.isDisabled,
   isAdmin: users.isAdmin,
+  isReservationAdmin: users.isReservationAdmin,
   bookingAccess: users.bookingAccess,
   bookingAccessRequestId: users.bookingAccessRequestId,
   bookingAccessRequestedAt: users.bookingAccessRequestedAt,
@@ -55,6 +60,43 @@ router.patch("/me", requireAccount, async (req, res) => {
 router.get("/admin/accounts", requireAdmin, async (_req, res) => {
   res.json(await db.select(account).from(users).orderBy(asc(users.name)));
 });
+const pendingRequests = or(
+  eq(users.accountStatus, "pending"),
+  and(
+    eq(users.bookingAccess, "pending"),
+    eq(users.accountStatus, "approved"),
+    eq(users.isDisabled, false),
+  ),
+);
+const reviewScope = (actor: { id: string; isAdmin: boolean }) =>
+  actor.isAdmin
+    ? undefined
+    : and(
+        ne(users.id, actor.id),
+        eq(users.isAdmin, false),
+        eq(users.isReservationAdmin, false),
+      );
+
+router.get("/admin/requests", requireStaff, async (req, res) => {
+  const id = req.query.demande;
+  if (id !== undefined && !uuid(id)) {
+    res.status(400).json({ error: "Demande invalide." });
+    return;
+  }
+  const filter = id
+    ? or(
+        eq(users.registrationRequestId, id),
+        eq(users.bookingAccessRequestId, id),
+      )
+    : pendingRequests;
+  res.json(
+    await db
+      .select(account)
+      .from(users)
+      .where(and(reviewScope(req.user!), filter))
+      .orderBy(asc(users.name)),
+  );
+});
 const validGroup = (group: unknown): group is typeof users.$inferSelect.group =>
   typeof group === "string" &&
   ["public", "proprietaire", "ancien_proprietaire", "famille", "ami"].includes(
@@ -63,9 +105,23 @@ const validGroup = (group: unknown): group is typeof users.$inferSelect.group =>
 
 router.post(
   "/admin/accounts/:id/registration",
-  requireAdmin,
+  requireStaff,
   async (req, res) => {
     const { decision, requestId, group, canBook, canApprove } = req.body ?? {};
+    if (
+      !req.user!.isAdmin &&
+      (req.body?.isAdmin ||
+        req.body?.isReservationAdmin ||
+        (decision === "approve" &&
+          (group !== "public" || canApprove !== false)))
+    ) {
+      res
+        .status(403)
+        .json({
+          error: "Seul le super administrateur peut attribuer les rôles.",
+        });
+      return;
+    }
     if (
       !uuid(req.params.id) ||
       !uuid(requestId) ||
@@ -97,6 +153,7 @@ router.post(
       .where(
         and(
           eq(users.id, req.params.id),
+          reviewScope(req.user!),
           eq(users.registrationRequestId, requestId),
           eq(users.accountStatus, "pending"),
           eq(users.isAdmin, false),
@@ -114,10 +171,13 @@ router.post(
   },
 );
 router.patch("/admin/accounts/:id", requireAdmin, async (req, res) => {
-  const { name, group, canApprove, isDisabled, canBook } = req.body ?? {};
+  const { name, group, canApprove, isDisabled, canBook, isReservationAdmin } =
+    req.body ?? {};
   if (
     !uuid(req.params.id) ||
     (name !== undefined && !field(name, 80)) ||
+    (isReservationAdmin !== undefined &&
+      typeof isReservationAdmin !== "boolean") ||
     !validGroup(group) ||
     (canBook !== undefined && typeof canBook !== "boolean") ||
     typeof canApprove !== "boolean" ||
@@ -130,6 +190,7 @@ router.patch("/admin/accounts/:id", requireAdmin, async (req, res) => {
     .update(users)
     .set({
       ...(name === undefined ? {} : { name: name.trim() }),
+      ...(isReservationAdmin === undefined ? {} : { isReservationAdmin }),
       group,
       ...(canBook !== undefined
         ? {
@@ -200,29 +261,29 @@ router.post("/me/booking-access", requireAccount, async (req, res) => {
     .status(409)
     .json({ error: "Votre accès a changé. Actualisez votre profil." });
 });
-router.get("/admin/booking-access/count", requireAdmin, async (_req, res) => {
+router.get("/admin/booking-access/count", requireStaff, async (req, res) => {
   await deliverAccessEmails();
   const [row] = await db
     .select({ pending: count() })
     .from(users)
-    .where(
-      or(
-        eq(users.accountStatus, "pending"),
-        and(
-          eq(users.bookingAccess, "pending"),
-          eq(users.accountStatus, "approved"),
-          eq(users.isDisabled, false),
-        ),
-      ),
-    );
+    .where(and(reviewScope(req.user!), pendingRequests));
   res.json(row);
 });
 router.post(
   "/admin/accounts/:id/booking-access",
-  requireAdmin,
+  requireStaff,
   async (req, res) => {
     const { decision, requestId } = req.body ?? {};
     const review = decision === "approve" || decision === "deny";
+    if (!req.user!.isAdmin && !review) {
+      res
+        .status(403)
+        .json({
+          error:
+            "Seul le super administrateur peut modifier un accès déjà décidé.",
+        });
+      return;
+    }
     if (review && !uuid(requestId)) {
       res
         .status(409)
@@ -260,6 +321,7 @@ router.post(
           eq(users.isAdmin, false),
           eq(users.isDisabled, false),
           eq(users.accountStatus, "approved"),
+          reviewScope(req.user!),
           eq(users.bookingAccess, before),
           review ? eq(users.bookingAccessRequestId, requestId) : undefined,
         ),

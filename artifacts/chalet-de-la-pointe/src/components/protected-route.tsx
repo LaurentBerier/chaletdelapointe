@@ -1,4 +1,4 @@
-import { reviewId } from "@/lib/access-review";
+import { reviewId, returnPanel } from "@/lib/access-review";
 import { Redirect } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 
@@ -28,16 +28,15 @@ export function ProtectedRoute({
 
   if (!isAuthenticated) {
     const selectedReview = reviewId(location.search);
+    const panel = returnPanel(location.search, "onglet");
     return (
       <Redirect
         to={
           selectedReview
             ? "/connexion?demande=" + selectedReview
-            : location.search.includes("onglet=approbations")
-              ? "/connexion?suite=approbations"
-              : new URLSearchParams(location.search).get("onglet") === "profil"
-                ? "/connexion?suite=profil"
-                : "/connexion"
+            : panel
+              ? "/connexion?suite=" + panel
+              : "/connexion"
         }
       />
     );

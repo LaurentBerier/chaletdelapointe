@@ -13,7 +13,7 @@ import {
   AdminModifyReservationResponse,
 } from "../../../../lib/api-zod/src/index.js";
 import { cancelStayAsAdmin } from "../lib/cancel-stay.js";
-import { requireAdmin } from "../middlewares/auth.js";
+import { requireAdmin, requireStaff } from "../middlewares/auth.js";
 import { logAdminAction } from "../lib/admin-log.js";
 import { calculateReservationPrice, validateStay, PricingError } from "../lib/pricing.js";
 import { toIsoDate } from "../lib/dates.js";
@@ -37,12 +37,12 @@ function isOverlapError(err: unknown): boolean {
   return false;
 }
 
-router.get("/admin/reservations", requireAdmin, async (_req, res): Promise<void> => {
+router.get("/admin/reservations", requireStaff, async (_req, res): Promise<void> => {
   const rows = await db
-    .select()
-    .from(reservationsTable)
+    .select({ stay: reservationsTable, ownerName: usersTable.name })
+    .from(reservationsTable).innerJoin(usersTable, eq(usersTable.id, reservationsTable.userId))
     .orderBy(desc(reservationsTable.createdAt));
-  res.json(AdminListReservationsResponse.parse(rows.map(serialize)));
+  res.json(AdminListReservationsResponse.parse(rows.map(({ stay, ownerName }) => ({ ...serialize(stay), ownerName }))));
 });
 
 router.post("/admin/reservations/:id/confirm", requireAdmin, async (req, res): Promise<void> => {
@@ -89,7 +89,7 @@ router.post("/admin/reservations/:id/confirm", requireAdmin, async (req, res): P
   }
 });
 
-router.post("/admin/reservations/:id/cancel", requireAdmin, async (req, res): Promise<void> => {
+router.post("/admin/reservations/:id/cancel", requireStaff, async (req, res): Promise<void> => {
   const params = AdminCancelReservationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -103,7 +103,7 @@ router.post("/admin/reservations/:id/cancel", requireAdmin, async (req, res): Pr
   await cancelStayAsAdmin(res, params.data.id, req.user!.id, body.data.reason);
 });
 
-router.patch("/admin/reservations/:id", requireAdmin, async (req, res): Promise<void> => {
+router.patch("/admin/reservations/:id", requireStaff, async (req, res): Promise<void> => {
   const params = AdminModifyReservationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -134,6 +134,10 @@ router.patch("/admin/reservations/:id", requireAdmin, async (req, res): Promise<
 
   if (existing.status === "cancelled") {
     res.status(409).json({ error: "Ce séjour a déjà été annulé." });
+    return;
+  }
+  if (!req.user!.isAdmin && body.data.status && body.data.status !== existing.status) {
+    res.status(400).json({ error: "Utilisez la décision d’approbation pour changer le statut." });
     return;
   }
   const newStartDate = body.data.startDate ? toIsoDate(body.data.startDate) : toIsoDate(existing.startDate);

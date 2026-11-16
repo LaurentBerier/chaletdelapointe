@@ -140,6 +140,7 @@ export default function Calendrier() {
   return <main className="calendar-page min-h-screen bg-secondary/20 pt-28 pb-20 px-4">
     <div className="max-w-5xl mx-auto">
       <FieldHeading kind="stay" title="Calendrier des disponibilités" />
+      {user?.canApprove && <Link className="calendar-link my-3 min-h-11" href="/tableau-de-bord?onglet=approbations">Gérer les demandes de séjour →</Link>}
       {(!ready && (properties.isError || availability.isError || (properties.isSuccess && !chalet)))
         ? <p role="alert">Les disponibilités sont momentanément indisponibles. <button className="underline" onClick={() => { void properties.refetch(); if (chalet) void availability.refetch(); }}>Réessayer</button></p>
         : !ready ? <p role="status">Chargement des disponibilités…</p>

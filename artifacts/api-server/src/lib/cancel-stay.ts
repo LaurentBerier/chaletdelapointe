@@ -5,7 +5,7 @@ import { AdminCancelReservationResponse } from "../../../../lib/api-zod/src/inde
 import { stayDates } from "../../../../lib/shared/stay-dates.js";
 import { cancellationSubject, deliverBookingEmails } from "./booking-email.js";
 
-// Called only after the route verifies the super-admin permission.
+// Called only after the route verifies the reservation management permission.
 export async function cancelStayAsAdmin(res: Response, id: string, adminId: string, reason?: string | null) {
   const result = await db.transaction(async (tx) => {
     const [stay] = await tx.select().from(stays).where(eq(stays.id, id)).for("update");

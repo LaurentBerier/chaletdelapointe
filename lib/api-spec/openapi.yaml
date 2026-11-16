@@ -225,7 +225,13 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: "#/components/schemas/Reservation" }
+                items:
+                  allOf:
+                    - { $ref: "#/components/schemas/Reservation" }
+                    - type: object
+                      properties:
+                        ownerName: { type: string }
+                      required: [ownerName]
         "403":
           description: Forbidden
           content:

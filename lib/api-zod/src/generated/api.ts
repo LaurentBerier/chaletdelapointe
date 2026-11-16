@@ -257,39 +257,45 @@ export const GetPublicCalendarResponse = zod.array(
 /**
  * @summary Admin - list all reservations
  */
-export const AdminListReservationsResponseItem = zod.object({
-  id: zod.string().uuid(),
-  propertyId: zod.string().uuid(),
-  userId: zod.string().uuid(),
-  startDate: zod.coerce.date(),
-  endDate: zod.coerce.date(),
-  guests: zod.number(),
-  nights: zod.number(),
-  subtotal: zod.number(),
-  discountAmount: zod.number(),
-  total: zod.number(),
-  status: zod.enum([
-    "draft",
-    "pending_payment",
-    "pending_approval",
-    "confirmed",
-    "rejected",
-    "cancelled",
-    "expired",
-  ]),
-  notes: zod.string().nullish(),
-  seasonBreakdown: zod.array(
+export const AdminListReservationsResponseItem = zod
+  .object({
+    id: zod.string().uuid(),
+    propertyId: zod.string().uuid(),
+    userId: zod.string().uuid(),
+    startDate: zod.coerce.date(),
+    endDate: zod.coerce.date(),
+    guests: zod.number(),
+    nights: zod.number(),
+    subtotal: zod.number(),
+    discountAmount: zod.number(),
+    total: zod.number(),
+    status: zod.enum([
+      "draft",
+      "pending_payment",
+      "pending_approval",
+      "confirmed",
+      "rejected",
+      "cancelled",
+      "expired",
+    ]),
+    notes: zod.string().nullish(),
+    seasonBreakdown: zod.array(
+      zod.object({
+        seasonName: zod.enum(["haute", "mi", "basse"]),
+        nights: zod.number(),
+        basePricePerNight: zod.number(),
+        effectivePricePerNight: zod.number(),
+        subtotal: zod.number(),
+      }),
+    ),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  })
+  .and(
     zod.object({
-      seasonName: zod.enum(["haute", "mi", "basse"]),
-      nights: zod.number(),
-      basePricePerNight: zod.number(),
-      effectivePricePerNight: zod.number(),
-      subtotal: zod.number(),
+      ownerName: zod.string(),
     }),
-  ),
-  createdAt: zod.coerce.date(),
-  updatedAt: zod.coerce.date(),
-});
+  );
 export const AdminListReservationsResponse = zod.array(
   AdminListReservationsResponseItem,
 );

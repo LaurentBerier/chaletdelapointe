@@ -1,3 +1,4 @@
+import { managesStays, reviewsStays } from "../../../../lib/shared/reservation-roles.js";
 import { mayBook } from "../../../../lib/db/src/booking-access.js";
 import type { RequestHandler } from "express";
 import { eq } from "drizzle-orm";
@@ -103,8 +104,16 @@ export const requireAdmin: RequestHandler = (req, res, next) => {
   next();
 };
 
+export const requireStaff: RequestHandler = (req, res, next) => {
+  if (!managesStays(req.user)) {
+    res.status(req.user || req.applicant ? 403 : 401).json({ error: "Accès réservé aux administrateurs." });
+    return;
+  }
+  next();
+};
+
 export const requireApprover: RequestHandler = (req, res, next) => {
-  if (!req.user?.canApprove || req.user.group !== "proprietaire") {
+  if (!reviewsStays(req.user)) {
     res
       .status(req.user || req.applicant ? 403 : 401)
       .json({ error: "Accès au comité requis." });

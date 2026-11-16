@@ -158,3 +158,7 @@ export interface AdminModifyBody {
   /** @nullable */
   reason?: string | null;
 }
+
+export type AdminListReservations200Item = Reservation & {
+  ownerName: string;
+};

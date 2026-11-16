@@ -26,6 +26,7 @@ type Account = {
   canApprove: boolean;
   isDisabled: boolean;
   isAdmin: boolean;
+  isReservationAdmin: boolean;
   bookingAccess: BookingAccess;
   bookingAccessRequestId: string | null;
   bookingAccessRequestedAt: string | null;
@@ -255,6 +256,7 @@ function AccessDecision({ account: a }: { account: Account }) {
   );
 }
 function RegistrationCard({ a }: { a: Account }) {
+  const { user } = useAuth();
   const op = useAction(),
     cache = useQueryClient();
   const [group, setGroup] = useState("public"),
@@ -291,7 +293,7 @@ function RegistrationCard({ a }: { a: Account }) {
         </p>
       ) : (
         <>
-          <label>
+          {user?.isAdmin ? <label>
             Rôle à attribuer
             <select
               value={group}
@@ -306,10 +308,10 @@ function RegistrationCard({ a }: { a: Account }) {
                 </option>
               ))}
             </select>
-          </label>
+          </label> : <p>Le compte sera ouvert comme membre. Le super administrateur attribue les rôles.</p>}
           {group === "proprietaire" && (
             <p>
-              Un propriétaire peut voir les noms associés aux séjours confirmés.
+              Un propriétaire voit les noms associés aux séjours en attente et confirmés.
             </p>
           )}
           <label className="check">
@@ -331,8 +333,7 @@ function RegistrationCard({ a }: { a: Account }) {
             </label>
           )}
           <p>
-            Le membre recevra votre décision par courriel. Vous pourrez modifier
-            ses permissions plus tard.
+            Le membre recevra votre décision par courriel.
           </p>
           <div className="button-row">
             <button
@@ -371,7 +372,7 @@ function AccountRow({ a }: { a: Account }) {
             ? "Super admin"
             : a.isDisabled
               ? "Suspendu"
-              : groups[a.group]}
+              : a.isReservationAdmin ? "Administrateur" : groups[a.group]}
         </span>
       </summary>
       {a.declaredRelation && (
@@ -397,6 +398,7 @@ function AccountRow({ a }: { a: Account }) {
                   ? { canBook: f.book === "on" }
                   : {}),
                 isDisabled: f.disabled === "on",
+                isReservationAdmin: f.staff === "on",
               }),
             );
           }}
@@ -406,7 +408,7 @@ function AccountRow({ a }: { a: Account }) {
             <input name="name" defaultValue={a.name} maxLength={80} required />
           </label>
           <label>
-            Rôle attribué
+            Lien avec le chalet
             <select value={group} onChange={(e) => setGroup(e.target.value)}>
               {Object.entries(groups).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -442,6 +444,10 @@ function AccountRow({ a }: { a: Account }) {
             </label>
           )}
           <label className="check">
+            <input type="checkbox" name="staff" defaultChecked={a.isReservationAdmin} /> Administrateur
+          </label>
+          <p className="text-sm">Gère tous les séjours et examine les demandes de compte et d’accès aux réservations.</p>
+          <label className="check">
             <input
               type="checkbox"
               name="disabled"
@@ -459,10 +465,13 @@ function AccountRow({ a }: { a: Account }) {
   );
 }
 export function AccountsPanel({ requestId }: { requestId: string | null }) {
+  const { user } = useAuth();
+  const full = !!user?.isAdmin;
   const q = useQuery({
-    queryKey: ["admin-accounts"],
+    queryKey: ["admin-accounts", user?.id, full ? "directory" : "requests", requestId],
     refetchInterval: 30000,
-    queryFn: () => ownerRequest<Account[]>("/admin/accounts"),
+    queryFn: () => ownerRequest<Account[]>(full ? "/admin/accounts" :
+      "/admin/requests" + (requestId ? "?demande=" + encodeURIComponent(requestId) : "")),
   });
   if (requestId) {
     const applicant = q.data?.find(
@@ -478,7 +487,7 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
           <h2 className="section-title">Demande d’inscription</h2>
           <RegistrationCard a={applicant} key={applicant.id} />
           <Link className="text-link" href="/tableau-de-bord?onglet=comptes">
-            Voir tous les comptes
+            {full ? "Voir tous les comptes" : "Voir toutes les demandes"}
           </Link>
         </section>
       );
@@ -516,14 +525,14 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
           </div>
         )}
         <Link className="text-link" href="/tableau-de-bord?onglet=comptes">
-          Voir tous les comptes
+          {full ? "Voir tous les comptes" : "Voir toutes les demandes"}
         </Link>
       </section>
     );
   }
   return (
     <>
-      <h2 className="section-title">Comptes et accès</h2>
+      <h2 className="section-title">{full ? "Comptes et accès" : "Demandes des membres"}</h2>
       <p className="section-note">
         Les nouveaux membres apparaissent après confirmation de leur courriel.
         Le droit de réserver peut être accordé sans attribuer le rôle de
@@ -586,10 +595,10 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
         ? "Chargement…"
         : q.isError
           ? "Comptes indisponibles."
-          : q.data
+          : full && q.data
               .filter((a) => a.accountStatus === "approved")
               .map((a) => <AccountRow key={a.id} a={a} />)}
-      {q.data?.some((a) => a.accountStatus === "denied") && (
+      {full && q.data?.some((a) => a.accountStatus === "denied") && (
         <details className="panel">
           <summary>Inscriptions refusées</summary>
           {q.data
@@ -833,6 +842,7 @@ type Stay = {
   guests: number;
   status: string;
   userId: string;
+  ownerName: string;
 };
 const labels: Record<string, string> = {
   pending_approval: "En attente",
@@ -913,10 +923,6 @@ export function StaysPanel() {
   const q = useQuery({
       queryKey: ["admin-stays"],
       queryFn: () => ownerRequest<Stay[]>("/admin/reservations"),
-    }),
-    a = useQuery({
-      queryKey: ["admin-accounts"],
-      queryFn: () => ownerRequest<Account[]>("/admin/accounts"),
     });
   return (
     <>
@@ -934,7 +940,7 @@ export function StaysPanel() {
           <AdminStay
             key={s.id}
             s={s}
-            name={a.data?.find((u) => u.id === s.userId)?.name}
+            name={s.ownerName}
           />
         ))
       ) : (

@@ -32,3 +32,18 @@ export function rememberedReview() {
   }
   return null;
 }
+
+const panelIds = [
+  "profil",
+  "securite",
+  "reservations",
+  "approbations",
+  "comptes",
+  "sejours",
+  "chalet",
+  "blogue",
+];
+export function returnPanel(search: string, key: "onglet" | "suite") {
+  const panel = new URLSearchParams(search).get(key);
+  return panel && panelIds.includes(panel) ? panel : undefined;
+}

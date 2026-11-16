@@ -404,8 +404,26 @@
 .calendar-swatch {flex:none;align-self:center;width:.75rem;height:.75rem;border-radius:50%;background:var(--stay-accent)}
 .sent-note {display:flex;align-items:center;gap:.8rem;background:#f6f4e9;border:1px solid #d9dbca;border-radius:.65rem;padding:.8rem}
 .sent-note img {width:3.7rem;height:auto}.sent-note strong {font-family:var(--font-serif);font-size:1.1rem}.sent-note p{font-size:.88rem;line-height:1.5}
-.mobile-panel-menu {display:none}
-@media(max-width:850px){.account-nav{display:flex;align-items:center;justify-content:space-between;gap:1rem}.account-nav .nav-group{display:none}.mobile-panel-menu{display:grid;flex:1;min-width:0}.mobile-panel-menu .eyebrow{display:block;padding:0 .45rem;font-size:.6rem}.mobile-panel-menu select{background:transparent;width:100%;min-width:0;color:#234638;font:650 .97rem/1.45 var(--font-sans);padding:.45rem;min-height:44px}.account-nav .nav-logout{align-self:center;padding:.55rem .45rem}}
+.staff-menu {border-top:1px solid #dce2d7;margin-top:.45rem}
+.mobile-site-nav {display:grid;gap:.5rem;max-width:40rem;margin:auto}
+.mobile-site-nav a {display:flex;align-items:center;min-height:44px}
+.mobile-account-links {border-bottom:1px solid #dce2d7;padding-bottom:.75rem;margin-bottom:.5rem}
+.mobile-account-links .staff-menu {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.25rem .5rem;padding-top:.65rem}
+.mobile-account-links .eyebrow {grid-column:1/-1;color:#52675b}
+.mobile-account-links .staff-menu a {gap:.45rem;background:#edf2ed;padding:.45rem .65rem;border-radius:.5rem;font-size:.88rem}
+.staff-menu svg,.account-nav svg {flex-shrink:0}
+.account-pop {max-height:calc(100dvh - 6rem);overflow-y:auto}
+@media(max-width:850px){
+ .account-layout,.account-content {min-width:0}
+ .account-nav {display:grid;gap:.4rem}
+ .account-nav .nav-group {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.1rem .35rem}
+ .account-nav .nav-group[data-group=staff] {order:-1;background:#f3f6f2;border-radius:.6rem;padding:.25rem}
+ .account-nav .nav-group .eyebrow {display:block;grid-column:1/-1;padding:.25rem .6rem}
+ .account-nav .nav-group+.nav-group {margin:0;border:0}
+ .account-nav a,.account-nav .nav-logout,.stay-card button,.account-content .button-row button {min-height:44px}
+ .account-nav .nav-logout {justify-self:start}
+}
+
 @media(max-width:600px){.field-heading img{width:clamp(4.5rem,18vw,6rem)}.calendar-page .rdp-root{--rdp-day-width:clamp(31px,10.1vw,44px);--rdp-day_button-width:clamp(30px,9.8vw,42px)}.calendar-page{padding-top:5.7rem}}
 .security-panel{max-width:38rem}.access-panel{align-items:start}.access-panel .action,.booking-access-compact .action{gap:.45rem}.access-panel .badge,.booking-access-compact .badge{margin-bottom:.55rem}.booking-access-compact{display:grid;gap:.85rem;border-top:1px solid #d5ddd5;margin-top:1rem;padding-top:1rem;font-size:.9rem}
 .access-queue{border:1px solid #d6ddcf;border-radius:1rem;background:#f9f8ef;padding:1.1rem 1.3rem;margin:1rem 0 1.25rem}.access-queue h3{font:500 1.3rem/1.3 var(--font-serif);margin:.25rem 0 .55rem}.access-queue-item{padding-top:.85rem;margin-top:.85rem;border-top:1px solid #d9dfd1}.access-queue-item>p{font-size:.9rem;color:#506459}.access-decision{margin:.8rem 0}

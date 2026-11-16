@@ -31,6 +31,7 @@ export const usersTable = pgTable("users", {
     withTimezone: true,
   }),
   isDisabled: boolean("is_disabled").notNull().default(false),
+  isReservationAdmin: boolean("is_reservation_admin").notNull().default(false),
   isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

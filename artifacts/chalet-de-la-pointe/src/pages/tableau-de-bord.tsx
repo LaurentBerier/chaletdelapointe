@@ -1,17 +1,15 @@
+import { managesStays } from "../../../../lib/shared/reservation-roles";
+import { managementLinks, panelHref } from "@/lib/management-navigation";
 import { relationshipLabel } from "../../../../lib/shared/membership";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { rememberReview, reviewId } from "@/lib/access-review";
 import { useLocation, useSearch, Link } from "wouter";
 import {
   CalendarDays,
   BookOpen,
   LogOut,
-  ShieldCheck,
   KeyRound,
   UserRound,
-  UsersRound,
-  House,
-  CalendarRange,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { ownerRequest, useAuth } from "@/context/AuthContext";
@@ -29,13 +27,24 @@ export default function TableauDeBord() {
   const { user, logout } = useAuth(),
     [, navigate] = useLocation(),
     search = useSearch();
+  const content = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (
+      user?.accountStatus === "approved" &&
+      new URLSearchParams(search).has("onglet") &&
+      window.matchMedia("(max-width: 850px)").matches
+    ) {
+      content.current?.focus({ preventScroll: true });
+      content.current?.scrollIntoView({ block: "start" });
+    }
+  }, [search, user?.accountStatus]);
   const requestId = reviewId(search);
   useEffect(() => {
     if (requestId) rememberReview(null);
   }, [requestId]);
   const count = useQuery({
     queryKey: ["admin-access-count", user?.id],
-    enabled: !!user?.isAdmin,
+    enabled: managesStays(user),
     queryFn: () =>
       ownerRequest<{ pending: number }>("/admin/booking-access/count"),
     refetchInterval: 30000,
@@ -87,6 +96,14 @@ export default function TableauDeBord() {
       </main>
     );
   }
+  const staffLinks = managementLinks(user);
+  const managementPanels = {
+    approbations: <BookingList review />,
+    sejours: <StaysPanel />,
+    comptes: <AccountsPanel requestId={requestId} />,
+    chalet: <ChaletPanel />,
+    blogue: <BlogPanel />,
+  };
   const tabs = [
     {
       id: "reservations",
@@ -111,41 +128,20 @@ export default function TableauDeBord() {
     },
     {
       id: "blogue",
-      label: user.isAdmin ? "Gestion du blogue" : "Mes chroniques",
+      label: "Mes chroniques",
       icon: BookOpen,
-      visible: true,
+      visible: !user.isAdmin,
       panel: <BlogPanel />,
     },
-    {
-      id: "approbations",
-      label: "Approbations",
-      icon: ShieldCheck,
-      visible: user.canApprove,
-      panel: <BookingList review />,
-    },
-    {
-      id: "comptes",
-      label: count.data?.pending
-        ? "Comptes et accès (" + count.data.pending + ")"
-        : "Comptes et accès",
-      icon: UsersRound,
-      visible: user.isAdmin,
-      panel: <AccountsPanel requestId={requestId} />,
-    },
-    {
-      id: "sejours",
-      label: "Tous les séjours",
-      icon: CalendarRange,
-      visible: user.isAdmin,
-      panel: <StaysPanel />,
-    },
-    {
-      id: "chalet",
-      label: "Réglages du chalet",
-      icon: House,
-      visible: user.isAdmin,
-      panel: <ChaletPanel />,
-    },
+    ...staffLinks.map((link) => ({
+      ...link,
+      visible: true,
+      panel: managementPanels[link.id],
+      label:
+        link.id === "comptes" && count.data?.pending
+          ? link.label + " (" + count.data.pending + ")"
+          : link.label,
+    })),
   ].filter((t) => t.visible);
   const selected =
     tabs.find((t) => t.id === new URLSearchParams(search).get("onglet")) ??
@@ -162,11 +158,13 @@ export default function TableauDeBord() {
             <span className="badge">
               {user.isAdmin
                 ? "Super administrateur"
-                : user.canApprove
-                  ? "Propriétaire · Comité d’approbation"
-                  : user.isOwner
-                    ? "Propriétaire"
-                    : "Membre"}
+                : user.isReservationAdmin
+                  ? "Administrateur"
+                  : user.canApprove
+                    ? "Propriétaire · Comité d’approbation"
+                    : user.isOwner
+                      ? "Propriétaire"
+                      : "Membre"}
             </span>
           </div>
           <figure className="welcome-photo">
@@ -181,37 +179,27 @@ export default function TableauDeBord() {
         </header>
         <div className="account-layout">
           <nav aria-label="Menu du compte" className="account-nav">
-            <label className="mobile-panel-menu">
-              <span className="eyebrow">Mon espace</span>
-              <select
-                aria-label="Choisir un panneau"
-                value={selected.id}
-                onChange={(e) =>
-                  navigate("/tableau-de-bord?onglet=" + e.target.value)
-                }
-              >
-                {tabs.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </label>
             {["Mon espace", "Administration"].map((group) => {
               const entries = tabs.filter(
                 (t) =>
-                  (["comptes", "sejours", "chalet"].includes(t.id)
+                  (staffLinks.some((link) => link.id === t.id)
                     ? "Administration"
                     : "Mon espace") === group,
               );
               return (
                 entries.length > 0 && (
-                  <div key={group} className="nav-group">
+                  <div
+                    key={group}
+                    className="nav-group"
+                    data-group={
+                      group === "Administration" ? "staff" : "personal"
+                    }
+                  >
                     <p className="eyebrow">{group}</p>
                     {entries.map((t) => (
                       <Link
                         key={t.id}
-                        href={"/tableau-de-bord?onglet=" + t.id}
+                        href={panelHref(t.id)}
                         data-testid={"tab-" + t.id}
                         aria-current={selected.id === t.id ? "page" : undefined}
                       >
@@ -233,8 +221,13 @@ export default function TableauDeBord() {
               <LogOut size={16} /> Déconnexion
             </button>
           </nav>
-          <section key={selected.id} className="account-content">
-            {requestId && !user.isAdmin ? (
+          <section
+            key={selected.id}
+            ref={content}
+            tabIndex={-1}
+            className="account-content scroll-mt-24"
+          >
+            {requestId && !managesStays(user) ? (
               <div className="panel" role="status">
                 <h2 className="section-title">Compte administrateur requis</h2>
                 <p>
