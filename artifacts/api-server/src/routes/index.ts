@@ -12,10 +12,13 @@ import calendarRouter from "./calendar.js";
 import adminRouter from "./admin.js";
 import { loadUser } from "../middlewares/auth.js";
 import { requireDatabase } from "../middlewares/database.js";
+import contactRouter from "./contact.js";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+// Contact remains available to visitors, without a database or an account.
+router.use(contactRouter);
 router.get("/auth/config", (_req, res) => {
   const { SUPABASE_URL: url, SUPABASE_PUBLISHABLE_KEY: key } = process.env;
   if (!url || !key) { res.status(503).json({ error: "Connexion indisponible." }); return; }
