@@ -1,4 +1,8 @@
-import { returnPanel } from "@/lib/access-review";
+import {
+  returnPanel,
+  communityDestination,
+  articleDestination,
+} from "@/lib/access-review";
 import {
   isRelationship,
   type Relationship,
@@ -103,7 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
         subscription = supabase.auth.onAuthStateChange((event, session) => {
           const id = session?.user.id ?? null;
-          if (activeIdentity.current !== id) cache.clear();
+          // Public articles may already be loading when Auth restores a session.
+          // Keep that request alive while discarding all private account data.
+          if (activeIdentity.current !== id)
+            cache.removeQueries({
+              predicate: (q) => q.queryKey[0] !== "journal",
+            });
           activeIdentity.current = id;
           setIdentity(id);
           setStarting(false);
@@ -135,6 +144,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const next = returnPanel(location.search, "suite");
     const redirect = new URL("/connexion", location.origin);
     if (next) redirect.searchParams.set("suite", next);
+    if (articleDestination(location.search))
+      redirect.searchParams.set(
+        "article",
+        new URLSearchParams(location.search).get("article")!,
+      );
+    const community = new URLSearchParams(
+      communityDestination(location.search),
+    );
+    community.forEach((value, key) => redirect.searchParams.set(key, value));
     const { error } = await (
       await client()
     ).auth.signInWithOtp({
@@ -195,7 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     const { error } = await (await client()).auth.signOut({ scope: "local" });
     if (error) throw error;
-    cache.clear();
+    cache.removeQueries({ predicate: (q) => q.queryKey[0] !== "journal" });
     setIdentity(null);
   }
   return (

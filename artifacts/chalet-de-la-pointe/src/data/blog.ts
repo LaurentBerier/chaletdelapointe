@@ -14,6 +14,8 @@ export interface BlogPost {
   cover: string;
   tags: string[];
   published: boolean;
+  removedAt?: string | null;
+  commentsLocked: boolean;
 }
 export function useJournal() {
   return useQuery({

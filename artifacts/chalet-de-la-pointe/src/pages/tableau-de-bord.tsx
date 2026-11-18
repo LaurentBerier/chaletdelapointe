@@ -14,6 +14,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { ownerRequest, useAuth } from "@/context/AuthContext";
 import { BookingList } from "@/components/booking-list";
+import { CommunityPanel } from "@/components/community-panel";
 import {
   ProfilePanel,
   SecurityPanel,
@@ -120,6 +121,13 @@ export default function TableauDeBord() {
       panel: <ProfilePanel />,
     },
     {
+      id: "vie",
+      label: "Vie du chalet",
+      icon: BookOpen,
+      visible: true,
+      panel: <CommunityPanel />,
+    },
+    {
       id: "securite",
       label: "Sécurité",
       icon: KeyRound,
@@ -130,7 +138,7 @@ export default function TableauDeBord() {
       id: "blogue",
       label: "Mes chroniques",
       icon: BookOpen,
-      visible: !user.isAdmin,
+      visible: !managesStays(user),
       panel: <BlogPanel />,
     },
     ...staffLinks.map((link) => ({

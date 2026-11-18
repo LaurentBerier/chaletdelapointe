@@ -1,4 +1,8 @@
-import { reviewId, returnPanel } from "@/lib/access-review";
+import {
+  reviewId,
+  returnPanel,
+  communityDestination,
+} from "@/lib/access-review";
 import { Redirect } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 
@@ -35,7 +39,9 @@ export function ProtectedRoute({
           selectedReview
             ? "/connexion?demande=" + selectedReview
             : panel
-              ? "/connexion?suite=" + panel
+              ? "/connexion?suite=" +
+                panel +
+                communityDestination(location.search)
               : "/connexion"
         }
       />

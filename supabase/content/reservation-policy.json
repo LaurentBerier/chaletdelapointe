@@ -1,0 +1,43 @@
+{
+  "slug": "politique-de-reservation",
+  "title": "Politique de réservation du chalet",
+  "introduction": "Cette proposition est soumise aux copropriétaires pour discussion. Elle vise à répartir équitablement les séjours et les périodes les plus demandées, tout en tenant compte des vacances liées au travail en construction. Vous pouvez commenter chaque section et suggérer un nouveau texte. Seuls les administrateurs peuvent intégrer les changements. La publication de cette proposition ne modifie pas les règles de réservation actuellement appliquées.",
+  "status": "discussion",
+  "sections": [
+    {
+      "id": "priorite-individuelle",
+      "title": "Une priorité par copropriétaire",
+      "body": "Chaque copropriétaire dispose d’une place dans l’ordre de réservation. Le nombre de comptes créés ou de membres de sa famille ne donne aucun tour supplémentaire.\n\nLa liste des copropriétaires et les droits d’usage associés à leur participation sont confirmés avant la mise en place du classement. La répartition proposée remplace les priorités par groupes familiaux, sous réserve de son adoption par le groupe."
+    },
+    {
+      "id": "rotation-annuelle",
+      "title": "Un classement qui change chaque année",
+      "body": "Le premier classement est établi par tirage au sort et communiqué à tous. Chaque année, la personne placée en premier passe à la fin de la liste et les autres avancent d’une place. L’ordre initial et les classements successifs sont conservés.\n\nLe classement sert à départager les demandes pendant les tours prioritaires. Il ne permet pas de déplacer une réservation déjà confirmée. Les réservations se font pour une année à la fois."
+    },
+    {
+      "id": "meilleures-dates",
+      "title": "Faire tourner les meilleures dates",
+      "body": "Avant l’ouverture des demandes, le groupe identifie les périodes très demandées : semaines d’été, vacances de la construction, Noël, jour de l’An, relâche et longs congés retenus. Les blocs et leurs dates exactes sont publiés chaque année.\n\nUn historique indique qui a obtenu chaque période, en rapprochant les blocs équivalents d’une année à l’autre, par exemple Noël ou la première semaine de la construction.\n\nLorsque plusieurs copropriétaires de même niveau de priorité demandent le même bloc, la personne qui l’a obtenu l’année précédente passe après les autres demandeurs pour ce bloc. Le classement annuel départage ensuite les candidats.\n\nUne personne peut reprendre la même période si aucun autre demandeur de même priorité ne la souhaite. La priorité particulière aux travailleurs de la construction demeure applicable aux semaines concernées."
+    },
+    {
+      "id": "vacances-construction",
+      "title": "Priorité pour les vacances de la construction",
+      "body": "Les copropriétaires qui travaillent en construction et dont les vacances sont liées à cette période ont priorité sur les autres pour les semaines officielles des vacances de la construction. Les personnes concernées sont identifiées avant l’ouverture des réservations.\n\nLeur priorité est prévue par défaut, sauf avis contraire de leur part. Elles doivent toutefois confirmer la semaine souhaitée avant une date limite annoncée. Aucune réservation n’est créée automatiquement sans confirmation. Une personne peut renoncer à cette priorité pour une année sans perdre sa place dans le classement général.\n\nAu premier tour, chaque personne concernée peut obtenir au maximum une semaine de construction. Cette semaine compte comme son premier séjour prioritaire d’été et ne donne aucun tour supplémentaire.\n\nSi plusieurs personnes admissibles souhaitent la même semaine, on sert d’abord celles qui n’ont obtenu aucune semaine de construction l’année précédente. On applique ensuite la rotation de la semaine précise, puis le classement annuel.\n\nLes semaines non demandées, refusées ou non confirmées à la date limite sont offertes aux autres copropriétaires selon les règles générales. Une deuxième semaine ne peut être attribuée à la même personne qu’après le premier tour offert à tous les copropriétaires.\n\nCette priorité professionnelle s’applique uniquement aux vacances de la construction. Les règles générales s’appliquent aux autres périodes."
+    },
+    {
+      "id": "tours-reservation",
+      "title": "Les tours de réservation",
+      "body": "Les dates limites et le calendrier complet des étapes sont communiqués à tous avant le début du processus.\n\n1. Les personnes admissibles aux semaines de construction confirment leurs demandes pendant une première fenêtre annoncée à l’avance. Ces attributions sont réglées avant le tour général d’été.\n\n2. Les copropriétaires disposent ensuite de 14 jours pour transmettre jusqu’à trois choix classés par préférence. Au premier tour général, chacun peut obtenir un bloc, selon les priorités applicables. Si le premier choix est pris, on examine le suivant. Une semaine de construction déjà attribuée compte dans cette limite pour l’été.\n\n3. Au deuxième tour, les disponibilités restantes sont proposées dans l’ordre inverse du classement annuel, en respectant les règles de rotation des périodes convoitées. Les personnes ayant demandé à temps mais n’ayant rien obtenu sont servies avant toute deuxième attribution."
+    },
+    {
+      "id": "autres-occupants",
+      "title": "L’ouverture aux autres occupants",
+      "body": "Après les deux tours, les copropriétaires disposent de sept jours pour réserver les disponibilités restantes. Une fenêtre de sept jours est ensuite proposée aux anciens propriétaires et aux membres de la famille autorisés, puis aux autres invités autorisés.\n\nPour les périodes très demandées, les séjours des non-propriétaires ne sont confirmés que 21 jours avant l’arrivée.\n\nHors période très demandée, les copropriétaires ont accès au calendrier 14 jours avant les autres occupants autorisés. Après l’ouverture à tous, les demandes complètes sont traitées dans l’ordre de réception."
+    },
+    {
+      "id": "confirmations-suivi",
+      "title": "Les confirmations et le suivi",
+      "body": "Les réservations confirmées sont protégées, y compris celles qui existaient avant l’adoption de la nouvelle politique.\n\nUne liste d’attente conserve les demandes non satisfaites. Lorsqu’un bloc se libère, il est proposé selon les priorités applicables, avec 48 heures pour répondre.\n\nUne annulation volontaire n’efface pas automatiquement le séjour attribué de l’historique des priorités. Une annulation imposée par l’indisponibilité du chalet ne pénalise pas le propriétaire.\n\nLa personne responsable des réservations tient le classement, les attributions et la liste d’attente à jour. Un bilan est fait après la première saison, sans modifier rétroactivement les séjours confirmés."
+    }
+  ]
+}

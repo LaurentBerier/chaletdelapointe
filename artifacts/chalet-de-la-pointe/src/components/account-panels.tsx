@@ -3,6 +3,8 @@ import {
   type Relationship,
   type AccountStatus,
 } from "../../../../lib/shared/membership";
+import { managesStays } from "../../../../lib/shared/reservation-roles";
+import { BlogComments } from "./blog-comments";
 import { BookingAccessPanel } from "./booking-access";
 import { AdminCancelStay } from "./cancel-stay";
 import type { BookingAccess } from "../../../../lib/db/src/booking-access";
@@ -293,25 +295,33 @@ function RegistrationCard({ a }: { a: Account }) {
         </p>
       ) : (
         <>
-          {user?.isAdmin ? <label>
-            Rôle à attribuer
-            <select
-              value={group}
-              onChange={(e) => {
-                setGroup(e.target.value);
-                setApprove(false);
-              }}
-            >
-              {Object.entries(groups).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label> : <p>Le compte sera ouvert comme membre. Le super administrateur attribue les rôles.</p>}
+          {user?.isAdmin ? (
+            <label>
+              Rôle à attribuer
+              <select
+                value={group}
+                onChange={(e) => {
+                  setGroup(e.target.value);
+                  setApprove(false);
+                }}
+              >
+                {Object.entries(groups).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <p>
+              Le compte sera ouvert comme membre. Le super administrateur
+              attribue les rôles.
+            </p>
+          )}
           {group === "proprietaire" && (
             <p>
-              Un propriétaire voit les noms associés aux séjours en attente et confirmés.
+              Un propriétaire voit les noms associés aux séjours en attente et
+              confirmés.
             </p>
           )}
           <label className="check">
@@ -332,9 +342,7 @@ function RegistrationCard({ a }: { a: Account }) {
               Recevoir et traiter les demandes de séjour
             </label>
           )}
-          <p>
-            Le membre recevra votre décision par courriel.
-          </p>
+          <p>Le membre recevra votre décision par courriel.</p>
           <div className="button-row">
             <button
               className="action"
@@ -372,7 +380,9 @@ function AccountRow({ a }: { a: Account }) {
             ? "Super admin"
             : a.isDisabled
               ? "Suspendu"
-              : a.isReservationAdmin ? "Administrateur" : groups[a.group]}
+              : a.isReservationAdmin
+                ? "Administrateur"
+                : groups[a.group]}
         </span>
       </summary>
       {a.declaredRelation && (
@@ -444,9 +454,17 @@ function AccountRow({ a }: { a: Account }) {
             </label>
           )}
           <label className="check">
-            <input type="checkbox" name="staff" defaultChecked={a.isReservationAdmin} /> Administrateur
+            <input
+              type="checkbox"
+              name="staff"
+              defaultChecked={a.isReservationAdmin}
+            />{" "}
+            Administrateur
           </label>
-          <p className="text-sm">Gère tous les séjours et examine les demandes de compte et d’accès aux réservations.</p>
+          <p className="text-sm">
+            Gère tous les séjours et examine les demandes de compte et d’accès
+            aux réservations.
+          </p>
           <label className="check">
             <input
               type="checkbox"
@@ -468,10 +486,20 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
   const { user } = useAuth();
   const full = !!user?.isAdmin;
   const q = useQuery({
-    queryKey: ["admin-accounts", user?.id, full ? "directory" : "requests", requestId],
+    queryKey: [
+      "admin-accounts",
+      user?.id,
+      full ? "directory" : "requests",
+      requestId,
+    ],
     refetchInterval: 30000,
-    queryFn: () => ownerRequest<Account[]>(full ? "/admin/accounts" :
-      "/admin/requests" + (requestId ? "?demande=" + encodeURIComponent(requestId) : "")),
+    queryFn: () =>
+      ownerRequest<Account[]>(
+        full
+          ? "/admin/accounts"
+          : "/admin/requests" +
+              (requestId ? "?demande=" + encodeURIComponent(requestId) : ""),
+      ),
   });
   if (requestId) {
     const applicant = q.data?.find(
@@ -532,7 +560,9 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
   }
   return (
     <>
-      <h2 className="section-title">{full ? "Comptes et accès" : "Demandes des membres"}</h2>
+      <h2 className="section-title">
+        {full ? "Comptes et accès" : "Demandes des membres"}
+      </h2>
       <p className="section-note">
         Les nouveaux membres apparaissent après confirmation de leur courriel.
         Le droit de réserver peut être accordé sans attribuer le rôle de
@@ -595,7 +625,8 @@ export function AccountsPanel({ requestId }: { requestId: string | null }) {
         ? "Chargement…"
         : q.isError
           ? "Comptes indisponibles."
-          : full && q.data
+          : full &&
+            q.data
               .filter((a) => a.accountStatus === "approved")
               .map((a) => <AccountRow key={a.id} a={a} />)}
       {full && q.data?.some((a) => a.accountStatus === "denied") && (
@@ -723,7 +754,7 @@ function Editor({ post, close }: { post?: BlogPost; close: () => void }) {
           required
         />
       </label>
-      {user?.isAdmin && (
+      {
         <label className="check">
           <input
             type="checkbox"
@@ -732,7 +763,7 @@ function Editor({ post, close }: { post?: BlogPost; close: () => void }) {
           />{" "}
           Publier sur le blogue
         </label>
-      )}
+      }
       <div className="button-row">
         <button className="action" disabled={op.busy}>
           Enregistrer
@@ -740,19 +771,22 @@ function Editor({ post, close }: { post?: BlogPost; close: () => void }) {
         <button className="secondary-action" type="button" onClick={close}>
           Fermer
         </button>
-        {user?.isAdmin && post && (
+        {managesStays(user) && post && (
           <button
             className="text-link"
             type="button"
             onClick={() => setRemove(!remove)}
           >
-            Supprimer…
+            Retirer du blogue…
           </button>
         )}
       </div>
       {remove && (
         <div className="feedback">
-          <p>Supprimer définitivement cet article ?</p>
+          <p>
+            Retirer cet article du blogue ? Les admins pourront le rétablir en
+            brouillon.
+          </p>
           <button
             type="button"
             className="text-link"
@@ -764,7 +798,7 @@ function Editor({ post, close }: { post?: BlogPost; close: () => void }) {
               })
             }
           >
-            Confirmer la suppression
+            Confirmer le retrait
           </button>
         </div>
       )}
@@ -774,6 +808,7 @@ function Editor({ post, close }: { post?: BlogPost; close: () => void }) {
 }
 export function BlogPanel() {
   const { user } = useAuth(),
+    moderation = useAction(),
     q = useQuery({
       queryKey: ["account-articles", user?.id],
       queryFn: () => ownerRequest<BlogPost[]>("/account/articles"),
@@ -783,23 +818,26 @@ export function BlogPanel() {
     <>
       <div className="panel-heading">
         <h2 className="section-title">
-          {user?.isAdmin ? "Gestion du blogue" : "Mes chroniques"}
+          {managesStays(user) ? "Gestion du blogue" : "Mes chroniques"}
         </h2>
         <button className="action" onClick={() => setEdit("new")}>
           Écrire une chronique
         </button>
       </div>
       <p className="section-note">
-        Les brouillons restent privés jusqu’à leur publication par
-        l’administration.
+        Vous pouvez écrire et publier vos chroniques. Les articles publiés sont
+        visibles sur le site; vos brouillons restent privés. Les admins peuvent
+        modérer les publications et les commentaires.
       </p>
-      {edit && (
+      {edit && (edit === "new" || !edit.removedAt) && (
         <Editor
           key={edit === "new" ? "new" : edit.id}
           post={edit === "new" ? undefined : edit}
           close={() => setEdit(null)}
         />
       )}
+      {edit && edit !== "new" && <BlogComments slug={edit.slug} />}
+      {moderation.feedback}
       {q.isPending ? (
         "Chargement…"
       ) : q.isError ? (
@@ -813,17 +851,64 @@ export function BlogPanel() {
         q.data.map((p) => (
           <div key={p.id} className="panel">
             <span className="badge">
-              {p.published ? "Publié" : "Brouillon"}
+              {p.removedAt
+                ? "Retiré par la modération"
+                : p.published
+                  ? "Publié"
+                  : "Brouillon"}
             </span>
             <h3 className="mt-2">{p.title}</h3>
             <p>{p.author || "Équipe ChaletDeLaPointe"}</p>
             <div className="button-row mt-3">
-              {(user?.isAdmin || !p.published) && (
+              {!p.removedAt && (
                 <button className="text-link" onClick={() => setEdit(p)}>
                   Modifier
                 </button>
               )}
-              {p.published && (
+              {managesStays(user) && (
+                <>
+                  <button
+                    className="text-link"
+                    disabled={moderation.busy}
+                    onClick={() =>
+                      moderation.run(() =>
+                        write(
+                          "/admin/articles/" + p.id + "/moderation",
+                          "POST",
+                          { action: p.commentsLocked ? "unlock" : "lock" },
+                        ),
+                      )
+                    }
+                  >
+                    {p.commentsLocked
+                      ? "Rouvrir les commentaires"
+                      : "Fermer les commentaires"}
+                  </button>
+                  {p.removedAt && (
+                    <button
+                      className="text-link"
+                      disabled={moderation.busy}
+                      onClick={() =>
+                        moderation.run(() =>
+                          write(
+                            "/admin/articles/" + p.id + "/moderation",
+                            "POST",
+                            { action: "restore" },
+                          ),
+                        )
+                      }
+                    >
+                      Rétablir en brouillon
+                    </button>
+                  )}
+                  {p.removedAt && (
+                    <button className="text-link" onClick={() => setEdit(p)}>
+                      Examiner les commentaires
+                    </button>
+                  )}
+                </>
+              )}
+              {p.published && !p.removedAt && (
                 <Link className="text-link" href={"/blogue/" + p.slug}>
                   Voir l’article
                 </Link>
@@ -866,54 +951,56 @@ function AdminStay({ s, name }: { s: Stay; name?: string }) {
         </span>
         <span className={"badge status-" + s.status}>{labels[s.status]}</span>
       </summary>
-      {s.status !== "cancelled" && <form
-        className="account-form mt-4"
-        onSubmit={(e) => {
-          const f = values(e);
-          void op.run(() =>
-            write("/admin/reservations/" + s.id, "PATCH", {
-              ...f,
-              guests: Number(f.guests),
-            }),
-          );
-        }}
-      >
-        <div className="account-grid">
+      {s.status !== "cancelled" && (
+        <form
+          className="account-form mt-4"
+          onSubmit={(e) => {
+            const f = values(e);
+            void op.run(() =>
+              write("/admin/reservations/" + s.id, "PATCH", {
+                ...f,
+                guests: Number(f.guests),
+              }),
+            );
+          }}
+        >
+          <div className="account-grid">
+            <label>
+              Arrivée
+              <input
+                required
+                name="startDate"
+                type="date"
+                defaultValue={dayKey(s.startDate)}
+              />
+            </label>
+            <label>
+              Départ
+              <input
+                required
+                name="endDate"
+                type="date"
+                defaultValue={dayKey(s.endDate)}
+              />
+            </label>
+          </div>
           <label>
-            Arrivée
+            Voyageurs
             <input
+              type="number"
+              min={1}
               required
-              name="startDate"
-              type="date"
-              defaultValue={dayKey(s.startDate)}
+              name="guests"
+              defaultValue={s.guests}
             />
           </label>
-          <label>
-            Départ
-            <input
-              required
-              name="endDate"
-              type="date"
-              defaultValue={dayKey(s.endDate)}
-            />
-          </label>
-        </div>
-        <label>
-          Voyageurs
-          <input
-            type="number"
-            min={1}
-            required
-            name="guests"
-            defaultValue={s.guests}
-          />
-        </label>
-        <div className="button-row">
-          <button className="action" disabled={op.busy}>
-            Modifier le séjour
-          </button>
-        </div>
-      </form>}
+          <div className="button-row">
+            <button className="action" disabled={op.busy}>
+              Modifier le séjour
+            </button>
+          </div>
+        </form>
+      )}
       <AdminCancelStay stay={s} name={name} />
       {op.feedback}
     </details>
@@ -921,28 +1008,23 @@ function AdminStay({ s, name }: { s: Stay; name?: string }) {
 }
 export function StaysPanel() {
   const q = useQuery({
-      queryKey: ["admin-stays"],
-      queryFn: () => ownerRequest<Stay[]>("/admin/reservations"),
-    });
+    queryKey: ["admin-stays"],
+    queryFn: () => ownerRequest<Stay[]>("/admin/reservations"),
+  });
   return (
     <>
       <h2 className="section-title">Toutes les réservations</h2>
       <p className="section-note">
-        Modifiez un séjour ou annulez une réservation pour libérer les dates et prévenir la personne qui a réservé. Pour approuver ou refuser
-        une demande, ouvrez Approbations.
+        Modifiez un séjour ou annulez une réservation pour libérer les dates et
+        prévenir la personne qui a réservé. Pour approuver ou refuser une
+        demande, ouvrez Approbations.
       </p>
       {q.isPending ? (
         "Chargement…"
       ) : q.isError ? (
         "Séjours indisponibles."
       ) : q.data.length ? (
-        q.data.map((s) => (
-          <AdminStay
-            key={s.id}
-            s={s}
-            name={s.ownerName}
-          />
-        ))
+        q.data.map((s) => <AdminStay key={s.id} s={s} name={s.ownerName} />)
       ) : (
         <p className="panel">Aucun séjour.</p>
       )}

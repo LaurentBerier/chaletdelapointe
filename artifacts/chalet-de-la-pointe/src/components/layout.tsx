@@ -22,7 +22,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const staffLinks = managementLinks(user);
   const personalLinks = user?.accountStatus === "approved"
-    ? [["profil", "Mon profil"], ["securite", "Sécurité"], ...(user.canBook ? [["reservations", "Mes réservations"]] : [])]
+    ? [["profil", "Mon profil"], ["securite", "Sécurité"], ["vie", "Vie du chalet"], ...(user.canBook ? [["reservations", "Mes réservations"]] : [])]
     : [["profil", "Mon inscription"]];
   const staffMenu = staffLinks.length > 0 && <div className="staff-menu">
     <p className="eyebrow">Administration</p>
@@ -130,6 +130,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <nav aria-label="Navigation mobile" className="mobile-site-nav">
               {isAuthenticated && <div className="mobile-account-links">
                 <Link href="/tableau-de-bord" className="font-semibold text-primary" onClick={() => setMobileMenuOpen(false)}>Mon espace · {user?.name}</Link>
+                {user?.accountStatus === "approved" && <Link href="/tableau-de-bord?onglet=vie" onClick={() => setMobileMenuOpen(false)}>Vie du chalet</Link>}
                 {staffMenu}
               </div>}
               {navLinks.map((link) => (

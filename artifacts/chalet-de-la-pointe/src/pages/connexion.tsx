@@ -9,6 +9,8 @@ import {
   reviewPath,
   rememberReview,
   rememberedReview,
+  communityDestination,
+  articleDestination,
 } from "@/lib/access-review";
 import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
@@ -48,14 +50,18 @@ export default function Connexion() {
         to={
           returnReview
             ? reviewPath(returnReview)
-            : panel
-              ? "/tableau-de-bord?onglet=" + panel
-              : localStorage.getItem("chalet.calendar.sign-in-dates") &&
-                  auth.user?.canBook
-                ? "/calendrier?reprendre=1"
-                : auth.user?.canBook
-                  ? "/tableau-de-bord"
-                  : "/tableau-de-bord?onglet=profil"
+            : articleDestination(location.search)
+              ? articleDestination(location.search)
+              : panel
+                ? "/tableau-de-bord?onglet=" +
+                  panel +
+                  communityDestination(location.search)
+                : localStorage.getItem("chalet.calendar.sign-in-dates") &&
+                    auth.user?.canBook
+                  ? "/calendrier?reprendre=1"
+                  : auth.user?.canBook
+                    ? "/tableau-de-bord"
+                    : "/tableau-de-bord?onglet=profil"
         }
       />
     );

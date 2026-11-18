@@ -1,6 +1,8 @@
 import { deliverAccessEmails } from "../lib/access-email.js";
 import { deliverBookingEmails } from "../lib/booking-email.js";
 import management from "./management.js";
+import community from "./community.js";
+import blogComments from "./blog-comments.js";
 import { Router, type IRouter } from "express";
 import reviewsRouter from "./reviews.js";
 import healthRouter from "./health.js";
@@ -30,6 +32,8 @@ router.get("/jobs/access-mail", async (req, res) => {
   res.sendStatus(204);
 });
 router.use(loadUser);
+router.use(community);
+router.use(blogComments);
 router.use(management);
 router.use(reviewsRouter);
 router.use(propertiesRouter);

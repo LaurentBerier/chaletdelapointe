@@ -2,6 +2,7 @@ import { Link, useParams } from "wouter";
 import { motion } from "framer-motion";
 import { useJournal } from "@/data/blog";
 import NotFound from "@/pages/not-found";
+import { BlogComments } from "@/components/blog-comments";
 
 export default function Article() {
   const params = useParams<{ slug: string }>();
@@ -98,6 +99,7 @@ export default function Article() {
           </div>
         </motion.div>
 
+        <BlogComments slug={post.slug}/>
         {/* Related articles */}
         {related.length > 0 && (
           <div className="mt-20">

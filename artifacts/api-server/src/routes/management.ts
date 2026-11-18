@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { managesStays as isStaff } from "../../../../lib/shared/reservation-roles.js";
 import {
   and,
   asc,
@@ -8,6 +9,7 @@ import {
   or,
   count,
   getTableColumns,
+  isNull,
 } from "drizzle-orm";
 import {
   db,
@@ -115,11 +117,9 @@ router.post(
         (decision === "approve" &&
           (group !== "public" || canApprove !== false)))
     ) {
-      res
-        .status(403)
-        .json({
-          error: "Seul le super administrateur peut attribuer les rôles.",
-        });
+      res.status(403).json({
+        error: "Seul le super administrateur peut attribuer les rôles.",
+      });
       return;
     }
     if (
@@ -276,12 +276,10 @@ router.post(
     const { decision, requestId } = req.body ?? {};
     const review = decision === "approve" || decision === "deny";
     if (!req.user!.isAdmin && !review) {
-      res
-        .status(403)
-        .json({
-          error:
-            "Seul le super administrateur peut modifier un accès déjà décidé.",
-        });
+      res.status(403).json({
+        error:
+          "Seul le super administrateur peut modifier un accès déjà décidé.",
+      });
       return;
     }
     if (review && !uuid(requestId)) {
@@ -366,13 +364,18 @@ router.patch("/admin/properties/:id", requireAdmin, async (req, res) => {
 });
 const projection = { ...getTableColumns(posts), author: users.name };
 router.get("/journal", async (_req, res) => {
-  const { authorId: _authorId, ...visible } = projection;
+  const {
+    authorId: _authorId,
+    removedAt: _removedAt,
+    removedBy: _removedBy,
+    ...visible
+  } = projection;
   res.json(
     await db
       .select(visible)
       .from(posts)
       .leftJoin(users, eq(posts.authorId, users.id))
-      .where(eq(posts.published, true))
+      .where(and(eq(posts.published, true), isNull(posts.removedAt)))
       .orderBy(desc(posts.createdAt)),
   );
 });
@@ -382,7 +385,7 @@ router.get("/account/articles", requireAccount, async (req, res) => {
       .select(projection)
       .from(posts)
       .leftJoin(users, eq(posts.authorId, users.id))
-      .where(req.user!.isAdmin ? undefined : eq(posts.authorId, req.user!.id))
+      .where(isStaff(req.user) ? undefined : eq(posts.authorId, req.user!.id))
       .orderBy(desc(posts.createdAt)),
   );
 });
@@ -395,10 +398,6 @@ router.post("/account/articles", requireAccount, async (req, res) => {
     typeof published !== "boolean"
   ) {
     res.status(400).json({ error: "Vérifiez les trois champs de l’article." });
-    return;
-  }
-  if (published && !req.user!.isAdmin) {
-    res.status(403).json({ error: "Publication réservée à l’administration." });
     return;
   }
   const prefix =
@@ -435,10 +434,6 @@ router.patch("/account/articles/:id", requireAccount, async (req, res) => {
     res.status(400).json({ error: "Article invalide." });
     return;
   }
-  if (published && !req.user!.isAdmin) {
-    res.status(403).json({ error: "Publication réservée à l’administration." });
-    return;
-  }
   const [row] = await db
     .update(posts)
     .set({
@@ -450,25 +445,27 @@ router.patch("/account/articles/:id", requireAccount, async (req, res) => {
     .where(
       and(
         eq(posts.id, req.params.id),
-        req.user!.isAdmin
-          ? undefined
-          : and(eq(posts.authorId, req.user!.id), eq(posts.published, false)),
+        isStaff(req.user) ? undefined : eq(posts.authorId, req.user!.id),
+        isNull(posts.removedAt),
       ),
     )
     .returning();
   if (!row) {
-    res.status(404).json({ error: "Article introuvable ou déjà publié." });
+    res
+      .status(404)
+      .json({ error: "Article introuvable ou retiré par la modération." });
     return;
   }
   res.json(row);
 });
-router.delete("/admin/articles/:id", requireAdmin, async (req, res) => {
+router.delete("/admin/articles/:id", requireStaff, async (req, res) => {
   if (!uuid(req.params.id)) {
     res.status(400).json({ error: "Article invalide." });
     return;
   }
   const [row] = await db
-    .delete(posts)
+    .update(posts)
+    .set({ published: false, removedAt: new Date(), removedBy: req.user!.id })
     .where(eq(posts.id, req.params.id))
     .returning({ id: posts.id });
   if (!row) {
@@ -477,4 +474,32 @@ router.delete("/admin/articles/:id", requireAdmin, async (req, res) => {
   }
   res.json(row);
 });
+router.post(
+  "/admin/articles/:id/moderation",
+  requireStaff,
+  async (req, res) => {
+    if (
+      !uuid(req.params.id) ||
+      !["restore", "lock", "unlock"].includes(req.body?.action)
+    ) {
+      res.status(400).json({ error: "Action invalide." });
+      return;
+    }
+    const action = req.body.action;
+    const [row] = await db
+      .update(posts)
+      .set(
+        action === "restore"
+          ? { removedAt: null, removedBy: null, published: false }
+          : { commentsLocked: action === "lock" },
+      )
+      .where(eq(posts.id, req.params.id))
+      .returning({ id: posts.id });
+    if (!row) {
+      res.status(404).json({ error: "Article introuvable." });
+      return;
+    }
+    res.json(row);
+  },
+);
 export default router;

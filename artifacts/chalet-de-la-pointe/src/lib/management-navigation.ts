@@ -40,11 +40,11 @@ export function managementLinks(
           },
         ]
       : []),
+    ...(managesStays(user)
+      ? [{ id: "blogue" as const, label: "Gestion du blogue", icon: BookOpen }]
+      : []),
     ...(user.isAdmin
-      ? [
-          { id: "chalet" as const, label: "Réglages du chalet", icon: House },
-          { id: "blogue" as const, label: "Gestion du blogue", icon: BookOpen },
-        ]
+      ? [{ id: "chalet" as const, label: "Réglages du chalet", icon: House }]
       : []),
   ];
 }
