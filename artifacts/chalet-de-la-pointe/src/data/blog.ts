@@ -1,3 +1,4 @@
+import type { RichNode } from "../../../../lib/shared/blog-content";
 import { useQuery } from "@tanstack/react-query";
 import mist from "@assets/IMG_6664_1777733051950.jpg";
 import storm from "@assets/IMG_0508_1777733051950.jpg";
@@ -9,6 +10,8 @@ export interface BlogPost {
   title: string;
   excerpt: string;
   content: string;
+  richContent?: RichNode | null;
+  coverImage?: string | null;
   author: string | null;
   createdAt: string;
   cover: string;
@@ -33,7 +36,9 @@ export function useJournal() {
           year: "numeric",
           timeZone: "UTC",
         }).format(new Date(p.createdAt)),
-        image: p.cover === "brume" ? mist : p.cover === "orage" ? storm : lake,
+        image:
+          p.coverImage ||
+          (p.cover === "brume" ? mist : p.cover === "orage" ? storm : lake),
         readTime:
           Math.max(1, Math.ceil(p.content.split(/\s+/).length / 200)) + " min",
       }));

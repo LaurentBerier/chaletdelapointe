@@ -1,3 +1,4 @@
+import { BlogContent, BlogImage } from "@/components/blog-content";
 import { Link, useParams } from "wouter";
 import { motion } from "framer-motion";
 import { useJournal } from "@/data/blog";
@@ -6,13 +7,19 @@ import { BlogComments } from "@/components/blog-comments";
 
 export default function Article() {
   const params = useParams<{ slug: string }>();
-  const journal=useJournal(), blogPosts=journal.data ?? [];
-  if (journal.isPending || journal.isError) return <div className="pt-32 text-center">{journal.isPending?"Chargement de l’article…":"Article momentanément indisponible."}</div>;
-  const post = blogPosts.find(p=>p.slug===params.slug);
+  const journal = useJournal(),
+    blogPosts = journal.data ?? [];
+  if (journal.isPending || journal.isError)
+    return (
+      <div className="pt-32 text-center">
+        {journal.isPending
+          ? "Chargement de l’article…"
+          : "Article momentanément indisponible."}
+      </div>
+    );
+  const post = blogPosts.find((p) => p.slug === params.slug);
 
   if (!post) return <NotFound />;
-
-  const paragraphs = post.content.split("\n\n").filter(Boolean);
 
   const related = blogPosts.filter((p) => p.slug !== post.slug).slice(0, 2);
 
@@ -20,10 +27,7 @@ export default function Article() {
     <div className="min-h-screen bg-background pt-20">
       {/* Hero */}
       <div className="relative h-[55vh] min-h-[380px] overflow-hidden">
-        <motion.img
-          initial={{ scale: 1.04 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
+        <BlogImage
           src={post.image}
           alt={post.title}
           className="w-full h-full object-cover"
@@ -62,31 +66,7 @@ export default function Article() {
             <span>{post.readTime} de lecture</span>
           </div>
 
-          <div className="prose-custom flex flex-col gap-6">
-            {paragraphs.map((block, i) => {
-              if (block.startsWith("**") && block.endsWith("**")) {
-                return (
-                  <h3 key={i} className="text-xl font-serif text-primary mt-4">
-                    {block.replace(/\*\*/g, "")}
-                  </h3>
-                );
-              }
-              const parts = block.split(/(\*\*[^*]+\*\*)/g);
-              return (
-                <p key={i} className="text-foreground/80 leading-relaxed text-lg">
-                  {parts.map((part, j) =>
-                    part.startsWith("**") && part.endsWith("**") ? (
-                      <strong key={j} className="text-primary font-semibold">
-                        {part.replace(/\*\*/g, "")}
-                      </strong>
-                    ) : (
-                      part
-                    )
-                  )}
-                </p>
-              );
-            })}
-          </div>
+          <BlogContent rich={post.richContent} content={post.content} />
 
           <div className="mt-16 border-t border-border pt-8">
             <Link
@@ -99,11 +79,13 @@ export default function Article() {
           </div>
         </motion.div>
 
-        <BlogComments slug={post.slug}/>
+        <BlogComments slug={post.slug} />
         {/* Related articles */}
         {related.length > 0 && (
           <div className="mt-20">
-            <h2 className="text-2xl font-serif text-primary mb-8">À lire aussi</h2>
+            <h2 className="text-2xl font-serif text-primary mb-8">
+              À lire aussi
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               {related.map((r, i) => (
                 <motion.div
@@ -113,16 +95,21 @@ export default function Article() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1, duration: 0.5 }}
                 >
-                  <Link href={`/blogue/${r.slug}`} data-testid={`link-related-${r.slug}`}>
+                  <Link
+                    href={`/blogue/${r.slug}`}
+                    data-testid={`link-related-${r.slug}`}
+                  >
                     <div className="group cursor-pointer">
                       <div className="aspect-[4/3] overflow-hidden mb-4">
-                        <img
+                        <BlogImage
                           src={r.image}
                           alt={r.title}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                       </div>
-                      <p className="text-xs tracking-widest uppercase text-muted-foreground mb-2">{r.date}</p>
+                      <p className="text-xs tracking-widest uppercase text-muted-foreground mb-2">
+                        {r.date}
+                      </p>
                       <h3 className="font-serif text-primary text-lg group-hover:text-primary/70 transition-colors leading-snug">
                         {r.title}
                       </h3>

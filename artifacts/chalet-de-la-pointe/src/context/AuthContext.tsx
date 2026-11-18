@@ -56,7 +56,7 @@ interface AuthContextValue {
 }
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 let clientPromise: Promise<SupabaseClient> | undefined;
-function client() {
+export function chaletClient() {
   return (clientPromise ??= fetch("/api/auth/config")
     .then(async (res) => {
       if (!res.ok) throw new Error("Connexion indisponible.");
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     let subscription: { unsubscribe(): void } | undefined;
-    client()
+    chaletClient()
       .then((supabase) => {
         if (!active) return;
         setAuthTokenGetter(
@@ -154,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
     community.forEach((value, key) => redirect.searchParams.set(key, value));
     const { error } = await (
-      await client()
+      await chaletClient()
     ).auth.signInWithOtp({
       email: email.trim(),
       options: { shouldCreateUser: false, emailRedirectTo: redirect.href },
@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
   async function passwordLogin(email: string, password: string) {
     const { error } = await (
-      await client()
+      await chaletClient()
     ).auth.signInWithPassword({ email: email.trim(), password });
     if (error) throw error;
   }
@@ -178,7 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!name.trim() || name.trim().length > 80)
       throw new Error("Nom invalide.");
     const { error } = await (
-      await client()
+      await chaletClient()
     ).auth.signUp({
       email: email.trim(),
       password,
@@ -191,14 +191,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
   async function sendRecovery(email: string) {
     const { error } = await (
-      await client()
+      await chaletClient()
     ).auth.resetPasswordForEmail(email.trim(), {
       redirectTo: new URL("/connexion", location.origin).href,
     });
     if (error) throw error;
   }
   async function savePassword(password: string) {
-    const { error } = await (await client()).auth.updateUser({ password });
+    const { error } = await (
+      await chaletClient()
+    ).auth.updateUser({ password });
     if (error) throw error;
     setRecovery(false);
     await cache.invalidateQueries({ queryKey: ["session-account", identity] });
@@ -211,7 +213,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await cache.invalidateQueries();
   }
   async function logout() {
-    const { error } = await (await client()).auth.signOut({ scope: "local" });
+    const { error } = await (
+      await chaletClient()
+    ).auth.signOut({ scope: "local" });
     if (error) throw error;
     cache.removeQueries({ predicate: (q) => q.queryKey[0] !== "journal" });
     setIdentity(null);
@@ -248,7 +252,7 @@ export async function ownerRequest<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const token = (await (await client()).auth.getSession()).data.session
+  const token = (await (await chaletClient()).auth.getSession()).data.session
     ?.access_token;
   if (!token) throw new Error("Connexion requise.");
   const res = await fetch("/api" + path, {

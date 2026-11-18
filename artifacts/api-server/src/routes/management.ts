@@ -1,3 +1,8 @@
+import {
+  parseRichContent,
+  mediaPath,
+  safeImage,
+} from "../../../../lib/shared/blog-content.js";
 import { Router, type IRouter } from "express";
 import { managesStays as isStaff } from "../../../../lib/shared/reservation-roles.js";
 import {
@@ -368,6 +373,7 @@ router.get("/journal", async (_req, res) => {
     authorId: _authorId,
     removedAt: _removedAt,
     removedBy: _removedBy,
+    mediaPaths: _mediaPaths,
     ...visible
   } = projection;
   res.json(
@@ -389,15 +395,60 @@ router.get("/account/articles", requireAccount, async (req, res) => {
       .orderBy(desc(posts.createdAt)),
   );
 });
+function articleContent(
+  body: any,
+  actor: NonNullable<import("express").Request["user"]>,
+  previous?: typeof posts.$inferSelect,
+) {
+  if (previous?.richContent && body.richContent === undefined)
+    throw Error(
+      "Rechargez la chronique avant de l’enregistrer avec cet éditeur.",
+    );
+  const rich =
+    body.richContent == null ? null : parseRichContent(body.richContent);
+  const coverImage =
+    body.coverImage === undefined
+      ? (previous?.coverImage ?? null)
+      : body.coverImage;
+  if (coverImage !== null && !safeImage(coverImage))
+    throw Error("L’image de couverture est invalide.");
+  const paths = new Set(rich?.mediaPaths ?? []);
+  const coverPath = mediaPath(coverImage);
+  if (coverPath) paths.add(coverPath);
+  if (
+    !isStaff(actor) &&
+    [...paths].some(
+      (p) =>
+        !p.startsWith(actor.authUserId + "/") &&
+        !previous?.mediaPaths.includes(p),
+    )
+  )
+    throw Error("Ajoutez vos propres images à cette chronique.");
+  const content = rich?.text ?? body.content;
+  if (!field(content, 30000))
+    throw Error("Ajoutez du texte ou une image à la chronique.");
+  return {
+    content: content.trim(),
+    richContent: rich?.document ?? null,
+    coverImage,
+    mediaPaths: [...paths],
+  };
+}
 router.post("/account/articles", requireAccount, async (req, res) => {
-  const { title, excerpt, content, published = false } = req.body ?? {};
+  const { title, excerpt, published = false } = req.body ?? {};
   if (
     !field(title, 160) ||
     !field(excerpt, 500) ||
-    !field(content, 30000) ||
     typeof published !== "boolean"
   ) {
     res.status(400).json({ error: "Vérifiez les trois champs de l’article." });
+    return;
+  }
+  let rich;
+  try {
+    rich = articleContent(req.body, req.user!);
+  } catch (e) {
+    res.status(400).json({ error: (e as Error).message });
     return;
   }
   const prefix =
@@ -415,7 +466,7 @@ router.post("/account/articles", requireAccount, async (req, res) => {
       slug: prefix + "-" + randomUUID().slice(0, 8),
       title: title.trim(),
       excerpt: excerpt.trim(),
-      content: content.trim(),
+      ...rich,
       published,
       authorId: req.user!.id,
     })
@@ -423,15 +474,37 @@ router.post("/account/articles", requireAccount, async (req, res) => {
   res.status(201).json(row);
 });
 router.patch("/account/articles/:id", requireAccount, async (req, res) => {
-  const { title, excerpt, content, published = false } = req.body ?? {};
+  const { title, excerpt, published = false } = req.body ?? {};
   if (
     !uuid(req.params.id) ||
     !field(title, 160) ||
     !field(excerpt, 500) ||
-    !field(content, 30000) ||
     typeof published !== "boolean"
   ) {
     res.status(400).json({ error: "Article invalide." });
+    return;
+  }
+  const [previous] = await db
+    .select()
+    .from(posts)
+    .where(
+      and(
+        eq(posts.id, req.params.id),
+        isStaff(req.user) ? undefined : eq(posts.authorId, req.user!.id),
+        isNull(posts.removedAt),
+      ),
+    );
+  if (!previous) {
+    res
+      .status(404)
+      .json({ error: "Article introuvable ou retiré par la modération." });
+    return;
+  }
+  let rich;
+  try {
+    rich = articleContent(req.body, req.user!, previous);
+  } catch (e) {
+    res.status(400).json({ error: (e as Error).message });
     return;
   }
   const [row] = await db
@@ -439,7 +512,7 @@ router.patch("/account/articles/:id", requireAccount, async (req, res) => {
     .set({
       title: title.trim(),
       excerpt: excerpt.trim(),
-      content: content.trim(),
+      ...rich,
       published,
     })
     .where(

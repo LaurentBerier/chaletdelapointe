@@ -5,6 +5,7 @@ import {
   boolean,
   timestamp,
   type AnyPgColumn,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { usersTable } from "./users.js";
 export const posts = pgTable("blog_posts", {
@@ -13,6 +14,9 @@ export const posts = pgTable("blog_posts", {
   title: text("title").notNull(),
   excerpt: text("excerpt").notNull(),
   content: text("content").notNull(),
+  richContent: jsonb("rich_content"),
+  coverImage: text("cover_image"),
+  mediaPaths: text("media_paths").array().notNull().default([]),
   authorId: uuid("author_id").references(() => usersTable.id),
   published: boolean("published").notNull().default(false),
   removedAt: timestamp("removed_at", { withTimezone: true }),

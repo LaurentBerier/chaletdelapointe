@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { EmojiPicker } from "./emoji-picker";
+import { useRef, useState } from "react";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ownerRequest, useAuth } from "@/context/AuthContext";
@@ -126,6 +127,7 @@ function CommentForm({
   onSaved: () => unknown;
 }) {
   const [body, setBody] = useState("");
+  const input = useRef<HTMLTextAreaElement>(null);
   const op = useMutation({
     mutationFn: () =>
       ownerRequest("/account/blog/" + slug + "/comments", {
@@ -149,12 +151,26 @@ function CommentForm({
         {parent ? "Votre réponse" : "Votre commentaire"}
         <textarea
           rows={3}
+          ref={input}
           required
           maxLength={6000}
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
       </label>
+      <EmojiPicker
+        disabled={op.isPending}
+        onPick={(emoji) => {
+          const node = input.current,
+            start = node?.selectionStart ?? body.length,
+            end = node?.selectionEnd ?? start;
+          setBody(body.slice(0, start) + emoji + body.slice(end));
+          requestAnimationFrame(() => {
+            node?.focus();
+            node?.setSelectionRange(start + emoji.length, start + emoji.length);
+          });
+        }}
+      />
       {op.error && (
         <p role="alert" className="community-error">
           {op.error.message}

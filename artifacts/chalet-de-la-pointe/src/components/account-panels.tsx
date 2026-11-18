@@ -9,7 +9,16 @@ import { BookingAccessPanel } from "./booking-access";
 import { AdminCancelStay } from "./cancel-stay";
 import type { BookingAccess } from "../../../../lib/db/src/booking-access";
 import { IllustratedNote } from "./field-heading";
-import { useState, type FormEvent } from "react";
+import { lazy, Suspense, useState, type FormEvent } from "react";
+import { BlogContent, BlogImage, uploadBlogImage } from "./blog-content";
+import {
+  legacyRichContent,
+  parseRichContent,
+  type RichNode,
+} from "../../../../lib/shared/blog-content";
+const BlogEditor = lazy(() =>
+  import("./blog-editor").then((m) => ({ default: m.BlogEditor })),
+);
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ownerRequest, useAuth } from "@/context/AuthContext";
 import { listProperties } from "@workspace/api-client-react";
@@ -710,16 +719,34 @@ function Editor({ post, close }: { post?: BlogPost; close: () => void }) {
   const { user } = useAuth(),
     op = useAction();
   const [remove, setRemove] = useState(false);
+  const [richContent, setRichContent] = useState<RichNode>(
+    () => post?.richContent ?? legacyRichContent(post?.content || ""),
+  );
+  const [mediaBusy, setMediaBusy] = useState(false),
+    [coverBusy, setCoverBusy] = useState(false);
+  const [coverImage, setCoverImage] = useState<string | null>(
+      post?.coverImage ?? null,
+    ),
+    [mediaError, setMediaError] = useState("");
+  const [preview, setPreview] = useState(false);
   return (
     <form
       className="panel account-form"
       onSubmit={(e) => {
         const f = values(e);
+        if (mediaBusy || coverBusy) return;
         void op.run(async () => {
+          const parsed = parseRichContent(richContent);
           await write(
             post ? "/account/articles/" + post.id : "/account/articles",
             post ? "PATCH" : "POST",
-            { ...f, published: f.published === "on" },
+            {
+              ...f,
+              content: parsed.text,
+              richContent: parsed.document,
+              coverImage,
+              published: f.published === "on",
+            },
           );
           close();
         });
@@ -744,16 +771,85 @@ function Editor({ post, close }: { post?: BlogPost; close: () => void }) {
           maxLength={500}
         />
       </label>
-      <label>
-        Texte
-        <textarea
-          rows={9}
-          name="content"
-          defaultValue={post?.content}
-          maxLength={30000}
-          required
-        />
-      </label>
+      <div className="blog-cover-editor">
+        <div>
+          <strong>Image de couverture</strong>
+          <p className="community-muted">
+            Une photo ou un GIF pour la carte du blogue et le haut de l’article.
+          </p>
+        </div>
+        {coverImage && (
+          <BlogImage
+            src={coverImage}
+            alt="Aperçu de la couverture"
+            className="blog-cover-preview"
+          />
+        )}
+        <label>
+          Choisir une couverture
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            disabled={coverBusy}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setCoverBusy(true);
+              setMediaError("");
+              try {
+                setCoverImage(await uploadBlogImage(file));
+              } catch (err) {
+                setMediaError((err as Error).message);
+              } finally {
+                setCoverBusy(false);
+              }
+            }}
+          />
+        </label>
+        {coverBusy && <p role="status">Ajout de la couverture…</p>}
+        {coverImage && (
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => setCoverImage(null)}
+          >
+            Retirer la couverture
+          </button>
+        )}
+        {mediaError && (
+          <p className="community-error" role="alert">
+            {mediaError}
+          </p>
+        )}
+      </div>
+      <div>
+        <div className="rich-editor-heading">
+          <strong>Texte de la chronique</strong>
+          <button
+            type="button"
+            className="text-link"
+            aria-pressed={preview}
+            onClick={() => setPreview(!preview)}
+          >
+            {preview ? "Revenir à l’éditeur" : "Aperçu du texte"}
+          </button>
+        </div>
+        <div hidden={preview}>
+          <Suspense fallback={<p>Chargement de l’éditeur…</p>}>
+            <BlogEditor
+              initialContent={richContent}
+              onChange={setRichContent}
+              onBusyChange={setMediaBusy}
+            />
+          </Suspense>
+        </div>
+        {preview && (
+          <div className="blog-preview">
+            <BlogContent rich={richContent} content="" />
+          </div>
+        )}
+      </div>
       {
         <label className="check">
           <input
@@ -765,7 +861,7 @@ function Editor({ post, close }: { post?: BlogPost; close: () => void }) {
         </label>
       }
       <div className="button-row">
-        <button className="action" disabled={op.busy}>
+        <button className="action" disabled={op.busy || mediaBusy || coverBusy}>
           Enregistrer
         </button>
         <button className="secondary-action" type="button" onClick={close}>
