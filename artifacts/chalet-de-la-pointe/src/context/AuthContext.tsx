@@ -32,6 +32,7 @@ interface Owner {
   bookingAccess: BookingAccess;
   name: string;
   canApprove: boolean;
+  canCancelOthers: boolean;
   isReservationAdmin: boolean;
   isAdmin: boolean;
 }

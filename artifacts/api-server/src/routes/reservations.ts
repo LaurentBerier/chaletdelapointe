@@ -9,11 +9,10 @@ import {
   GetReservationParams,
   GetReservationResponse,
   CancelReservationParams,
-  CancelReservationResponse,
   ListMyReservationsResponse,
 } from "../../../../lib/api-zod/src/index.js";
-import { cancelStayAsAdmin } from "../lib/cancel-stay.js";
-import { requireBookingAccess } from "../middlewares/auth.js";
+import { cancelStay } from "../lib/cancel-stay.js";
+import { requireAccount, requireBookingAccess } from "../middlewares/auth.js";
 import { calculateReservationPrice, validateStay, PricingError } from "../lib/pricing.js";
 import { deliverBookingEmails, reviewUrl } from "../lib/booking-email.js";
 import { toIsoDate } from "../lib/dates.js";
@@ -69,7 +68,7 @@ router.post("/reservations/quote", async (req: Request, res): Promise<void> => {
   }
 });
 
-router.get("/reservations", requireBookingAccess, async (req, res): Promise<void> => {
+router.get("/reservations", requireAccount, async (req, res): Promise<void> => {
   await deliverBookingEmails();
   const rows = await db
     .select()
@@ -129,7 +128,7 @@ router.post("/reservations", requireBookingAccess, async (req, res): Promise<voi
   }
 });
 
-router.get("/reservations/:id", requireBookingAccess, async (req, res): Promise<void> => {
+router.get("/reservations/:id", requireAccount, async (req, res): Promise<void> => {
   const params = GetReservationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -151,39 +150,13 @@ router.get("/reservations/:id", requireBookingAccess, async (req, res): Promise<
   res.json(GetReservationResponse.parse(serializeReservation(row)));
 });
 
-router.post("/reservations/:id/cancel", requireBookingAccess, async (req, res): Promise<void> => {
+router.post("/reservations/:id/cancel", requireAccount, async (req, res): Promise<void> => {
   const params = CancelReservationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [row] = await db
-    .select()
-    .from(reservationsTable)
-    .where(eq(reservationsTable.id, params.data.id))
-    .limit(1);
-  if (!row) {
-    res.status(404).json({ error: "Reservation not found" });
-    return;
-  }
-  if (row.userId !== req.user!.id && !req.user!.isAdmin) {
-    res.status(403).json({ error: "Forbidden" });
-    return;
-  }
-  if (req.user!.isAdmin && row.userId !== req.user!.id) {
-    await cancelStayAsAdmin(res, row.id, req.user!.id);
-    return;
-  }
-  if (row.status === "cancelled") {
-    res.json(CancelReservationResponse.parse(serializeReservation(row)));
-    return;
-  }
-  const [updated] = await db
-    .update(reservationsTable)
-    .set({ status: "cancelled" })
-    .where(eq(reservationsTable.id, row.id))
-    .returning();
-  res.json(CancelReservationResponse.parse(serializeReservation(updated)));
+  await cancelStay(res, params.data.id, req.user!);
 });
 
 export default router;

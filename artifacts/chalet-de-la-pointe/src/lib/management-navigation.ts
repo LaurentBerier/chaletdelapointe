@@ -5,7 +5,7 @@ import {
   ShieldCheck,
   UsersRound,
 } from "lucide-react";
-import { managesStays } from "../../../../lib/shared/reservation-roles";
+import { managesStays, cancelsOthersStays } from "../../../../lib/shared/reservation-roles";
 
 export function managementLinks(
   user?: {
@@ -13,6 +13,7 @@ export function managementLinks(
     isAdmin: boolean;
     isReservationAdmin: boolean;
     canApprove: boolean;
+    canCancelOthers: boolean;
   } | null,
 ) {
   if (!user || user.accountStatus !== "approved") return [];
@@ -26,13 +27,17 @@ export function managementLinks(
           },
         ]
       : []),
-    ...(managesStays(user)
+    ...(cancelsOthersStays(user)
       ? [
           {
             id: "sejours" as const,
             label: "Tous les séjours",
             icon: CalendarRange,
           },
+        ]
+      : []),
+    ...(managesStays(user)
+      ? [
           {
             id: "comptes" as const,
             label: user.isAdmin ? "Comptes et accès" : "Demandes des membres",

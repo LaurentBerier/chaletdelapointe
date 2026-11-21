@@ -44,6 +44,7 @@ const account = {
   registrationRequestId: users.registrationRequestId,
   group: users.group,
   canApprove: users.canApprove,
+  canCancelOthers: users.canCancelOthers,
   isDisabled: users.isDisabled,
   isAdmin: users.isAdmin,
   isReservationAdmin: users.isReservationAdmin,
@@ -119,6 +120,7 @@ router.post(
       !req.user!.isAdmin &&
       (req.body?.isAdmin ||
         req.body?.isReservationAdmin ||
+        req.body?.canCancelOthers ||
         (decision === "approve" &&
           (group !== "public" || canApprove !== false)))
     ) {
@@ -176,13 +178,14 @@ router.post(
   },
 );
 router.patch("/admin/accounts/:id", requireAdmin, async (req, res) => {
-  const { name, group, canApprove, isDisabled, canBook, isReservationAdmin } =
+  const { name, group, canApprove, isDisabled, canBook, isReservationAdmin, canCancelOthers } =
     req.body ?? {};
   if (
     !uuid(req.params.id) ||
     (name !== undefined && !field(name, 80)) ||
     (isReservationAdmin !== undefined &&
       typeof isReservationAdmin !== "boolean") ||
+    (canCancelOthers !== undefined && typeof canCancelOthers !== "boolean") ||
     !validGroup(group) ||
     (canBook !== undefined && typeof canBook !== "boolean") ||
     typeof canApprove !== "boolean" ||
@@ -196,6 +199,7 @@ router.patch("/admin/accounts/:id", requireAdmin, async (req, res) => {
     .set({
       ...(name === undefined ? {} : { name: name.trim() }),
       ...(isReservationAdmin === undefined ? {} : { isReservationAdmin }),
+      ...(canCancelOthers === undefined ? {} : { canCancelOthers }),
       group,
       ...(canBook !== undefined
         ? {

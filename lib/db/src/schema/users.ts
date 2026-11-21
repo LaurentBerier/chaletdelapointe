@@ -8,6 +8,7 @@ export const usersTable = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   authUserId: uuid("auth_user_id").unique(),
   canApprove: boolean("can_approve").notNull().default(false),
+  canCancelOthers: boolean("can_cancel_others").notNull().default(false),
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   group: userGroupEnum("group").notNull().default("public"),

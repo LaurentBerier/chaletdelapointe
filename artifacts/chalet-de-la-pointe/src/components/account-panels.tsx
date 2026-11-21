@@ -35,6 +35,7 @@ type Account = {
   registrationRequestId: string | null;
   group: string;
   canApprove: boolean;
+  canCancelOthers: boolean;
   isDisabled: boolean;
   isAdmin: boolean;
   isReservationAdmin: boolean;
@@ -418,6 +419,7 @@ function AccountRow({ a }: { a: Account }) {
                   : {}),
                 isDisabled: f.disabled === "on",
                 isReservationAdmin: f.staff === "on",
+                canCancelOthers: f.cancelOthers === "on",
               }),
             );
           }}
@@ -473,6 +475,19 @@ function AccountRow({ a }: { a: Account }) {
           <p className="text-sm">
             Gère tous les séjours et examine les demandes de compte et d’accès
             aux réservations.
+          </p>
+          <label className="check">
+            <input
+              type="checkbox"
+              name="cancelOthers"
+              defaultChecked={a.canCancelOthers}
+            />{" "}
+            Annuler les séjours des autres
+          </label>
+          <p className="text-sm">
+            Permission supplémentaire, désactivée par défaut. Les administrateurs
+            peuvent déjà annuler tous les séjours. Chaque membre peut annuler
+            ses propres réservations.
           </p>
           <label className="check">
             <input
@@ -1035,6 +1050,7 @@ const labels: Record<string, string> = {
   pending_payment: "En attente de paiement",
 };
 function AdminStay({ s, name }: { s: Stay; name?: string }) {
+  const { user } = useAuth();
   const op = useAction();
   return (
     <details className="panel">
@@ -1047,7 +1063,7 @@ function AdminStay({ s, name }: { s: Stay; name?: string }) {
         </span>
         <span className={"badge status-" + s.status}>{labels[s.status]}</span>
       </summary>
-      {s.status !== "cancelled" && (
+      {managesStays(user) && s.status !== "cancelled" && (
         <form
           className="account-form mt-4"
           onSubmit={(e) => {
@@ -1103,17 +1119,19 @@ function AdminStay({ s, name }: { s: Stay; name?: string }) {
   );
 }
 export function StaysPanel() {
+  const { user } = useAuth();
+  const staff = managesStays(user);
   const q = useQuery({
-    queryKey: ["admin-stays"],
-    queryFn: () => ownerRequest<Stay[]>("/admin/reservations"),
+    queryKey: ["admin-stays", user?.id, staff ? "manage" : "cancel"],
+    queryFn: () => ownerRequest<Stay[]>(staff ? "/admin/reservations" : "/cancellations"),
   });
   return (
     <>
       <h2 className="section-title">Toutes les réservations</h2>
       <p className="section-note">
-        Modifiez un séjour ou annulez une réservation pour libérer les dates et
-        prévenir la personne qui a réservé. Pour approuver ou refuser une
-        demande, ouvrez Approbations.
+        {staff
+          ? "Modifiez un séjour ou annulez une réservation pour libérer les dates et prévenir la personne qui a réservé. Pour approuver ou refuser une demande, ouvrez Approbations."
+          : "Vous pouvez annuler les séjours des autres. Les dates seront libérées et la personne qui a réservé recevra un courriel."}
       </p>
       {q.isPending ? (
         "Chargement…"

@@ -1,6 +1,6 @@
-import { managesStays } from "../../../../lib/shared/reservation-roles";
+import { cancelsOthersStays } from "../../../../lib/shared/reservation-roles";
 import { IllustratedNote } from "./field-heading";
-import { AdminCancelStay } from "./cancel-stay";
+import { AdminCancelStay, CancelOwnStay } from "./cancel-stay";
 import { CalendarDays } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { stayDates } from "../../../../lib/shared/stay-dates";
@@ -74,7 +74,7 @@ export function BookingList({ review = false }: { review?: boolean }) {
               ? "Aucune demande pour le moment."
               : "Aucun séjour réservé."}
           </h3>
-          {!review && (
+          {!review && user?.canBook && (
             <Link href="/calendrier" className="text-link">
               Choisir mes dates
             </Link>
@@ -118,8 +118,9 @@ export function BookingList({ review = false }: { review?: boolean }) {
                 </button>
               </div>
             )}
-            {managesStays(user) && s.status === "confirmed" &&
-              <AdminCancelStay stay={s} name={review ? s.ownerName : user?.name} />}
+            {!review && <CancelOwnStay stay={s} />}
+            {review && cancelsOthersStays(user) &&
+              <AdminCancelStay stay={s} name={s.ownerName} />}
           </li>
         ))}
       </ul>

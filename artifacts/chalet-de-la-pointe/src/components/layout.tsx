@@ -22,7 +22,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const staffLinks = managementLinks(user);
   const personalLinks = user?.accountStatus === "approved"
-    ? [["profil", "Mon profil"], ["securite", "Sécurité"], ["vie", "Vie du chalet"], ...(user.canBook ? [["reservations", "Mes réservations"]] : [])]
+    ? [["profil", "Mon profil"], ["securite", "Sécurité"], ["vie", "Vie du chalet"], ["reservations", "Mes réservations"]]
     : [["profil", "Mon inscription"]];
   const staffMenu = staffLinks.length > 0 && <div className="staff-menu">
     <p className="eyebrow">Administration</p>

@@ -1,4 +1,4 @@
-import { managesStays, reviewsStays } from "../../../../lib/shared/reservation-roles.js";
+import { managesStays, reviewsStays, cancelsOthersStays } from "../../../../lib/shared/reservation-roles.js";
 import { mayBook } from "../../../../lib/db/src/booking-access.js";
 import type { RequestHandler } from "express";
 import { eq } from "drizzle-orm";
@@ -117,6 +117,14 @@ export const requireApprover: RequestHandler = (req, res, next) => {
     res
       .status(req.user || req.applicant ? 403 : 401)
       .json({ error: "Accès au comité requis." });
+    return;
+  }
+  next();
+};
+
+export const requireCancellationManager: RequestHandler = (req, res, next) => {
+  if (!cancelsOthersStays(req.user)) {
+    res.status(req.user || req.applicant ? 403 : 401).json({ error: "Permission d’annuler les séjours des autres requise." });
     return;
   }
   next();

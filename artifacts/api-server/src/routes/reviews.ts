@@ -14,12 +14,12 @@ router.get("/me", async (req, res) => {
   if (req.applicant) {
     const { id, name, email, accountStatus, declaredRelation, registrationRequestId, hasPassword } = req.applicant;
     if (accountStatus === "pending" && registrationRequestId) await deliverAccessEmails(registrationRequestId);
-    res.json({ id, name, email, accountStatus, declaredRelation, hasPassword, canBook: false, bookingAccess: "none", isOwner: false, canApprove: false, isReservationAdmin: false, isAdmin: false });
+    res.json({ id, name, email, accountStatus, declaredRelation, hasPassword, canBook: false, bookingAccess: "none", isOwner: false, canApprove: false, canCancelOthers: false, isReservationAdmin: false, isAdmin: false });
     return;
   }
   if (!req.user) { res.status(401).json({ error: "Connexion requise." }); return; }
-  const { id, name, email, isReservationAdmin, isAdmin, group, bookingAccess, hasPassword } = req.user!;
-  res.json({ id, name, email, accountStatus: req.user.accountStatus, declaredRelation: req.user.declaredRelation, canApprove: reviewsStays(req.user), isReservationAdmin, isAdmin, bookingAccess, hasPassword, canBook: mayBook(req.user!), isOwner: group === "proprietaire" });
+  const { id, name, email, isReservationAdmin, isAdmin, group, bookingAccess, hasPassword, canCancelOthers } = req.user!;
+  res.json({ id, name, email, accountStatus: req.user.accountStatus, declaredRelation: req.user.declaredRelation, canApprove: reviewsStays(req.user), canCancelOthers, isReservationAdmin, isAdmin, bookingAccess, hasPassword, canBook: mayBook(req.user!), isOwner: group === "proprietaire" });
 });
 
 router.get("/reviews", requireApprover, async (_req, res) => {

@@ -110,7 +110,7 @@ export default function TableauDeBord() {
       id: "reservations",
       label: "Mes réservations",
       icon: CalendarDays,
-      visible: user.canBook,
+      visible: true,
       panel: <BookingList />,
     },
     {

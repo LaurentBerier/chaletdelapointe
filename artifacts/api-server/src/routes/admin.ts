@@ -12,8 +12,8 @@ import {
   AdminModifyReservationBody,
   AdminModifyReservationResponse,
 } from "../../../../lib/api-zod/src/index.js";
-import { cancelStayAsAdmin } from "../lib/cancel-stay.js";
-import { requireAdmin, requireStaff } from "../middlewares/auth.js";
+import { cancelStay } from "../lib/cancel-stay.js";
+import { requireAdmin, requireStaff, requireCancellationManager } from "../middlewares/auth.js";
 import { logAdminAction } from "../lib/admin-log.js";
 import { calculateReservationPrice, validateStay, PricingError } from "../lib/pricing.js";
 import { toIsoDate } from "../lib/dates.js";
@@ -89,7 +89,18 @@ router.post("/admin/reservations/:id/confirm", requireAdmin, async (req, res): P
   }
 });
 
-router.post("/admin/reservations/:id/cancel", requireStaff, async (req, res): Promise<void> => {
+// Delegates receive only the information needed to identify a stay, never its
+// private notes, pricing or the account directory.
+router.get("/cancellations", requireCancellationManager, async (_req, res) => {
+  res.json(await db.select({
+    id: reservationsTable.id, startDate: reservationsTable.startDate,
+    endDate: reservationsTable.endDate, guests: reservationsTable.guests,
+    status: reservationsTable.status, ownerName: usersTable.name,
+  }).from(reservationsTable).innerJoin(usersTable, eq(usersTable.id, reservationsTable.userId))
+    .orderBy(desc(reservationsTable.createdAt)));
+});
+
+router.post("/admin/reservations/:id/cancel", requireCancellationManager, async (req, res): Promise<void> => {
   const params = AdminCancelReservationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -100,7 +111,7 @@ router.post("/admin/reservations/:id/cancel", requireStaff, async (req, res): Pr
     res.status(400).json({ error: body.error.message });
     return;
   }
-  await cancelStayAsAdmin(res, params.data.id, req.user!.id, body.data.reason);
+  await cancelStay(res, params.data.id, req.user!, body.data.reason);
 });
 
 router.patch("/admin/reservations/:id", requireStaff, async (req, res): Promise<void> => {
@@ -119,7 +130,7 @@ router.patch("/admin/reservations/:id", requireStaff, async (req, res): Promise<
       res.status(400).json({ error: "Annulez le séjour séparément des autres modifications." });
       return;
     }
-    await cancelStayAsAdmin(res, params.data.id, req.user!.id, body.data.reason);
+    await cancelStay(res, params.data.id, req.user!, body.data.reason);
     return;
   }
   const [existing] = await db
