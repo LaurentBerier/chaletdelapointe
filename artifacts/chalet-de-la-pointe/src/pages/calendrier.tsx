@@ -147,12 +147,12 @@ export default function Calendrier() {
         : <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_17rem] items-start">
           <section ref={calendar} tabIndex={-1} aria-label="Dates du séjour" className="bg-background border rounded-2xl p-4 md:p-6 scroll-mt-24">
             <p className="mb-4 text-sm text-muted-foreground" role="status">{editingArrival ? "Choisissez votre nouvelle date d’arrivée dans le calendrier." : selectingEnd ? "Choisissez maintenant votre date de départ." : "Sélectionnez votre arrivée, puis votre départ."}</p>
-            {ownerView && visible.some(s => s.ownerName) &&
+            {ownerView &&
               <p className="calendar-inspect-hint">Survolez ou touchez une date pour voir qui a réservé ou fait une demande.</p>}
             <StayInspection.Provider value={{ staysFor, ownerView, active: previewDay ?? pinned,
               preview: (day, visible) => setPreviewDay(prev => visible ? day : prev === day ? null : prev) }}>
             <DayPicker locale={fr} mode="range" month={month} onMonthChange={m => { setPinned(null); setPreviewDay(null); setMonth(m); }}
-              numberOfMonths={mobile ? 1 : 2} startMonth={firstMonth} selected={range}
+              numberOfMonths={mobile ? 1 : 2} fixedWeeks startMonth={firstMonth} selected={range}
               components={{ DayButton: CalendarDayButton }}
               onSelect={(_range, day) => select(day)} disabled={d => !canInspect(iso(d)) && disabled(d)}
               modifiers={{
