@@ -1,7 +1,7 @@
 {
   "slug": "politique-de-reservation",
   "title": "Politique de réservation du chalet",
-  "introduction": "Cette proposition est soumise aux copropriétaires pour discussion. Elle vise à répartir équitablement les séjours et les périodes les plus demandées, tout en tenant compte des vacances liées au travail en construction. Vous pouvez commenter chaque section et suggérer un nouveau texte. Seuls les administrateurs peuvent intégrer les changements. La publication de cette proposition ne modifie pas les règles de réservation actuellement appliquées.",
+  "introduction": "Cette proposition est soumise aux copropriétaires pour discussion. Elle vise à répartir équitablement les séjours et les périodes les plus demandées, tout en tenant compte des vacances liées au travail en construction. Vous pouvez commenter chaque section et suggérer un nouveau texte. Seuls les administrateurs peuvent intégrer les changements. La limite décrite dans « Ouverture annuelle du calendrier » est appliquée aux réservations. Les autres dispositions demeurent des propositions soumises à discussion.",
   "status": "discussion",
   "sections": [
     {
@@ -38,6 +38,11 @@
       "id": "confirmations-suivi",
       "title": "Les confirmations et le suivi",
       "body": "Les réservations confirmées sont protégées, y compris celles qui existaient avant l’adoption de la nouvelle politique.\n\nUne liste d’attente conserve les demandes non satisfaites. Lorsqu’un bloc se libère, il est proposé selon les priorités applicables, avec 48 heures pour répondre.\n\nUne annulation volontaire n’efface pas automatiquement le séjour attribué de l’historique des priorités. Une annulation imposée par l’indisponibilité du chalet ne pénalise pas le propriétaire.\n\nLa personne responsable des réservations tient le classement, les attributions et la liste d’attente à jour. Un bilan est fait après la première saison, sans modifier rétroactivement les séjours confirmés."
+    },
+    {
+      "id": "fcc5766c-e3c7-40e0-ab85-10b199117666",
+      "title": "Ouverture annuelle du calendrier",
+      "body": "Les nuits sont ouvertes à la réservation jusqu’au 31 décembre 2027. Les dates à partir du 1er janvier 2028 sont bloquées jusqu’à cette date.\n\nLe 1er janvier 2028, à minuit, heure du Québec (America/Toronto), les dates de l’année 2028 s’ouvrent jusqu’au 31 décembre 2028. Le 1er janvier 2029, les dates de l’année 2029 s’ouvrent de la même façon, et ainsi de suite chaque année. Il s’agit d’une ouverture annuelle, et non d’une fenêtre mobile de 365 jours.\n\nLa limite s’applique aux nuits occupées. Un séjour peut se terminer le 1er janvier suivant la dernière année ouverte, mais il ne peut pas inclure une nuit de l’année encore fermée. Par exemple, avant le 1er janvier 2028, un séjour du 30 décembre 2027 au 1er janvier 2028 est possible; un départ le 2 janvier 2028 ne l’est pas.\n\nL’ouverture du calendrier permet de faire une demande; elle ne confirme pas automatiquement le séjour. Les réservations déjà enregistrées ne sont ni annulées ni déplacées par cette règle."
     }
   ]
 }

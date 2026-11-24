@@ -42,6 +42,16 @@ Premium Airbnb-style rental site for Chalet St-Mathieu (Saint-Mathieu-de-Rioux, 
 - **No double-booking**: PostgreSQL `EXCLUDE USING gist` constraint on `(property_id, daterange(start_date, end_date, '[)'))` filtered to `pending_payment|pending_approval|confirmed`. Requires `btree_gist` extension. Returns 409 to clients.
 - The calendar API lists held and confirmed date ranges. Signed-in owners also see the booker’s name for both. The departure date is marked and remains available for a new arrival if its night is free.
 
+### Notes — ouverture annuelle des réservations
+
+Décision du 23 novembre 2026 : les nuits peuvent être réservées jusqu’au 31 décembre 2027. Les nuits à partir du 1er janvier 2028 sont fermées jusqu’à cette date.
+
+Le 1er janvier 2028, à minuit, heure du Québec (`America/Toronto`), l’année 2028 s’ouvre jusqu’au 31 décembre 2028. Le 1er janvier 2029, l’année 2029 s’ouvre de la même manière, et ainsi de suite. L’ouverture est annuelle, et non une fenêtre mobile de 365 jours.
+
+Un départ le 1er janvier est permis lorsque la dernière nuit du séjour est le 31 décembre de l’année ouverte. Un séjour ne peut pas inclure une nuit de l’année encore fermée. Les séjours déjà enregistrés ne sont ni annulés ni déplacés par cette règle.
+
+La limite est calculée automatiquement par `lib/shared/booking-window.ts` et vérifiée dans le calendrier ainsi que lors des demandes, devis et modifications de séjour. Aucune intervention annuelle ni tâche planifiée n’est nécessaire. La même règle figure dans la politique de réservation, sous « Ouverture annuelle du calendrier ».
+
 ### Owner pilot
 
 Supabase Auth sends email sign-in links. Express verifies each bearer token against the project's Auth service and loads the linked owner by Supabase user ID. Registration is invite-only. Enable the email provider and disable public signup in Supabase Auth.

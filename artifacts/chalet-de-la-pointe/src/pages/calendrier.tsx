@@ -2,6 +2,7 @@ import { BookingAccessPanel } from "@/components/booking-access";
 import { FieldHeading } from "@/components/field-heading";
 import { CalendarDayButton, StayInspection, stayStyle } from "@/components/calendar-stay";
 import { stayDates } from "../../../../lib/shared/stay-dates";
+import { bookingWindowError, getBookingWindow } from "../../../../lib/shared/booking-window";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import { DayPicker, type DateRange } from "react-day-picker";
@@ -20,7 +21,17 @@ export default function Calendrier() {
   const { user, isLoading } = useAuth();
   const mobile = useIsMobile();
   const cache = useQueryClient();
-  const today = parseISO(new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto" }).format(new Date()));
+  const [bookingWindow, setBookingWindow] = useState(() => getBookingWindow());
+  useEffect(() => {
+    const refresh = () => setBookingWindow(previous => {
+      const current = getBookingWindow();
+      return current.today === previous.today ? previous : current;
+    });
+    const timer = window.setInterval(refresh, 30_000);
+    window.addEventListener("focus", refresh);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", refresh); };
+  }, []);
+  const today = parseISO(bookingWindow.today);
   const [month, setMonth] = useState(startOfMonth(today));
   const [range, setRange] = useState<DateRange>();
   const resumeAfterLogin = useRef(new URLSearchParams(location.search).has("reprendre"));
@@ -78,16 +89,21 @@ export default function Calendrier() {
     const [start, end, savedAt] = saved.split("|");
     const todayISO = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto" }).format(new Date());
     if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || start < todayISO || Number(savedAt) < Date.now() - 3_600_000) return;
+    if (start >= bookingWindow.endDate) {
+      localStorage.removeItem(signInDatesKey);
+      setNotice(bookingWindow.message);
+      return;
+    }
     if (availability.data.some(s => s.startDate <= start && start < s.endDate)) {
       setNotice("Votre date d’arrivée a été réservée. Choisissez une autre date.");
       return;
     }
     const from = parseISO(start);
-    const keepEnd = /^\d{4}-\d{2}-\d{2}$/.test(end) && start < end &&
+    const keepEnd = /^\d{4}-\d{2}-\d{2}$/.test(end) && start < end && !bookingWindowError(start, end) &&
       !availability.data.some(s => start < s.endDate && s.startDate < end);
     setMonth(startOfMonth(from));
     setRange({ from, to: keepEnd ? parseISO(end) : undefined });
-  }, [user, availability.data]);
+  }, [user, availability.data, bookingWindow.endDate, bookingWindow.message]);
   const checkIn = range?.from && iso(range.from);
   const checkOut = range?.to && iso(range.to);
   const nights = range?.from && range.to ? differenceInCalendarDays(range.to, range.from) : 0;
@@ -104,6 +120,7 @@ export default function Calendrier() {
   function disabled(date: Date) {
     const day = iso(date);
     if (day < iso(today)) return true;
+    if (day > bookingWindow.endDate || (day === bookingWindow.endDate && !selectingEnd)) return true;
     if (selectingEnd && day > checkIn!) return conflicts(checkIn!, day);
     return !!nightFor(day);
   }
@@ -122,7 +139,11 @@ export default function Calendrier() {
     else setRange({ from: date, to: undefined });
   }
   const booking = useMutation({
-    mutationFn: () => createReservation({ propertyId: chalet!.id, startDate: checkIn!, endDate: checkOut!, guests }),
+    mutationFn: () => {
+      const windowError = bookingWindowError(checkIn!, checkOut!);
+      if (windowError) throw new Error(windowError);
+      return createReservation({ propertyId: chalet!.id, startDate: checkIn!, endDate: checkOut!, guests });
+    },
     onSuccess: async () => {
       localStorage.removeItem(signInDatesKey);
       setRange(undefined); setNotice("Demande envoyée. Vos nuits sont en attente d’approbation.");
@@ -140,6 +161,7 @@ export default function Calendrier() {
   return <main className="calendar-page min-h-screen bg-secondary/20 pt-28 pb-20 px-4">
     <div className="max-w-5xl mx-auto">
       <FieldHeading kind="stay" title="Calendrier des disponibilités" />
+      <p className="mt-4 text-sm text-muted-foreground">{bookingWindow.message}</p>
       {user?.canApprove && <Link className="calendar-link my-3 min-h-11" href="/tableau-de-bord?onglet=approbations">Gérer les demandes de séjour →</Link>}
       {(!ready && (properties.isError || availability.isError || (properties.isSuccess && !chalet)))
         ? <p role="alert">Les disponibilités sont momentanément indisponibles. <button className="underline" onClick={() => { void properties.refetch(); if (chalet) void availability.refetch(); }}>Réessayer</button></p>
@@ -152,7 +174,7 @@ export default function Calendrier() {
             <StayInspection.Provider value={{ staysFor, ownerView, active: previewDay ?? pinned,
               preview: (day, visible) => setPreviewDay(prev => visible ? day : prev === day ? null : prev) }}>
             <DayPicker locale={fr} mode="range" month={month} onMonthChange={m => { setPinned(null); setPreviewDay(null); setMonth(m); }}
-              numberOfMonths={mobile ? 1 : 2} fixedWeeks startMonth={firstMonth} selected={range}
+              numberOfMonths={mobile ? 1 : 2} fixedWeeks startMonth={firstMonth} endMonth={parseISO(bookingWindow.endDate)} selected={range}
               components={{ DayButton: CalendarDayButton }}
               onSelect={(_range, day) => select(day)} disabled={d => !canInspect(iso(d)) && disabled(d)}
               modifiers={{
@@ -182,7 +204,7 @@ export default function Calendrier() {
                 {Array.from({ length: chalet!.maxGuests }, (_, i) => <option key={i}>{i + 1}</option>)}</select></label>}
               {nights > 0 && <p className="mt-4">{nights} nuit{nights > 1 ? "s" : ""}</p>}
               {user?.canBook ?
-              <button disabled={editingArrival || !nights || conflicts(checkIn!, checkOut!) || booking.isPending} onClick={() => booking.mutate()} className="w-full bg-primary text-white rounded-lg p-3 mt-4 disabled:opacity-45">Demander la réservation</button>
+              <button disabled={editingArrival || !nights || !!bookingWindowError(checkIn!, checkOut!) || conflicts(checkIn!, checkOut!) || booking.isPending} onClick={() => booking.mutate()} className="w-full bg-primary text-white rounded-lg p-3 mt-4 disabled:opacity-45">Demander la réservation</button>
               : user ? <BookingAccessPanel compact/> : <Link className="block bg-primary text-white text-center px-4 py-3 mt-4 rounded-lg" href="/connexion" onClick={() => {
                 if (checkIn) localStorage.setItem(signInDatesKey, [checkIn, checkOut ?? "", Date.now()].join("|"));
                 else localStorage.removeItem(signInDatesKey);

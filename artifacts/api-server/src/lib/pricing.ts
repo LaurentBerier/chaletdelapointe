@@ -8,6 +8,7 @@ import {
   type User,
 } from "../../../../lib/db/src/index.js";
 import { eachNight, diffNights } from "./dates.js";
+import { bookingWindowError } from "../../../../lib/shared/booking-window.js";
 
 export interface PriceComputation {
   nights: number;
@@ -122,6 +123,8 @@ export async function validateStay(propertyId: string, startDate: string, endDat
   if (nights <= 0) {
     throw new PricingError("endDate must be after startDate");
   }
+  const windowError = bookingWindowError(startDate, endDate);
+  if (windowError) throw new PricingError(windowError);
 
   const [property] = await db
     .select()
